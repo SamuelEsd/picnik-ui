@@ -1,0 +1,20 @@
+Metadata-Version: 2.1
+Name: picnik-integrator
+Version: 0.2.2
+Summary: Numerical integration functions developed to work with the picnik package. Includes: Trapezoid, Simpson and Romberg.
+License: MIT
+Keywords: numerical integration,non-isothermal kinetics,picnik
+Author: ErickErock
+Author-email: ramirez.orozco.erick@gmail.com
+Requires-Python: >=3.7,<4.0
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Requires-Dist: numpy (>=2.0.0,<3.0.0)
+Description-Content-Type: text/markdown
+
+This module defines numerical integration for thermokinetic studies
+
