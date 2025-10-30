@@ -5,6 +5,8 @@ from picnik import DataExtraction as DE
 import numpy as np
 import os
 import matplotlib.pyplot as plt
+from common.FileUploader import FileUploader
+
 
 # --- TODO: Complete picnik web ui tool ---
 
@@ -19,16 +21,13 @@ st.write("This is a web application for picnik python package.")
 st.write("Picnik - Python Isoconversional Computations for Non-Isothermal Kinetics. [GitHub Repository](https://github.com/ErickErock/pICNIK)")
 st.write("Please upload your CSV files below.")
 
-# Create file uploader widget that accepts multiple files
-uploaded_files = st.file_uploader("Choose CSV files (minimum 2, maximum 20)", type=['csv'], accept_multiple_files=True)
 
-file_paths = []
-# Get the full path to the files (if running locally and files are saved temporarily)
-if uploaded_files:
-    for uploaded_file in uploaded_files:
-        with open(os.path.join("/tmp", uploaded_file.name), "wb") as f:
-            f.write(uploaded_file.getbuffer())
-        file_paths.append(os.path.join("/tmp", uploaded_file.name))
+# Create an instance of FileUploader
+uploader = FileUploader()
+
+# Call the upload_files method to display the widget and get file paths
+uploaded_files = uploader.upload_files()
+
 
 # Check number of uploaded files
 num_files = len(uploaded_files)
