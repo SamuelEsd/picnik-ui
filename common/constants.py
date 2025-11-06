@@ -42,17 +42,21 @@ your data files, upload them with the file uploader located below:
 """
 
 STEP_3_DESCRIPTION = """
-The DataExtraction object is equipped with functions to read and manipulate data from thermally 
+The DataExtraction object in picnik library is equipped with functions to read and manipulate 
+data from thermally 
 controlled experiments. An exahustive list of all available functions, along with a description,
 can be found in the documentation [here](https://erickerock.github.io/pICNIK/modules/DataExtraction.html).
 
 
 To load files you have to create an instance of the DataExtraction object. Then, simply use
 the read_files function.
+```
 import picnik as pnk
 xtr = pnk.DataExtraction
 B, T0 = xtr.read_files(data)
-The read_files function takes as obligatory parameter the list of paths to the data files and
+```
+The next button use read_files function taking the list of paths to the data files
+you selected in step 2 and
 returns a numpy[ref] array of computed heating rates (B), another array containing the initial
 experimental temperature in K (T0) and a graphical summary of the expirmental data (Fig. 1.1).
 """
