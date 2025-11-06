@@ -29,8 +29,13 @@ st.markdown(STEP_2_DESCRIPTION)
 # File uploader
 file_uploader = FileUploader()
 list_of_files = file_uploader.upload_files()
-file_uploader.verify_file_count()
+step_2_completed = False
+if (file_uploader.verify_file_count()):
+    step_2_completed = file_uploader.verify_file_columns()
 
 # Step 3
 st.header(HEADER_STEP_3)
 st.markdown(STEP_3_DESCRIPTION)
+
+if (step_2_completed):
+    file_uploader.display_file_info()
