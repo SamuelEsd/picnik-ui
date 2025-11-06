@@ -83,7 +83,7 @@ class FileUploader:
             with tab:
                 st.dataframe(valid_file)  # Display the full DataFrame            
 
-    def display_file_info_3(self):
+    def display_file_info(self):
         """
         Display file information with Reset and Extract Data buttons in the same row.
         The extracted data is displayed in a new row below the buttons.
