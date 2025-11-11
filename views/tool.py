@@ -33,5 +33,6 @@ step_2_completed = False
 if (file_uploader.verify_file_count() and file_uploader.verify_file_columns()):
     file_uploader.show_valid_files()
     file_uploader.display_file_info()
+    #file_uploader.display_all_plots()
 
 

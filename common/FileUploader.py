@@ -119,15 +119,86 @@ class FileUploader:
             Bnum, T0num = data_extractor.read_files(self.file_paths)
             st.write("Files to be used: \n{}\n ".format(self.file_paths))
 
-            data_extractor.plot_data(x_data='temperature',
+            simple_figure = data_extractor.plot_data(x_data='temperature',
                                         y_data='TG',
                                         x_units='K',
                                         y_units='%')
-            st.pyplot()  # Display the plot in Streamlit
+            st.pyplot(simple_figure)  # Display the plot in Streamlit
+
+
+            self.display_all_plots(data_extractor)
 
             data_extractor.Conversion(
                 [data_extractor.DFlis[k]['Temperature [K]'].values[0] for k in range(len(Bnum))],
                 [data_extractor.DFlis[k]['Temperature [K]'].values[-1] for k in range(len(Bnum))]
             )  # Calculation of the conversion degree in the temperature range (Ti, Tf)
-            st.pyplot()  # Display the plot in Streamlit
+            #st.pyplot()  # Display the plot in Streamlit
             isoTables_num = data_extractor.Isoconversion(d_a=0.02)
+
+
+
+    def display_all_plots(self, data_extractor):
+        """
+        Display all available plots from the DataExtraction class using Streamlit.
+        """
+        # Define all valid combinations of x_data, y_data, x_units, and y_units
+        x_data_options = ['time', 'temperature']
+        y_data_options = ['TG', 'DTG', 'dT/dt']
+        x_units_options = {'time': ['min'], 'temperature': ['K']}
+        y_units_options = {
+            'TG': ['%'],
+            'DTG': ['%/min'],
+            'dT/dt': ['K/min']
+        }
+
+        # Create tabs for each plot combination
+        tabs = []
+        for x_data in x_data_options:
+            for y_data in y_data_options:
+                for x_unit in x_units_options[x_data]:
+                    for y_unit in y_units_options[y_data]:
+                        tabs.append(f"{x_data} ({x_unit}) vs {y_data} ({y_unit})")
+
+        # Inject custom CSS for horizontal scrolling
+        st.markdown(
+            """
+            <style>
+            .streamlit-tabs {
+                display: flex;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+            .streamlit-tabs::-webkit-scrollbar {
+                height: 8px;
+            }
+            .streamlit-tabs::-webkit-scrollbar-thumb {
+                background: #888;
+                border-radius: 4px;
+            }
+            .streamlit-tabs::-webkit-scrollbar-thumb:hover {
+                background: #555;
+            }
+            </style>
+            """,
+            unsafe_allow_html=True
+        )
+
+        with st.container():
+            # Wrap tabs in a horizontally scrollable container
+            st.markdown('<div class="streamlit-tabs">', unsafe_allow_html=True)
+            tab_objects = st.tabs(tabs)
+            st.markdown('</div>', unsafe_allow_html=True)
+
+            # Generate and display each plot in its respective tab
+            for i, tab in enumerate(tab_objects):
+                with tab:
+                    # Extract the current combination
+                    x_data, x_unit, y_data, y_unit = tabs[i].split(" ")[0], tabs[i].split("(")[1].split(")")[0], tabs[i].split("vs")[1].split("(")[0].strip(), tabs[i].split("vs")[1].split("(")[1].split(")")[0]
+                    
+                    st.subheader(f"Plot: {x_data} ({x_unit}) vs {y_data} ({y_unit})")
+                    try:
+                        # Call the plot_data method with the current combination
+                        current_figure = data_extractor.plot_data(x_data=x_data, y_data=y_data, x_units=x_unit, y_units=y_unit)
+                        st.pyplot(current_figure)  # Render the plot in Streamlit
+                    except KeyError:
+                        st.error(f"Invalid combination: {x_data} ({x_unit}) vs {y_data} ({y_unit})")
