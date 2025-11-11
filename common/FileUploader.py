@@ -1,8 +1,9 @@
 import streamlit as st
 import os
 import pandas as pd
-import picnik as pnk
-from picnik import DataExtraction as DE
+import picnick_dev as pnk
+from picnick_dev import DataExtraction as DE
+import matplotlib.pyplot as plt
 
 class FileUploader:
     def __init__(self, label="Choose CSV files (minimum 2, maximum 20)", file_types=['csv'], max_files=20):
