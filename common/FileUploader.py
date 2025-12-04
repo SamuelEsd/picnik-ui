@@ -6,14 +6,31 @@ from picnick_dev import DataExtraction as DE
 import matplotlib.pyplot as plt
 
 class FileUploader:
-    def __init__(self, label="Choose CSV files (minimum 2, maximum 20)", file_types=['csv'], max_files=20):
+    def __init__(self, label="Choose CSV files (minimum 2, maximum 20)", file_types=['csv'], max_files=20, default_dir="./resources/default_files"):
         self.label = label
         self.file_types = file_types
         self.max_files = max_files
+        self.default_dir = default_dir
         self.file_paths = []
         self.valid_files = []
         self.uploaded_files = []
         self.files_names_list = []
+
+        # Load default files if available
+        self.load_default_files()
+
+
+    def load_default_files(self):
+        """
+        Load default files from the specified directory.
+        """
+        if os.path.exists(self.default_dir) and os.path.isdir(self.default_dir):
+            default_files = [os.path.join(self.default_dir, f) for f in os.listdir(self.default_dir) if f.endswith(tuple(self.file_types))]
+            self.file_paths.extend(default_files)
+            st.info(f"Loaded default files from: {self.default_dir}")
+        else:
+            st.warning(f"Default directory '{self.default_dir}' does not exist or is not accessible.")
+
 
     def upload_files(self):
         # Create file uploader widget
