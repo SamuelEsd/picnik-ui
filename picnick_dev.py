@@ -443,7 +443,7 @@ class DataExtraction:
         ax1.legend(frameon=True)
         ax1.grid(True)
 
-        plt.show()
+        return fig
 #-----------------------------------------------------------------------------------------------------------
     def Isoconversion(self, d_a = 0.01):    
         """
