@@ -5,6 +5,7 @@ import picnick_dev as pnk
 from picnick_dev import DataExtraction as DE
 import matplotlib.pyplot as plt
 import plotly.express as px
+from .PlotPlotly import PlotlyPlotter as PP
 
 
 class FileUploader:
@@ -201,10 +202,14 @@ class FileUploader:
 
         # Place the Extract Data button in the second column
         with col2:
-            extract_data_clicked = st.button("Extract Data")
+            st.button(
+                "Extract Data",
+                key="extract_data_btn",
+                on_click=lambda: st.session_state.update({"extract_data_clicked": True})
+            )
 
         # Display extracted data in a new row
-        if extract_data_clicked:
+        if st.session_state.get('extract_data_clicked'):
             st.write("Extracting Data!")
             # Extract data from uploaded files
 
@@ -252,7 +257,10 @@ class FileUploader:
                                         y_data='TG',
                                         x_units='K',
                                         y_units='%')
-            st.pyplot(simple_figure)  # Display the plot in Streamlit
+            #st.pyplot(simple_figure)  # Display the plot in Streamlit
+
+            plotly_plotter = PP(title="TG vs Temperature", x_label="Temperature [K]", y_label="TG [%]", from_matplotlib_fig=simple_figure)
+            plotly_plotter.show()
 
             self.display_all_plots()
 
@@ -403,9 +411,9 @@ class FileUploader:
 
     def display_all_plots(self):
         """
-        Display all available plots from the DataExtraction class using Streamlit.
+        Display all available plots from the DataExtraction class using Streamlit, with interactive x-range selection for each curve.
+        Always plot the graph, and only recalculate curve data on Truncate click. Store curve values and x-ranges in session_state.
         """
-        # Define all valid combinations of x_data, y_data, x_units, and y_units
         x_data_options = ['time', 'temperature']
         y_data_options = ['TG', 'DTG', 'dT/dt']
         x_units_options = {'time': ['min'], 'temperature': ['K']}
@@ -415,7 +423,6 @@ class FileUploader:
             'dT/dt': ['K/min']
         }
 
-        # Create tabs for each plot combination
         tabs = []
         for x_data in x_data_options:
             for y_data in y_data_options:
@@ -423,7 +430,6 @@ class FileUploader:
                     for y_unit in y_units_options[y_data]:
                         tabs.append(f"{x_data} ({x_unit}) vs {y_data} ({y_unit})")
 
-        # Inject custom CSS for horizontal scrolling
         st.markdown(
             """
             <style>
@@ -448,21 +454,20 @@ class FileUploader:
         )
 
         with st.container():
-            # Wrap tabs in a horizontally scrollable container
             st.markdown('<div class="streamlit-tabs">', unsafe_allow_html=True)
             tab_objects = st.tabs(tabs)
             st.markdown('</div>', unsafe_allow_html=True)
 
-            # Generate and display each plot in its respective tab
             for i, tab in enumerate(tab_objects):
                 with tab:
-                    # Extract the current combination
                     x_data, x_unit, y_data, y_unit = tabs[i].split(" ")[0], tabs[i].split("(")[1].split(")")[0], tabs[i].split("vs")[1].split("(")[0].strip(), tabs[i].split("vs")[1].split("(")[1].split(")")[0]
-                    
                     st.subheader(f"Plot: {x_data} ({x_unit}) vs {y_data} ({y_unit})")
                     try:
                         # Call the plot_data method with the current combination
                         current_figure = self.data_extractor.plot_data(x_data=x_data, y_data=y_data, x_units=x_unit, y_units=y_unit)
-                        st.pyplot(current_figure)  # Render the plot in Streamlit
+                        #st.pyplot(current_figure)  # Render the plot in Streamlit
+
+                        plotly_plotter = PP(title=f"{x_data} ({x_unit}) vs {y_data} ({y_unit})", x_label=f"{x_data} [{x_unit}]", y_label=f"{y_data} [{y_unit}]", from_matplotlib_fig=current_figure)
+                        plotly_plotter.show()
                     except KeyError:
                         st.error(f"Invalid combination: {x_data} ({x_unit}) vs {y_data} ({y_unit})")
