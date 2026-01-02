@@ -4,7 +4,7 @@ import pandas as pd
 import picnick_dev as pnk
 from picnick_dev import DataExtraction as DE
 import matplotlib.pyplot as plt
-import plotly.express as px
+#import plotly.express as px
 from .PlotPlotly import PlotlyPlotter as PP
 
 
