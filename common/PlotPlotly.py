@@ -2,6 +2,8 @@
 # New class for Plotly plotting
 import plotly.graph_objects as go
 import streamlit as st
+import seaborn as sns
+import matplotlib.colors as mcolors
 
 
 class PlotlyPlotter:
