@@ -231,19 +231,18 @@ class FileUploader:
             st.write("Extracting Data!")
             # Extract data from uploaded files
 
-
             self.data_extractor = DE()
             try:
                 Bnum, T0num = self.data_extractor.read_files(self.file_paths)
             except UnicodeDecodeError:
                 st.warning("Default encoding failed, retrying with utf-16le...")
-                # Try to re-read all files as utf-16le and save to temp, then retry
+                # Try to re-read all files with _safe_read_csv and save to temp, then retry
                 import tempfile
                 import shutil
                 temp_paths = []
                 for f in self.file_paths:
                     try:
-                        df = pd.read_csv(f, encoding='utf-16le')
+                        df = self._safe_read_csv(f)
                         # Save to a new temp file as utf-8
                         tmp = tempfile.NamedTemporaryFile(delete=False, suffix='.csv')
                         df.to_csv(tmp.name, index=False, encoding='utf-8')
@@ -252,7 +251,7 @@ class FileUploader:
                         st.error(f"Failed to re-encode {f} as utf-8: {e}")
                 if temp_paths:
                     Bnum, T0num = self.data_extractor.read_files(temp_paths)
-                    st.info("Files reloaded as utf-16le and re-encoded to utf-8 for processing.")
+                    st.info("Files reloaded with safe encoding and re-encoded to utf-8 for processing.")
                     # Optionally clean up temp files after use
                     for t in temp_paths:
                         try:
@@ -260,7 +259,7 @@ class FileUploader:
                         except Exception:
                             pass
                 else:
-                    st.error("Could not process any files as utf-16le.")
+                    st.error("Could not process any files with safe encoding.")
                     return
             st.write("Files to be used: \n{}\n ".format(self.file_paths))
 
