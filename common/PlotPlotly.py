@@ -16,9 +16,62 @@ class PlotlyPlotter:
         self.x_label = x_label
         self.y_label = y_label
         if from_matplotlib_fig is not None:
+            # Extract colors from matplotlib figure before conversion
+            extracted_colors = self._extract_colors_from_matplotlib(from_matplotlib_fig)
             self.fig = self._from_matplotlib(from_matplotlib_fig)
+            
+            # Create palette from extracted colors, or fallback to husl
+            if extracted_colors:
+                self.color_palette = sns.color_palette(extracted_colors)
+            else:
+                num_curves = len(self.fig.data)
+                self.color_palette = sns.color_palette("husl", n_colors=num_curves) if num_curves > 0 else []
+            
+            print(f"[DEBUG] Matplotlib figure: {len(self.fig.data)} curves detected, palette size: {len(self.color_palette)}")
         else:
             self.fig = go.Figure()
+            self.color_palette = []
+        self._original_data = []
+        self._current_ranges = []
+        print(f"[DEBUG] PlotlyPlotter initialized: color_palette={self.color_palette}")
+            
+
+    def _extract_colors_from_matplotlib(self, mpl_fig):
+        """
+        Extract the colors of all curves in a matplotlib figure.
+        Returns a list of RGB color tuples (values in range [0, 1]).
+        """
+        colors = []
+        try:
+            for ax in mpl_fig.axes:
+                for line in ax.get_lines():
+                    color = line.get_color()
+                    # Convert color name or hex to RGBA
+                    if isinstance(color, str):
+                        try:
+                            rgba = mcolors.to_rgba(color)
+                            colors.append(rgba[:3])  # Return just RGB, ignore alpha
+                        except (ValueError, AttributeError) as e:
+                            print(f"[DEBUG] Warning: Could not convert color '{color}' to RGBA: {e}")
+                    else:
+                        # Already a tuple/array
+                        colors.append(color[:3] if len(color) >= 3 else color)
+        except Exception as e:
+            print(f"[DEBUG] Warning: Failed to extract colors from matplotlib figure: {e}")
+        
+        return colors
+
+    def _rgb_to_string(self, rgb_color):
+        """
+        Convert RGB color tuple (values in range [0, 1]) to RGB string format.
+        
+        Args:
+            rgb_color (tuple): RGB color tuple (r, g, b) with values in range [0, 1].
+            
+        Returns:
+            str: Color in 'rgb(r, g, b)' format.
+        """
+        return f"rgb({int(rgb_color[0]*255)}, {int(rgb_color[1]*255)}, {int(rgb_color[2]*255)})"
 
     def add_curve(self, x, y, name=None, mode="lines+markers", line=None, marker=None, x_min=None, x_max=None):
         """
