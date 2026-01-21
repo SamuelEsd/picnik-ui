@@ -269,11 +269,67 @@ class PlotlyPlotter:
         Args:
             use_streamlit (bool): If True, use st.plotly_chart; else, fig.show().
         """
-        self.fig.update_layout(title=self.title, xaxis_title=self.x_label, yaxis_title=self.y_label)
-        if use_streamlit:
-            st.plotly_chart(self.fig, use_container_width=True)
+        # Build a display-only figure that preserves original data in
+        # `self._original_data` but only adds points inside the stored
+        # `_current_ranges`. This avoids mutating the stored arrays.
+        if self._original_data:
+            display_fig = go.Figure()
+            for idx, orig in enumerate(self._original_data):
+                x_vals = list(orig.get("x", []))
+                y_vals = list(orig.get("y", []))
+
+                # Determine stored range for this trace
+                x_min, x_max = (None, None)
+                if idx < len(self._current_ranges):
+                    x_min, x_max = self._current_ranges[idx]
+
+                if x_min is None and x_max is None:
+                    disp_x, disp_y = x_vals, y_vals
+                else:
+                    disp_x = []
+                    disp_y = []
+                    for xi, yi in zip(x_vals, y_vals):
+                        if (x_min is None or xi >= x_min) and (x_max is None or xi <= x_max):
+                            disp_x.append(xi)
+                            disp_y.append(yi)
+
+                display_fig.add_trace(
+                    go.Scatter(
+                        x=disp_x,
+                        y=disp_y,
+                        mode=orig.get("mode"),
+                        name=orig.get("name"),
+                        line=orig.get("line"),
+                        marker=orig.get("marker"),
+                    )
+                )
+
+            display_fig.update_layout(title=self.title, xaxis_title=self.x_label, yaxis_title=self.y_label)
+            if use_streamlit:
+                if container is not None:
+                    try:
+                        container.plotly_chart(display_fig, use_container_width=True)
+                        return
+                    except Exception:
+                        # Fallback to global st if container fails
+                        pass
+                st.plotly_chart(display_fig, use_container_width=True)
+            else:
+                display_fig.show()
         else:
-            self.fig.show()
+            # Fallback: if no original_data recorded (e.g., figure created via mpl conversion),
+            # just display the internal figure as-is.
+            self.fig.update_layout(title=self.title, xaxis_title=self.x_label, yaxis_title=self.y_label)
+            if use_streamlit:
+                if container is not None:
+                    try:
+                        container.plotly_chart(self.fig, use_container_width=True)
+                        return
+                    except Exception:
+                        pass
+                st.plotly_chart(self.fig, use_container_width=True)
+            else:
+                self.fig.show()
 
     def _from_matplotlib(self, mpl_fig):
         try:
