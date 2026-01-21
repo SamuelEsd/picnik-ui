@@ -36,6 +36,27 @@ class FileUploader:
         else:
             st.warning(f"Default directory '{self.default_dir}' does not exist or is not accessible.")
 
+    def _safe_read_csv(self, filepath: str) -> pd.DataFrame:
+        """
+        Safely read a CSV file with automatic encoding detection.
+        Tries UTF-8 first, then falls back to UTF-16LE if that fails.
+        
+        Args:
+            filepath (str): Path to the CSV file.
+            
+        Returns:
+            pd.DataFrame: The loaded DataFrame.
+            
+        Raises:
+            Exception: If the file cannot be read with either encoding.
+        """
+        try:
+            return pd.read_csv(filepath, encoding='utf-8-sig')
+        except UnicodeDecodeError:
+            try:
+                return pd.read_csv(filepath, encoding='utf-16le')
+            except Exception as e:
+                raise Exception(f"Failed to read {filepath} with UTF-8 or UTF-16LE encoding: {e}")
 
     def upload_files(self):
         # Create file uploader widget
@@ -134,20 +155,13 @@ class FileUploader:
 
         for uploaded_file in self.file_paths:
             try:
-                df = pd.read_csv(uploaded_file, encoding='utf-8-sig')
-            except UnicodeDecodeError as ue:
-                try:
-                    df = pd.read_csv(uploaded_file, encoding='utf-16le')
-                except Exception as e:
-                    st.error(f"Failed to read {uploaded_file}: {e}")
-                    all_valid = False
-                    invalid_files.append((uploaded_file, 'Unreadable'))
-                    continue
+                df = self._safe_read_csv(uploaded_file)
             except Exception as e:
                 st.error(f"Failed to read {uploaded_file}: {e}")
                 all_valid = False
                 invalid_files.append((uploaded_file, 'Unreadable'))
                 continue
+            
             if len(df.columns) != 3:
                 all_valid = False
                 invalid_files.append((uploaded_file, len(df.columns)))
