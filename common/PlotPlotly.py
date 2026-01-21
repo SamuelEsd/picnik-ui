@@ -31,6 +31,20 @@ class PlotlyPlotter:
             self.color_palette = []
         self._original_data = []
         self._current_ranges = []
+        
+        # Initialize _original_data and _current_ranges for existing traces (e.g., from matplotlib conversion)
+        for idx, trace in enumerate(self.fig.data):
+            x_data = list(trace.x) if getattr(trace, 'x', None) is not None else []
+            y_data = list(trace.y) if getattr(trace, 'y', None) is not None else []
+            self._original_data.append({
+                "x": x_data,
+                "y": y_data,
+                "name": getattr(trace, 'name', None),
+                "mode": getattr(trace, 'mode', 'lines+markers'),
+                "line": getattr(trace, 'line', None),
+                "marker": getattr(trace, 'marker', None),
+            })
+            self._current_ranges.append((None, None))
             
 
     def _extract_colors_from_matplotlib(self, mpl_fig):
@@ -70,6 +84,57 @@ class PlotlyPlotter:
         """
         return f"rgb({int(rgb_color[0]*255)}, {int(rgb_color[1]*255)}, {int(rgb_color[2]*255)})"
 
+    def _resolve_trace_indices(self, identifier):
+        """
+        Resolve an identifier (int index or str name) to a list of trace indices.
+        
+        Args:
+            identifier (int|str): Trace index (0-based) or trace name.
+            
+        Returns:
+            list: List of trace indices matching the identifier.
+            
+        Raises:
+            IndexError: If int identifier is out of range.
+            ValueError: If str identifier not found.
+            TypeError: If identifier is neither int nor str.
+        """
+        if isinstance(identifier, int):
+            if identifier < 0 or identifier >= len(self.fig.data):
+                raise IndexError("Trace index out of range")
+            return [identifier]
+        elif isinstance(identifier, str):
+            indices = [i for i, tr in enumerate(self.fig.data) if (getattr(tr, "name", None) == identifier)]
+            if not indices:
+                raise ValueError(f"No trace found with name '{identifier}'")
+            return indices
+        else:
+            raise TypeError("Identifier must be an int (index) or str (name)")
+
+    def _filter_xy_by_range(self, x_vals, y_vals, x_min=None, x_max=None):
+        """
+        Filter x and y values based on x range bounds.
+        
+        Args:
+            x_vals (list): X values.
+            y_vals (list): Y values.
+            x_min (float|None): Minimum x value to keep.
+            x_max (float|None): Maximum x value to keep.
+            
+        Returns:
+            tuple: (filtered_x, filtered_y) or (x_vals, y_vals) if no filtering needed.
+        """
+        if x_min is None and x_max is None:
+            return x_vals, y_vals
+        
+        filtered_x = []
+        filtered_y = []
+        for xi, yi in zip(x_vals, y_vals):
+            if (x_min is None or xi >= x_min) and (x_max is None or xi <= x_max):
+                filtered_x.append(xi)
+                filtered_y.append(yi)
+        return filtered_x, filtered_y
+
     def add_curve(self, x, y, name=None, mode="lines+markers", line=None, marker=None, x_min=None, x_max=None):
         """
         Add a curve to the plot.
@@ -97,19 +162,8 @@ class PlotlyPlotter:
         # Default: no user-applied bounds
         self._current_ranges.append((None, None))
 
-        # Filter x and y based on x_min and x_max if provided (use originals)
-        if x_min is not None or x_max is not None:
-            filtered_x = []
-            filtered_y = []
-            for xi, yi in zip(orig_x, orig_y):
-                if (x_min is None or xi >= x_min) and (x_max is None or xi <= x_max):
-                    filtered_x.append(xi)
-                    filtered_y.append(yi)
-            x = filtered_x
-            y = filtered_y
-        else:
-            x = orig_x
-            y = orig_y
+        # Filter x and y based on x_min and x_max if provided
+        x, y = self._filter_xy_by_range(orig_x, orig_y, x_min, x_max)
 
         self.fig.add_trace(go.Scatter(x=x, y=y, mode=mode, name=name, line=line, marker=marker))
 
@@ -143,18 +197,15 @@ class PlotlyPlotter:
         Raises:
             IndexError: If curve_index is out of range.
         """
-        print(f"[DEBUG] get_curve_color_rgb_string: curve_index={curve_index}, palette_size={len(self.color_palette)}")
         rgb_color = self.get_curve_color(curve_index)
         rgb_string = self._rgb_to_string(rgb_color)
-        print(f"[DEBUG] get_curve_color_rgb_string: returning {rgb_string}")
         return rgb_string
 
     def update_curve_xrange(self, identifier, x_min=None, x_max=None):
         """
         Update (trim) the x-range for a specific curve, identified by its
         integer trace index or by its legend name (string). The method uses
-        the original x/y data stored when the curve was added and replaces
-        the trace data with the filtered values.
+        the original x/y data stored when the curve was added and stores the range.
 
         Args:
             identifier (int|str): Trace index (0-based) or trace name.
@@ -165,16 +216,7 @@ class PlotlyPlotter:
             raise ValueError("No original curve data available to update ranges.")
 
         # Resolve indices for the identifier
-        if isinstance(identifier, int):
-            if identifier < 0 or identifier >= len(self.fig.data):
-                raise IndexError("Trace index out of range")
-            indices = [identifier]
-        elif isinstance(identifier, str):
-            indices = [i for i, tr in enumerate(self.fig.data) if (getattr(tr, "name", None) == identifier)]
-            if not indices:
-                raise ValueError(f"No trace found with name '{identifier}'")
-        else:
-            raise TypeError("Identifier must be an int (index) or str (name)")
+        indices = self._resolve_trace_indices(identifier)
 
         # Store the requested current range for the trace(s). This does NOT
         # mutate or trim the original x/y arrays — it only records the desired
@@ -185,25 +227,6 @@ class PlotlyPlotter:
             except IndexError:
                 raise IndexError("Original data for the specified trace is not available")
             self._current_ranges[idx] = (x_min, x_max)
-
-    def apply_stored_ranges(self, identifier=None, re_render=False):
-        """
-        Apply the stored `_current_ranges` to traces by trimming the original
-        x/y arrays and writing the trimmed arrays into the Plotly traces.
-
-        Args:
-            identifier (int|str|None): If int or str, apply only to that trace (or traces by name).
-                                       If None, apply to all traces.
-            re_render (bool): If True, call `show()` after applying ranges.
-        """
-        # The stored ranges do not mutate the original stored arrays. If the
-        # caller wants to refresh the displayed plot to reflect stored ranges,
-        # call `show()` which will build a filtered figure for display.
-        if re_render:
-            try:
-                self.show()
-            except Exception:
-                pass
 
     def get_curve_xrange(self, identifier):
         """
@@ -220,16 +243,7 @@ class PlotlyPlotter:
             raise ValueError("No traces available in the figure")
 
         # Resolve indices for the identifier
-        if isinstance(identifier, int):
-            if identifier < 0 or identifier >= len(self.fig.data):
-                raise IndexError("Trace index out of range")
-            indices = [identifier]
-        elif isinstance(identifier, str):
-            indices = [i for i, tr in enumerate(self.fig.data) if (getattr(tr, "name", None) == identifier)]
-            if not indices:
-                raise ValueError(f"No trace found with name '{identifier}'")
-        else:
-            raise TypeError("Identifier must be an int (index) or str (name)")
+        indices = self._resolve_trace_indices(identifier)
 
         results = {}
         for idx in indices:
@@ -266,12 +280,14 @@ class PlotlyPlotter:
     def show(self, use_streamlit=True, container=None):
         """
         Display the plot using Streamlit or in a browser.
+        
+        Rebuilds the figure from _original_data, applying any stored ranges from
+        update_curve_xrange(). This ensures display always reflects the current state.
+        
         Args:
             use_streamlit (bool): If True, use st.plotly_chart; else, fig.show().
+            container: Optional Streamlit container to render into.
         """
-        # Build a display-only figure that preserves original data in
-        # `self._original_data` but only adds points inside the stored
-        # `_current_ranges`. This avoids mutating the stored arrays.
         if self._original_data:
             display_fig = go.Figure()
             for idx, orig in enumerate(self._original_data):
@@ -283,15 +299,8 @@ class PlotlyPlotter:
                 if idx < len(self._current_ranges):
                     x_min, x_max = self._current_ranges[idx]
 
-                if x_min is None and x_max is None:
-                    disp_x, disp_y = x_vals, y_vals
-                else:
-                    disp_x = []
-                    disp_y = []
-                    for xi, yi in zip(x_vals, y_vals):
-                        if (x_min is None or xi >= x_min) and (x_max is None or xi <= x_max):
-                            disp_x.append(xi)
-                            disp_y.append(yi)
+                # Filter by range if specified
+                disp_x, disp_y = self._filter_xy_by_range(x_vals, y_vals, x_min, x_max)
 
                 display_fig.add_trace(
                     go.Scatter(
@@ -308,26 +317,25 @@ class PlotlyPlotter:
             if use_streamlit:
                 if container is not None:
                     try:
-                        container.plotly_chart(display_fig, use_container_width=True)
+                        container.plotly_chart(display_fig, width='stretch')
                         return
                     except Exception:
                         # Fallback to global st if container fails
                         pass
-                st.plotly_chart(display_fig, use_container_width=True)
+                st.plotly_chart(display_fig, width='stretch')
             else:
                 display_fig.show()
         else:
-            # Fallback: if no original_data recorded (e.g., figure created via mpl conversion),
-            # just display the internal figure as-is.
+            # Fallback: if no original_data recorded, just display the internal figure as-is.
             self.fig.update_layout(title=self.title, xaxis_title=self.x_label, yaxis_title=self.y_label)
             if use_streamlit:
                 if container is not None:
                     try:
-                        container.plotly_chart(self.fig, use_container_width=True)
+                        container.plotly_chart(self.fig, width='stretch')
                         return
                     except Exception:
                         pass
-                st.plotly_chart(self.fig, use_container_width=True)
+                st.plotly_chart(self.fig, width='stretch')
             else:
                 self.fig.show()
 

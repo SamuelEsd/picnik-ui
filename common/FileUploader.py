@@ -19,6 +19,10 @@ class FileUploader:
         self.uploaded_files = []
         self.files_names_list = []
         self.data_extractor = None
+        # Container to hold PlotlyPlotter instances created for each displayed plot
+        # Keyed by tab index so other methods can reference and modify curves.
+        self.plotly_plotters = {}
+        self.last_plotly_plotter = None
 
 
     def load_default_files(self):
@@ -260,8 +264,6 @@ class FileUploader:
             #st.pyplot(simple_figure)  # Display the plot in Streamlit
 
             plotly_plotter = PP(title="TG vs Temperature", x_label="Temperature [K]", y_label="TG [%]", from_matplotlib_fig=simple_figure)
-            plotly_plotter.show()
-
             self.display_all_plots()
 
 # TODO: before running the conversion, give inputs for ranges in each data set, 
@@ -335,79 +337,6 @@ class FileUploader:
                 st.error(f"❌ Error during conversion: {str(e)}")
 
 
-    def choose_conversion_ranges(self):
-        """
-        Open a modal that displays temperature values for each dataset and lets
-        the user pick a min and max for each. The result is stored in
-        `st.session_state['conversion_ranges']` as a list of `(min, max)` tuples
-        and must have the same length as `Bnum`.
-        """
-        if not st.session_state.get('conversion_ready'):
-            st.info("No extracted data available. Click 'Extract Data' first.")
-            return
-
-        data_extractor = st.session_state.get('data_extractor') or self.data_extractor
-        Bnum = st.session_state.get('Bnum')
-        if data_extractor is None or Bnum is None:
-            st.error("No extracted data available for selecting ranges.")
-            return
-
-        # Open modal for selecting ranges
-        st.write("Pick a minimum and maximum temperature for each dataset.")
-        temp_ranges = []
-
-        # For each dataset, present slider-based temperature range selection
-        for k in range(len(Bnum)):
-            # Retrieve temperature values for dataset k
-            try:
-                temps = data_extractor.DFlis[k]['Temperature [K]'].values
-            except Exception:
-                st.error(f"Could not read temperatures for dataset index {k}")
-                return
-
-            # Ensure temps is a sorted list of unique values
-            temps_list = sorted(list(dict.fromkeys([float(t) for t in temps])))
-            min_temp = temps_list[0]
-            max_temp = temps_list[-1]
-
-            st.markdown(f"**Dataset {k+1}** ({os.path.basename(st.session_state.get('file_paths', [f'file_{k}'])[k]) if 'file_paths' in st.session_state and k < len(st.session_state['file_paths']) else 'unknown file'})")
-
-            # Use a range slider for this dataset
-            range_key = f"conv_range_{k}"
-            range_vals = st.slider(
-                f"Temperature range (dataset {k+1})",
-                min_value=min_temp,
-                max_value=max_temp,
-                value=(min_temp, max_temp),
-                step=None,
-                key=range_key
-            )
-            temp_ranges.append((float(range_vals[0]), float(range_vals[1])))
-
-        # Buttons at bottom of modal
-        ok = st.button("Apply ranges")
-        cancel = st.button("Cancel")
-
-        if cancel:
-            st.info("Conversion range selection cancelled.")
-            return
-
-        if ok:
-            # Validate count
-            if len(temp_ranges) != len(Bnum):
-                st.error("Number of ranges does not match number of datasets.")
-                return
-
-            # Final validation: ensure min <= max for all
-            for idx, (mn, mx) in enumerate(temp_ranges):
-                if mn > mx:
-                    st.error(f"Dataset {idx+1}: min ({mn}) is greater than max ({mx}). Fix and apply again.")
-                    return
-
-            st.session_state['conversion_ranges'] = temp_ranges
-            st.success("Conversion ranges saved")
-
-
 
     def display_all_plots(self):
         """
@@ -468,6 +397,134 @@ class FileUploader:
                         #st.pyplot(current_figure)  # Render the plot in Streamlit
 
                         plotly_plotter = PP(title=f"{x_data} ({x_unit}) vs {y_data} ({y_unit})", x_label=f"{x_data} [{x_unit}]", y_label=f"{y_data} [{y_unit}]", from_matplotlib_fig=current_figure)
-                        plotly_plotter.show()
+                        # Create a placeholder so we can update the same displayed plot later
+                        placeholder = st.empty()
+                        plotly_plotter.show(container=placeholder)
+                        # Keep a reference to the plotter and its placeholder so other methods can update/get ranges
+                        self.plotly_plotters[i] = {"plotter": plotly_plotter, "placeholder": placeholder}
+                        self.last_plotly_plotter = plotly_plotter
+                        # Persist a lightweight reference in Streamlit session state so it
+                        # survives widget-triggered reruns if needed by other pages.
+                        try:
+                            st.session_state['plotly_plotters'] = self.plotly_plotters
+                        except Exception:
+                            pass
+                        # Add per-plot controls (sliders) to adjust each trace's x-range locally;
+                        # changes are applied only after clicking the "Apply changes" button.
+                        try:
+                            self.display_plot_range_controls(i, plotly_plotter, placeholder)
+                        except Exception:
+                            pass
                     except KeyError:
                         st.error(f"Invalid combination: {x_data} ({x_unit}) vs {y_data} ({y_unit})")
+
+    def display_plot_range_controls(self, plot_idx, plotter, placeholder=None):
+        """
+        Render sliders for each trace in `plotter` showing the current x-range.
+        Slider movements only change values locally (stored in session_state) and
+        are applied to the actual traces when the user clicks "Apply changes".
+
+        Args:
+            plot_idx (int): Index of the plot/tab.
+            plotter (PlotlyPlotter): The PlotlyPlotter instance for this plot.
+        """
+        # Group controls under an expander
+        with st.expander("Adjust curve x-ranges (changes applied on button)", expanded=False):
+            trace_count = len(getattr(plotter, 'fig').data)
+            if trace_count == 0:
+                st.write("No traces available for this plot.")
+                return
+
+            # Prepare keys and display sliders
+            slider_keys = []
+            for ti in range(trace_count):
+                tr = plotter.fig.data[ti]
+                name = getattr(tr, 'name', f'trace_{ti}') or f'trace_{ti}'
+
+                # Determine bounds: prefer original data if available
+                try:
+                    orig_x = plotter._original_data[ti]['x']
+                    bound_min = float(min(orig_x))
+                    bound_max = float(max(orig_x))
+                except Exception:
+                    # Fallback to current trace x-values
+                    xs = list(getattr(tr, 'x', []) or [])
+                    if xs:
+                        bound_min = float(min(xs))
+                        bound_max = float(max(xs))
+                    else:
+                        bound_min = 0.0
+                        bound_max = 1.0
+
+                # Current displayed range
+                try:
+                    curr_min, curr_max = plotter.get_curve_xrange(ti)
+                    if curr_min is None or curr_max is None:
+                        curr_min, curr_max = bound_min, bound_max
+                except Exception:
+                    curr_min, curr_max = bound_min, bound_max
+
+                # Create a range slider; key ensures value persists but isn't applied until 'Apply changes'
+                key = f"tmp_range_{plot_idx}_{ti}"
+                slider_keys.append((ti, key))
+                
+                # Get the color for this curve from the plotter's color palette
+                try:
+                    curve_color = plotter.get_curve_color_rgb_string(ti)
+                    # Create styled slider with the curve's color using markdown/HTML
+                    st.markdown(
+                        f"""
+                        <style>
+                        [data-testid="stSlider"][id*="{key.replace('_', '\\\\-')}"] .st-ax {{
+                            accent-color: {curve_color};
+                        }}
+                        </style>
+                        """,
+                        unsafe_allow_html=True
+                    )
+                    # Display color tag for debugging
+                    col1, col2 = st.columns([4, 1])
+                    with col1:
+                        selected = st.slider(f"{name} — x range", min_value=bound_min, max_value=bound_max, value=(float(curr_min), float(curr_max)), key=key)
+                    with col2:
+                        st.markdown(f"<div style='background-color: {curve_color}; width: 40px; height: 40px; border-radius: 5px; border: 1px solid #ccc;'></div>", unsafe_allow_html=True)
+                except Exception as e:
+                    curve_color = f"Error: {str(e)}"
+                    st.warning(f"Color error for {name}: {str(e)}")
+                    selected = st.slider(f"{name} — x range", min_value=bound_min, max_value=bound_max, value=(float(curr_min), float(curr_max)), key=key)
+                    # Display error message
+                    st.text(f"Color: {curve_color}")
+
+            # Buttons to apply or reset
+            col_apply, col_reset = st.columns([1, 1])
+            with col_apply:
+                if st.button("Apply changes", key=f"apply_ranges_{plot_idx}"):
+                    applied = 0
+                    for ti, key in slider_keys:
+                        vals = st.session_state.get(key)
+                        if vals is None:
+                            continue
+                        try:
+                            mn, mx = float(vals[0]), float(vals[1])
+                            plotter.update_curve_xrange(ti, x_min=mn, x_max=mx)
+                            applied += 1
+                        except Exception:
+                            continue
+                    if applied:
+                        # Re-render into the original placeholder if available so the
+                        # displayed plot is replaced rather than duplicated.
+                        try:
+                            plotter.show(container=placeholder) if placeholder is not None else plotter.show()
+                        except Exception:
+                            pass
+                        st.success(f"Applied ranges to {applied} trace(s) on this plot")
+            with col_reset:
+                if st.button("Reset sliders", key=f"reset_ranges_{plot_idx}"):
+                    # Reset sliders back to current trace ranges
+                    for ti, key in slider_keys:
+                        try:
+                            curr = plotter.get_curve_xrange(ti)
+                            if curr and curr[0] is not None:
+                                st.session_state[key] = (float(curr[0]), float(curr[1]))
+                        except Exception:
+                            pass
