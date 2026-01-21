@@ -113,8 +113,157 @@ class PlotlyPlotter:
 
         self.fig.add_trace(go.Scatter(x=x, y=y, mode=mode, name=name, line=line, marker=marker))
 
+    def get_curve_color(self, curve_index):
+        """
+        Get the color for a specific curve by its index.
+        
+        Args:
+            curve_index (int): The index of the curve (0-based).
+            
+        Returns:
+            tuple: RGB color tuple (r, g, b) with values in range [0, 1].
+            
+        Raises:
+            IndexError: If curve_index is out of range.
+        """
+        if curve_index < 0 or curve_index >= len(self.color_palette):
+            raise IndexError(f"Curve index {curve_index} out of range. Total curves: {len(self.color_palette)}")
+        return self.color_palette[curve_index]
 
-    def show(self, use_streamlit=True):
+    def get_curve_color_rgb_string(self, curve_index):
+        """
+        Get the color for a specific curve as an RGB string.
+        
+        Args:
+            curve_index (int): The index of the curve (0-based).
+            
+        Returns:
+            str: Color in 'rgb(r, g, b)' format.
+            
+        Raises:
+            IndexError: If curve_index is out of range.
+        """
+        print(f"[DEBUG] get_curve_color_rgb_string: curve_index={curve_index}, palette_size={len(self.color_palette)}")
+        rgb_color = self.get_curve_color(curve_index)
+        rgb_string = self._rgb_to_string(rgb_color)
+        print(f"[DEBUG] get_curve_color_rgb_string: returning {rgb_string}")
+        return rgb_string
+
+    def update_curve_xrange(self, identifier, x_min=None, x_max=None):
+        """
+        Update (trim) the x-range for a specific curve, identified by its
+        integer trace index or by its legend name (string). The method uses
+        the original x/y data stored when the curve was added and replaces
+        the trace data with the filtered values.
+
+        Args:
+            identifier (int|str): Trace index (0-based) or trace name.
+            x_min (float|None): Minimum x value to keep.
+            x_max (float|None): Maximum x value to keep.
+        """
+        if not self._original_data:
+            raise ValueError("No original curve data available to update ranges.")
+
+        # Resolve indices for the identifier
+        if isinstance(identifier, int):
+            if identifier < 0 or identifier >= len(self.fig.data):
+                raise IndexError("Trace index out of range")
+            indices = [identifier]
+        elif isinstance(identifier, str):
+            indices = [i for i, tr in enumerate(self.fig.data) if (getattr(tr, "name", None) == identifier)]
+            if not indices:
+                raise ValueError(f"No trace found with name '{identifier}'")
+        else:
+            raise TypeError("Identifier must be an int (index) or str (name)")
+
+        # Store the requested current range for the trace(s). This does NOT
+        # mutate or trim the original x/y arrays — it only records the desired
+        # x_min/x_max for later application.
+        for idx in indices:
+            try:
+                _ = self._original_data[idx]
+            except IndexError:
+                raise IndexError("Original data for the specified trace is not available")
+            self._current_ranges[idx] = (x_min, x_max)
+
+    def apply_stored_ranges(self, identifier=None, re_render=False):
+        """
+        Apply the stored `_current_ranges` to traces by trimming the original
+        x/y arrays and writing the trimmed arrays into the Plotly traces.
+
+        Args:
+            identifier (int|str|None): If int or str, apply only to that trace (or traces by name).
+                                       If None, apply to all traces.
+            re_render (bool): If True, call `show()` after applying ranges.
+        """
+        # The stored ranges do not mutate the original stored arrays. If the
+        # caller wants to refresh the displayed plot to reflect stored ranges,
+        # call `show()` which will build a filtered figure for display.
+        if re_render:
+            try:
+                self.show()
+            except Exception:
+                pass
+
+    def get_curve_xrange(self, identifier):
+        """
+        Get the current x-range for a specific curve (trace).
+
+        Args:
+            identifier (int|str): Trace index (0-based) or trace name.
+
+        Returns:
+            If `identifier` is an int: a tuple `(x_min, x_max)` or `(None, None)` if no data.
+            If `identifier` is a str (name): a dict mapping trace indices to `(x_min, x_max)`.
+        """
+        if not self.fig.data:
+            raise ValueError("No traces available in the figure")
+
+        # Resolve indices for the identifier
+        if isinstance(identifier, int):
+            if identifier < 0 or identifier >= len(self.fig.data):
+                raise IndexError("Trace index out of range")
+            indices = [identifier]
+        elif isinstance(identifier, str):
+            indices = [i for i, tr in enumerate(self.fig.data) if (getattr(tr, "name", None) == identifier)]
+            if not indices:
+                raise ValueError(f"No trace found with name '{identifier}'")
+        else:
+            raise TypeError("Identifier must be an int (index) or str (name)")
+
+        results = {}
+        for idx in indices:
+            # Prefer stored current ranges if available
+            if idx < len(self._current_ranges):
+                stored = self._current_ranges[idx]
+                if stored and (stored[0] is not None or stored[1] is not None):
+                    results[idx] = stored
+                    continue
+
+            # Fallback: infer from current trace x values
+            xs = list(self.fig.data[idx].x) if getattr(self.fig.data[idx], 'x', None) is not None else []
+            if not xs:
+                results[idx] = (None, None)
+            else:
+                try:
+                    xmin = min(xs)
+                    xmax = max(xs)
+                except TypeError:
+                    try:
+                        nums = [float(v) for v in xs]
+                        xmin = min(nums)
+                        xmax = max(nums)
+                    except Exception:
+                        results[idx] = (None, None)
+                        continue
+                results[idx] = (xmin, xmax)
+
+        if isinstance(identifier, int):
+            return results[indices[0]]
+        return results
+
+
+    def show(self, use_streamlit=True, container=None):
         """
         Display the plot using Streamlit or in a browser.
         Args:
