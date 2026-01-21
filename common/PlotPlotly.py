@@ -26,14 +26,11 @@ class PlotlyPlotter:
             else:
                 num_curves = len(self.fig.data)
                 self.color_palette = sns.color_palette("husl", n_colors=num_curves) if num_curves > 0 else []
-            
-            print(f"[DEBUG] Matplotlib figure: {len(self.fig.data)} curves detected, palette size: {len(self.color_palette)}")
         else:
             self.fig = go.Figure()
             self.color_palette = []
         self._original_data = []
         self._current_ranges = []
-        print(f"[DEBUG] PlotlyPlotter initialized: color_palette={self.color_palette}")
             
 
     def _extract_colors_from_matplotlib(self, mpl_fig):
@@ -52,12 +49,12 @@ class PlotlyPlotter:
                             rgba = mcolors.to_rgba(color)
                             colors.append(rgba[:3])  # Return just RGB, ignore alpha
                         except (ValueError, AttributeError) as e:
-                            print(f"[DEBUG] Warning: Could not convert color '{color}' to RGBA: {e}")
+                            print(f"Warning: Could not convert color '{color}' to RGBA: {e}")
                     else:
                         # Already a tuple/array
                         colors.append(color[:3] if len(color) >= 3 else color)
         except Exception as e:
-            print(f"[DEBUG] Warning: Failed to extract colors from matplotlib figure: {e}")
+            print(f"Warning: Failed to extract colors from matplotlib figure: {e}")
         
         return colors
 
