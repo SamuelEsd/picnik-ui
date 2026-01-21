@@ -14,3 +14,13 @@ sudo apt install python3-pip
 pip install -r requirements.txt
 
 streamlit run main.py
+
+
+
+modules required:
+
+streamlit
+scipy
+seaborn
+picknic
+plotly
