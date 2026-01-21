@@ -83,16 +83,34 @@ class PlotlyPlotter:
             x_min (float): Minimum x value to include (optional)
             x_max (float): Maximum x value to include (optional)
         """
-        # Filter x and y based on x_min and x_max if provided
+        # Keep originals (convert to lists in case user passes numpy arrays/iterables)
+        orig_x = list(x)
+        orig_y = list(y)
+        self._original_data.append({
+            "x": orig_x,
+            "y": orig_y,
+            "name": name,
+            "mode": mode,
+            "line": line,
+            "marker": marker,
+        })
+        # Default: no user-applied bounds
+        self._current_ranges.append((None, None))
+
+        # Filter x and y based on x_min and x_max if provided (use originals)
         if x_min is not None or x_max is not None:
             filtered_x = []
             filtered_y = []
-            for xi, yi in zip(x, y):
+            for xi, yi in zip(orig_x, orig_y):
                 if (x_min is None or xi >= x_min) and (x_max is None or xi <= x_max):
                     filtered_x.append(xi)
                     filtered_y.append(yi)
             x = filtered_x
             y = filtered_y
+        else:
+            x = orig_x
+            y = orig_y
+
         self.fig.add_trace(go.Scatter(x=x, y=y, mode=mode, name=name, line=line, marker=marker))
 
 
