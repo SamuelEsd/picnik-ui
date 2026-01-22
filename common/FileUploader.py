@@ -356,7 +356,7 @@ class FileUploader:
         Display all available plots from the DataExtraction class using Streamlit, with interactive x-range selection for each curve.
         Always plot the graph, and only recalculate curve data on Truncate click. Store curve values and x-ranges in session_state.
         """
-        x_data_options = ['time', 'temperature']
+        x_data_options = ['temperature', 'time']
         y_data_options = ['TG', 'DTG', 'dT/dt']
         x_units_options = {'time': ['min'], 'temperature': ['K']}
         y_units_options = {
@@ -424,10 +424,12 @@ class FileUploader:
                             pass
                         # Add per-plot controls (sliders) to adjust each trace's x-range locally;
                         # changes are applied only after clicking the "Apply changes" button.
-                        try:
-                            self.display_plot_range_controls(i, plotly_plotter, placeholder)
-                        except Exception:
-                            pass
+                        # Only show sliders for the first tab (Temperature vs TG)
+                        if i == 0:
+                            try:
+                                self.display_plot_range_controls(i, plotly_plotter, placeholder)
+                            except Exception:
+                                pass
                     except KeyError:
                         st.error(f"Invalid combination: {x_data} ({x_unit}) vs {y_data} ({y_unit})")
 
