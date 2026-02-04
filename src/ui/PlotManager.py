@@ -24,6 +24,10 @@ class PlotManager:
         self.data_extractor = data_extractor
         self.plotly_plotters = {}
         self.last_plotly_plotter = None
+        self.x_ranges = []
+
+    def get_x_ranges(self) -> Tuple[float, float]:
+        return self.x_ranges
 
     def generate_plot_tabs(self) -> List[str]:
         """
@@ -128,8 +132,10 @@ class PlotManager:
             tr = plotter.fig.data[ti]
             name = getattr(tr, 'name', f'trace_{ti}') or f'trace_{ti}'
 
-            # Get bounds
-            bound_min, bound_max = self._get_trace_bounds(plotter, ti)
+            # Get bounds for each curve
+            self.x_ranges.append(self._get_trace_bounds(plotter, ti))
+            bound_min = self.x_ranges[ti][0]
+            bound_max = self.x_ranges[ti][1]
             curr_min, curr_max = self._get_current_range(plotter, ti, bound_min, bound_max)
 
             key = f"tmp_range_{plot_idx}_{ti}"

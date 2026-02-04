@@ -93,7 +93,7 @@ class DataExtraction:
                        T0: Array of experimental initial temperatures.
         """
     
-        print("Files to be used: \n{}\n ".format(flist))
+        #print("Files to be used: \n{}\n ".format(flist))
         DFlis    =   self.DFlis
         Beta     =   self.Beta
         BetaEr   =   self.BetaError
@@ -192,10 +192,6 @@ class DataExtraction:
         self.BetaError = np.array(BetaEr)   #Array of correlation coefficients for the heating rates
         self.T0        = np.array(T0)              #Array of experimental initial temperatures
 
-        print(f'The computed heating rates are:\n')
-        for b in range(len(Beta)):
-            print(f'\n{Beta[b]:6.3f} +/- {BetaEr[b]:.3f} K/min\n')
-
         if summary == True:
             #TG visualization
             fig, axs = plt.subplots(2 , 3,figsize=(18,8))
@@ -206,7 +202,7 @@ class DataExtraction:
                 axs[0][0].plot(DFlis[i][DFlis[0].columns[0]],
                                DFlis[i]['%m'],
                                lw=3,
-                               label=rf'$\beta$={Beta[i]:.1f} K/min')
+                               label=rf'β={Beta[i]:.1f} K/min')
                 axs[0][0].legend(fontsize=14)
                 axs[0][0].set_xlabel('time [min]')
                 axs[0][0].set_ylabel('mass [%]')
@@ -215,7 +211,7 @@ class DataExtraction:
                 axs[0][1].plot(DFlis[i][DFlis[0].columns[0]],
                                DFlis[i]['dw/dt [%/min]'],
                                lw=3,
-                               label=rf'$\beta$={Beta[i]:.1f} K/min')
+                               label=rf'β={Beta[i]:.1f} K/min')
                 axs[0][1].legend(fontsize=14)
                 axs[0][1].set_xlabel('time [min]')
                 axs[0][1].set_ylabel('dw/dt [%/min]')
@@ -224,7 +220,7 @@ class DataExtraction:
                 axs[0][2].plot(DFlis[i][DFlis[0].columns[0]],
                                DFlis[i]['dT/dt'],
                                lw=3,
-                               label=rf'$\beta$={Beta[i]:.1f} K/min')
+                               label=rf'β={Beta[i]:.1f} K/min')
                 axs[0][2].legend(fontsize=14)
                 axs[0][2].set_xlabel('time [min]')
                 axs[0][2].set_ylabel('dT/dt [K/min]')
@@ -233,7 +229,7 @@ class DataExtraction:
                 axs[1][0].plot(DFlis[i]['Temperature [K]'],
                                DFlis[i]['%m'],
                                lw=3,
-                               label=rf'$\beta$={Beta[i]:.1f} K/min')
+                               label=rf'β={Beta[i]:.1f} K/min')
                 axs[1][0].legend(fontsize=14)
                 axs[1][0].set_xlabel('Temperature [K]')
                 axs[1][0].set_ylabel('mass [%]')
@@ -242,7 +238,7 @@ class DataExtraction:
                 axs[1][1].plot(DFlis[i]['Temperature [K]'],
                                DFlis[i]['dw/dt [%/min]'],
                                lw=3,
-                               label=rf'$\beta$={Beta[i]:.1f} K/min')
+                               label=rf'β={Beta[i]:.1f} K/min')
                 axs[1][1].legend(fontsize=14)
                 axs[1][1].set_xlabel('Temperature [K]')
                 axs[1][1].set_ylabel('dw/dt [%/min]')
@@ -251,7 +247,7 @@ class DataExtraction:
                 axs[1][2].plot(DFlis[i]['Temperature [K]'],
                                DFlis[i]['dT/dt'],
                                lw=3,
-                               label=rf'$\beta$={Beta[i]:.1f} K/min')
+                               label=rf'β={Beta[i]:.1f} K/min')
                 axs[1][2].legend(fontsize=14)
                 axs[1][2].set_xlabel('Temperature [K]')
                 axs[1][2].set_ylabel('dT/dt [K/min]')
@@ -315,15 +311,11 @@ class DataExtraction:
             plt.plot(DFlis[i][DFlis[i].columns[k]],
                      DFlis[i][DFlis[i].columns[l]],
                      lw=3,
-                     label=r'$\beta$ = '+str(np.round(Beta[i],decimals=1)))
+                     label=r'β = '+str(np.round(Beta[i],decimals=1)))
 
         plt.xlabel(x_data+' ['+x_units+']')
         plt.ylabel(y_data+' ['+y_units+']')
         plt.legend()
-        #plt.show()
-        print("--------------------------------")
-        print(plot_figure)
-        print("--------------------------------")
         return plot_figure
 #-----------------------------------------------------------------------------------------------------------
  
@@ -422,7 +414,7 @@ class DataExtraction:
         self.t         = t         #list of arrays of temperatures corresponding to a conversion value
         self.da_dt     = da_dt
 
-        plt.style.use('tableau-colorblind10')
+        #plt.style.use('tableau-colorblind10')
 
         markers = ["o","v","s","*","x","^","p","<","2",">"]
         #Plot of the thermograms showing the anaysis range.
@@ -431,13 +423,13 @@ class DataExtraction:
         for i in range(len(NDFl)):
             ax1.plot(NDFl[i]['Temperature [K]'].values[::2],           #Temperature in Kelvin
                      NDFl[i]['alpha'].values[::2],                        #mass loss percentage
-                     marker = markers[i],
+                     #marker = markers[i],
                      markersize=10,
                      linestyle = '--',
                      linewidth=4.20,
-                     label=rf'$\beta=$ {self.Beta[i]:.2f} K/min',
+                     label=rf'β= {self.Beta[i]:.2f} K/min',
                      alpha=0.75)
-        ax1.set_ylabel(r'conversion ($\alpha$)')
+        ax1.set_ylabel(r'conversion (α)')
         ax1.set_xlabel('Temperature [K]')
         ax1.set_xlim((T0[0]-20),(Tf[-1]+20))
         ax1.legend(frameon=True)
@@ -476,21 +468,21 @@ class DataExtraction:
                                   kind='cubic', 
                                   bounds_error=False, 
                                   fill_value="extrapolate")
-            TempAdvIsoDF[rf'$\beta=$ {Beta[i]:.2f} K/min'] = np.round(inter_func(adv_alps), decimals = 4)
+            TempAdvIsoDF[rf'β= {Beta[i]:.2f} K/min'] = np.round(inter_func(adv_alps), decimals = 4)
 
             inter_func2 = interp1d(alpha[i], 
                                    t[i],
                                    kind='cubic', 
                                    bounds_error=False, 
                                    fill_value="extrapolate")
-            timeAdvIsoDF[rf'$\beta=$ {Beta[i]:.2f} K/min'] = np.round(inter_func2(adv_alps), decimals = 4)
+            timeAdvIsoDF[rf'β= {Beta[i]:.2f} K/min'] = np.round(inter_func2(adv_alps), decimals = 4)
             
             inter_func3 = interp1d(alpha[i], 
                                    da_dt[i],
                                    kind='cubic', 
                                    bounds_error=False, 
                                    fill_value="extrapolate")
-            diffAdvIsoDF[rf'$\beta=$ {Beta[i]:.2f} K/min'] = np.round(inter_func3(adv_alps), decimals = 4)
+            diffAdvIsoDF[rf'β= {Beta[i]:.2f} K/min'] = np.round(inter_func3(adv_alps), decimals = 4)
             
             timeAdvIsoDF.index = adv_alps
             TempAdvIsoDF.index = adv_alps
@@ -639,7 +631,7 @@ class DataExtraction:
                      self.alpha[i],
                      label=str(np.round(self.Beta[i],decimals=1))+' K/min')
             plt.xlabel('T [K]')
-            plt.ylabel(r'$\alpha$')
+            plt.ylabel(r'α')
             plt.legend()
         return plt.show()
 #-----------------------------------------------------------------------------------------------------------
@@ -657,7 +649,7 @@ class DataExtraction:
                      self.da_dt[i],
                      label=str(np.round(self.Beta[i],decimals=1))+' K/min')
             plt.xlabel('T [K]')
-            plt.ylabel(r'$\text{d}\alpha/\text{d}t [min$^{-1}]$')
+            plt.ylabel(r'\\$\\text{d}α/\\text{d}t [min\\$^{-1}]\\$') ## May fail in future
             plt.legend()
         return plt.show()
 #-----------------------------------------------------------------------------------------------------------
@@ -693,7 +685,7 @@ class DataExtraction:
                      self.da_dt[i],
                      label=str(np.round(self.Beta[i],decimals=1))+' K/min')
             plt.xlabel(self.DFlis[i].columns[0])
-            plt.ylabel(r'$\alpha$')
+            plt.ylabel(r'α')
             plt.legend()
         return plt.show()
 #-----------------------------------------------------------------------------------------------------------
@@ -745,7 +737,7 @@ class ActivationEnergy:
     def Fr(self):
         """
         Computes the Activation Energy based on the Friedman treatment.
-        \ln{(d\alpha/dt)}_{\alpha ,i} = \ln{[A_{\alpha}f(\alpha)]}-\frac{E_{\alpha}}{RT_{\alpha ,i}}
+        \\ln{(dα/dt)}_{α ,i} = \\ln{[A_{α}f(α)]}-\\frac{E_{α}}{RT_{α ,i}}
 
         Parameters:    None
 
@@ -804,7 +796,7 @@ class ActivationEnergy:
     def OFW(self):
         """
         Computes the Activation Energy based on the Osawa-Flynn-Wall (OFW) treatment.
-        \ln{\beta_{i}} = cnt - 1.052\frac{E_{\alpha}}{RT_{\alpha ,i}}
+        \\ln{β_{i}} = cnt - 1.052\\frac{E_{α}}{RT_{α ,i}}
 
         Parameters:    None
 
@@ -834,7 +826,7 @@ class ActivationEnergy:
         for i in range(TempIsoDF.shape[0]):
             try:
             #Linear regression over all the conversion values in the isoconversional Dataframes
-                y = (logB)                                           #log(\beta)
+                y = (logB)                                           #log(β)
                 x = 1/(TempIsoDF.iloc[i].values)                     #1/T
                 LR = linregress(x,y)
                 E_a_i = -(self.R/1.052)*(LR.slope)                   #Activation energy
@@ -859,7 +851,7 @@ class ActivationEnergy:
     def KAS(self):
         """
         Computes the Activation Energy based on the Kissinger-Akahira-Sunose (KAS) treatment.
-        \ln{\frac{\beta_{i}}{T^{2}_{\alpha ,i}} = cnt - \frac{E_{\alpha}}{RT_{\alpha ,i}}
+        \\ln{\\frac{\β_{i}}{T^{2}_{α ,i}} = cnt - \\frac{E_{α}}{RT_{α ,i}}
          
         Parameters:    None
 
@@ -910,7 +902,7 @@ class ActivationEnergy:
 #-----------------------------------------------------------------------------------------------------------
     def I_Temp(self, E, row_i, col_i, method):
         """
-        Temperature integral for the Vyazovkin method: \int_{T0}^{T} exp[E_{alpha}/RT]dT
+        Temperature integral for the Vyazovkin method: \\int_{T0}^{T} exp[E_{alpha}/RT]dT
 
         Parameters:         E        :  Activation energy value in kJ/mol to compute the integral
  
@@ -983,7 +975,7 @@ class ActivationEnergy:
         """
         Calculates the function to minimize for the Vyazovkin method:
 
-        \Omega(Ea) = \sum_{i}^{n}\sum_{j}^{n-1}{[B_{j}{I(E,T_{i})]}/[B_{i}{I(E,T_{j})}]}        
+        \\Omega(Ea) = \\sum_{i}^{n}\\sum_{j}^{n-1}{[B_{j}{I(E,T_{i})]}/[B_{i}{I(E,T_{j})}]}        
 
         Parameters:     E      : The activation energy value used to calculate 
                                  the value of omega.
@@ -1046,9 +1038,9 @@ class ActivationEnergy:
         O = np.array([float(self.omega(E[i],row,method)) for i in range(len(E))])
         #Plot settings
         plt.style.use('seaborn-v0_8-whitegrid')
-        plt.plot(E,O,color='teal',label=r'$\alpha$ = '+str(np.round(IsoDF.index[row],decimals=3)))        
-        plt.ylabel(r'$\Omega\left(E_{\alpha}\right)$')
-        plt.xlabel(r'$E_{\alpha}$')
+        plt.plot(E,O,color='teal',label=r'α = '+str(np.round(IsoDF.index[row],decimals=3)))        
+        plt.ylabel(r'\\$\\Omega\\left(E_{α}\\right)\\$')
+        plt.xlabel(r'\\$E_{α}\\$')
         plt.legend()
         plt.grid(True)
 
@@ -1060,7 +1052,7 @@ class ActivationEnergy:
         Calculates the variance of the activation energy E obtained with the Vyazovkin 
         treatment. The variance is computed as:
 
-        S^{2}(E) = {1}/{n(n-1)}\sum_{i}^{n}\sum_{j}^{n-1}{[{J(E,T_{i})]}/[{J(E,T_{j})}]-1}^{2}
+        S^{2}(E) = {1}/{n(n-1)}\\sum_{i}^{n}\\sum_{j}^{n-1}{[{J(E,T_{i})]}/[{J(E,T_{j})}]-1}^{2}
 
         Parameters:     E      : The activation energy value used to calculate 
                                  the value of omega.
@@ -1102,7 +1094,7 @@ class ActivationEnergy:
         Calculates the F distribution to minimize for the Vyazovkin method.
         The distribution is computed as: 
 
-        \Psi(E) = S^{2}(E)/S^{2}_{min}
+        \\Psi(E) = S^{2}(E)/S^{2}_{min}
 
         Parameters:     E      : The activation energy value used to calculate 
                                  the value of omega.
@@ -1190,7 +1182,7 @@ class ActivationEnergy:
     def Vy(self, bounds, method='senum-yang'):
         """
         Method to compute the Activation Energy based on the Vyazovkin treatment.
-        \Omega(E_{\alpha})= min[ sum_{i}^{n}\sum_{j}^{n-1}[J(E,T_{i})]/[J(E,T_{j})] ]
+        \\Omega(E_{α})= min[ sum_{i}^{n}\\sum_{j}^{n-1}[J(E,T_{i})]/[J(E,T_{j})] ]
 
         Parameters:   bounds : Tuple object containing the lower and upper limit values 
                                for E, to evaluate omega.
@@ -1310,7 +1302,7 @@ class ActivationEnergy:
         """
         Function to minimize according to the advanced Vyazovkin treatment:
 
-        \Omega(Ea) = \sum_{i}^{n}\sum_{j}^{n-1}{[{J(E,T(t_{i}))]}/[B_{i}{J(E,T(t_{j}))}]}
+        \\Omega(Ea) = \\sum_{i}^{n}\\sum_{j}^{n-1}{[{J(E,T(t_{i}))]}/[B_{i}{J(E,T(t_{j}))}]}
 
         Parameters:   E       : Float object. Value for the activation energy to evaluate 
                                 the integral
@@ -1380,12 +1372,12 @@ class ActivationEnergy:
         Beta         = self.Beta
         #Activation energy (independent variable) array
         E = np.linspace(bounds[0], bounds[1], n)
-        #Evaluation of \Omega(E)
+        #Evaluation of \\Omega(E)
         O = np.array([float(self.adv_omega(E[i],row,var)) for i in range(len(E))])
         plt.style.use('seaborn-v0_8-whitegrid')
-        plt.plot(E,O,color='teal',label=r'$\alpha$ = '+str(np.round(timeAdvIsoDF.index[row],decimals=3)))
-        plt.ylabel(r'$\Omega\left(E_{\alpha}\right)$')
-        plt.xlabel(r'$E_{\alpha}$')
+        plt.plot(E,O,color='teal',label=r'α = '+str(np.round(timeAdvIsoDF.index[row],decimals=3)))
+        plt.ylabel(r'\\$\\Omega\\left(E_{α}\\right)\\$')
+        plt.xlabel(r'\\$E_{α}\\$')
         plt.legend()
         plt.grid(True)
 
@@ -1396,7 +1388,7 @@ class ActivationEnergy:
         Method to calculate the variance of the activation energy E obtained with the Vyazovkin 
         treatment. The variance is computed as:
 
-        S^{2}(E) = {1}/{n(n-1)}\sum_{i}^{n}\sum_{j}^{n-1}{[{J(E,T(t_{i}))]}/[{J(E,T(t_{j}))}]-1}^{2}
+        S^{2}(E) = {1}/{n(n-1)}\\sum_{i}^{n}\\sum_{j}^{n-1}{[{J(E,T(t_{i}))]}/[{J(E,T(t_{j}))}]-1}^{2}
 
         Parameters:     E      : The activation energy value used to calculate 
                                  the value of omega.
@@ -1457,7 +1449,7 @@ class ActivationEnergy:
         Method to calculate the F distribution to minimize for the Vyazovkin method.
         The distribution is computed as: 
 
-        \Psi(E) = S^{2}(E)/S^{2}_{min}
+        \\Psi(E) = S^{2}(E)/S^{2}_{min}
 
         Parameters:     E      : The activation energy value used to calculate 
                                  the value of omega.
@@ -1534,7 +1526,7 @@ class ActivationEnergy:
     def aVy(self,bounds, var='time', p= 0.95):
         """
         Method to compute the Activation Energy based on the Advanced Vyazovkin treatment.
-        \Omega(E_{\alpha})= min[ sum_{i}^{n}\sum_{j}^{n-1}[J(E,T_{i})]/[J(E,T_{j})] ]
+        \\Omega(E_{α})= min[ sum_{i}^{n}\\sum_{j}^{n-1}[J(E,T_{i})]/[J(E,T_{j})] ]
 
         Parameters:   bounds : Tuple object containing the lower limit and the upper 
                                limit values of E, for evaluating omega.
@@ -1614,8 +1606,8 @@ class ActivationEnergy:
 
         plt.ylim(ylim)
         plt.xlim(xlim)
-        plt.xlabel(r'$\alpha$')
-        plt.ylabel(r'$E_{\alpha}$')
+        plt.xlabel(r'α')
+        plt.ylabel(r'\\$E_{α}\\$')
         plt.legend()
         plt.grid(True)
         plt.show()
@@ -1696,7 +1688,7 @@ class ActivationEnergy:
 
     def modelfree_prediction(self,E, B, isoT = None, T_init=None,T_func = None, alpha=0, bounds = (5,5)):
         """
-        Method to compute a model-free prediction based on the integral isoconversional principle: $g(\alpha)=constant$ which implies 
+        Method to compute a model-free prediction based on the integral isoconversional principle: $g(α)=constant$ which implies 
         an equality between teperature integrals to reach a given conversion: $J[E_alpha,T(t)_i] = J[E_alpha,T(t)_j]$
         where $T(t)_i and T(t)_j$ are two different temperature programs
 
@@ -1862,7 +1854,7 @@ class ActivationEnergy:
                     else:
                         if er_m == 'r_NL' or er_m == 'r_Lin':
                             print(
-                                rf'Accuracy not met with precision of $r^{2}$ = {fr_l[k - 1]}. Lowering precision to $r^{2}$ = {fr_l[k]}')
+                                rf'Accuracy not met with precision of \\$r^{2}\\$ = {fr_l[k - 1]}. Lowering precision to \\$r^{2}\\$ = {fr_l[k]}')
                         else:
                             print(
                                 rf'Accuracy not met with precision of mse = {f_mse[k - 1]}. Lowering precision to mse = {f_mse[k]}')
@@ -1908,8 +1900,8 @@ class ActivationEnergy:
     def reconstruction(self,E, A, B):
 
         """ 
-        Method to numericaly reconstruct the reaction model in its integral expression, $g(\alpha)$ 
-        The reconstructions is computed as $g(\alpha)=\sum_{i}g(alpha_{i})$
+        Method to numericaly reconstruct the reaction model in its integral expression, $g(α)$ 
+        The reconstructions is computed as $g(α)=\\sum_{i}g(alpha_{i})$
 
         Parameters:     E :   numpy array containing the values of activation energy.
                         A :   numpy array containing the values of Pre-exponential factor array.
@@ -1930,9 +1922,9 @@ class ActivationEnergy:
             AiJsum += A[i]*J
             g += [AiJsum]
 
-        #color = sns.color_palette("rocket",len(models))
+        color = sns.color_palette("rocket",len(models))
         #color = sns.color_palette("crest",len(models))
-        color = sns.color_palette("Spectral",len(models))
+        #color = sns.color_palette("Spectral",len(models))
         #color = sns.color_palette("cubehelix", len(models))
         #color = sns.color_palette("icefire", len(models))
 
@@ -1952,8 +1944,8 @@ class ActivationEnergy:
             plt.plot(alpha[1::],g,'*-',color='#6963DB',lw=4.20, ms= 8, label='g_r',alpha=0.5)
         plt.ylim(0,2)
         plt.xlim(0,1)
-        plt.xlabel(r'$\alpha$')
-        plt.ylabel(r'$g(\alpha)$')
+        plt.xlabel(r'α')
+        plt.ylabel(r'\\$g(α)\\$')
         plt.grid(1)
         plt.legend(fontsize=12)
         plt.show()
@@ -2052,7 +2044,7 @@ class ActivationEnergy:
 
         Returns:    None. A file will be created according to the working path or path specified in `name`.
         """
-        kinDF = pd.DataFrame({r'$\alpha$':alpha,
+        kinDF = pd.DataFrame({r'α':alpha,
                               'E':E,
                               'ln_A':ln_A,
                               'g(alpha)':g_a})

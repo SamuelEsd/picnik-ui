@@ -34,9 +34,10 @@ from src.config import (
 )
 from src.utils.FileValidator import FileValidator
 from src.utils.SessionManager import SessionManager
-from src.core.conversion_manager import ConversionManager
-from src.ui.PlotlyPlotter import PlotlyPlotter
-from src.ui.plot_manager import PlotManager
+from src.core.ConversionManager import ConversionManager
+from src.ui.PlotlyPlotter import PlotlyPlotter as PP
+from src.ui.PlotManager import PlotManager
+from src.utils.StreamlitLogger import streamlitLogger
 
 
 class WorkflowUI:
@@ -281,7 +282,7 @@ class WorkflowUI:
 
         for tab, valid_file in zip(tabs, valid_files):
             with tab:
-                st.dataframe(valid_file, use_container_width=True)
+                st.dataframe(valid_file, width='stretch')
 
     def display_extraction_controls(self) -> None:
         """
@@ -430,9 +431,11 @@ class WorkflowUI:
                     SessionManager.set("plotly_plotters", plotters_dict)
 
                     # Display range controls for interactive adjustment
-                    plot_manager.display_plot_range_controls(
-                        idx, plotter, placeholder
-                    )
+                    st.text("idx: " + str(idx))
+                    if (idx == 0):        
+                        plot_manager.display_plot_range_controls(
+                            idx, plotter, placeholder
+                        )
 
                 except KeyError as e:
                     st.error(f"Invalid plot combination: {str(e)}")
@@ -482,6 +485,7 @@ class WorkflowUI:
 
             # Get temperature ranges
             ranges = SessionManager.get("conversion_ranges")
+            streamlitLogger.debug(f"Using conversion ranges from session: {ranges}", module="WorkflowUI")
             if ranges and len(ranges) == len(Bnum):
                 Ti_list = [r[0] for r in ranges]
                 Tf_list = [r[1] for r in ranges]
@@ -511,7 +515,17 @@ class WorkflowUI:
             col1, col2 = st.columns([2, 1])
 
             with col1:
-                st.pyplot(conversion_figure)
+                #st.pyplot(conversion_figure)
+                plotly_plotter = PP(
+                    title=f"Conversion",
+                    x_label=f"Temperature [K]",
+                    y_label=f"TG [%]",
+                    from_matplotlib_fig=conversion_figure
+                )
+                plotly_plotter.update_curve_xrange()
+                placeholder = st.empty()
+                plotly_plotter.show(container=placeholder)
+
 
             with col2:
                 st.subheader("Analysis Summary")
