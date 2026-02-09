@@ -26,22 +26,21 @@ class ConversionManager:
 
     def run_conversion(self, Ti_list: List[float], Tf_list: List[float]):
         """
-        Execute conversion and isoconversion calculations.
+        Execute conversion calculations (without isoconversion).
         
         Args:
             Ti_list (List[float]): Initial temperatures for each dataset.
             Tf_list (List[float]): Final temperatures for each dataset.
             
         Returns:
-            Tuple of (conversion_figure, isoTables_num) or (None, None) on error.
+            Conversion figure or None on error.
         """
         try:
             conversion_figure = self.data_extractor.Conversion(Ti_list, Tf_list)
-            isoTables_num = self.data_extractor.Isoconversion(d_a=DEFAULT_ISO_DA)
-            return conversion_figure, isoTables_num
+            return conversion_figure
         except Exception as e:
             st.error(f"Error during conversion: {str(e)}")
-            return None, None
+            return None
 
     def handle_encoding_retry(self, file_paths: List[str]) -> Optional[List[str]]:
         """

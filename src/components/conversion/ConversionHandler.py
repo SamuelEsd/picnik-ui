@@ -40,7 +40,7 @@ class ConversionHandler:
             )
 
             # Execute conversion
-            conversion_figure, iso_tables = conversion_manager.run_conversion(
+            conversion_figure = conversion_manager.run_conversion(
                 Ti_list, Tf_list
             )
 
@@ -51,10 +51,8 @@ class ConversionHandler:
             st.success("Conversion analysis completed")
 
             # Display results
-            self._display_results(conversion_figure, Ti_list, Tf_list, Bnum, iso_tables)
+            self._display_results(conversion_figure, Ti_list, Tf_list, Bnum)
 
-            # Clear the button state
-            SessionManager.set("run_conversion_clicked", False)
 
         except Exception as e:
             st.error(f"Error during conversion analysis: {str(e)}")
@@ -101,17 +99,15 @@ class ConversionHandler:
         Ti_list: List[float],
         Tf_list: List[float],
         Bnum: list,
-        iso_tables,
     ) -> None:
         """
-        Display conversion results.
+        Display conversion results and save to session.
 
         Args:
             conversion_figure: Matplotlib figure from conversion.
             Ti_list: Initial temperatures.
             Tf_list: Final temperatures.
             Bnum: List of B numbers.
-            iso_tables: Isoconversion tables.
         """
         col1, col2 = st.columns([2, 1])
 
@@ -135,6 +131,9 @@ class ConversionHandler:
                             pass
             placeholder = st.empty()
             plotly_plotter.show(container=placeholder)
+            
+            # Save plotter to session
+            SessionManager.set("conversion_plotter", plotly_plotter)
 
         with col2:
             st.subheader("Analysis Summary")
@@ -142,8 +141,10 @@ class ConversionHandler:
             st.write("Temperature ranges:")
             for i, (ti, tf) in enumerate(zip(Ti_list, Tf_list)):
                 st.write(f"  • Dataset {i + 1}: {ti:.1f} K → {tf:.1f} K")
-
-        # Display isoconversion tables if available
-        if iso_tables is not None:
-            st.subheader("Isoconversion Data")
-            st.info("Isoconversion tables would be displayed here")
+        
+        # Save conversion metadata to session
+        SessionManager.set("conversion_metadata", {
+            "Ti_list": Ti_list,
+            "Tf_list": Tf_list,
+            "Bnum": Bnum,
+        })

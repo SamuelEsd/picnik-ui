@@ -16,7 +16,7 @@ from src.components.file_validation import (
 )
 from src.components.extraction import ExtractionControls, ExtractionHandler
 from src.components.plots import PlotViewer
-from src.components.conversion import ConversionControls, ConversionHandler
+from src.components.conversion import ConversionControls, ConversionHandler, IsoconversionHandler
 
 
 def main():
@@ -75,6 +75,11 @@ def main():
 
     conversion_handler = ConversionHandler()
     conversion_handler.handle_conversion()
+
+    # Component 8: Isoconversion Controls and Handler
+    isoconversion_handler = IsoconversionHandler()
+    isoconversion_handler.render_isoconversion_controls()
+    isoconversion_handler.handle_isoconversion()
 
 
 if __name__ == "__main__":

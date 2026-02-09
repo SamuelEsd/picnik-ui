@@ -23,6 +23,11 @@ class ConversionControls:
             if st.button("Reset Conversion", type="secondary", key="conversion_reset_btn"):
                 SessionManager.set("run_conversion_clicked", False)
                 SessionManager.set("conversion_ranges", {})
+                SessionManager.set("conversion_plotter", None)
+                SessionManager.set("conversion_metadata", None)
+
+                # Clear the button state
+                SessionManager.set("run_conversion_clicked", False)
                 st.success("Conversion state reset.")
 
         with col2:
