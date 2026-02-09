@@ -30,7 +30,7 @@ class PlotlyPlotter:
             self.fig = go.Figure()
             self.color_palette = []
         self._original_data = []
-        self._current_ranges = []
+        self._current_ranges = {}
         
         # Initialize _original_data and _current_ranges for existing traces (e.g., from matplotlib conversion)
         for idx, trace in enumerate(self.fig.data):
@@ -44,7 +44,7 @@ class PlotlyPlotter:
                 "line": getattr(trace, 'line', None),
                 "marker": getattr(trace, 'marker', None),
             })
-            self._current_ranges.append((None, None))
+            self._current_ranges[idx] = (None, None)
             
 
     def _extract_colors_from_matplotlib(self, mpl_fig):
@@ -160,7 +160,7 @@ class PlotlyPlotter:
             "marker": marker,
         })
         # Default: no user-applied bounds
-        self._current_ranges.append((None, None))
+        self._current_ranges[len(self._original_data) - 1] = (None, None)
 
         # Filter x and y based on x_min and x_max if provided
         x, y = self._filter_xy_by_range(orig_x, orig_y, x_min, x_max)
@@ -227,6 +227,15 @@ class PlotlyPlotter:
             except IndexError:
                 raise IndexError("Original data for the specified trace is not available")
             self._current_ranges[idx] = (x_min, x_max)
+
+    def get_current_ranges(self):
+        """
+        Get the current x-ranges for all curves.
+
+        Returns:
+            dict: Mapping of trace indices to (x_min, x_max) tuples.
+        """
+        return self._current_ranges.copy()
 
     def get_curve_xrange(self, identifier):
         """

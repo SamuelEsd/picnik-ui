@@ -1,49 +1,83 @@
+"""
+Main Tool View - Using Component-Based Architecture
+
+This view demonstrates how to compose modular components
+following a React-like architecture pattern in Streamlit.
+"""
+
 import streamlit as st
-import pandas as pd
-import picnik as pnk
-from picnik import DataExtraction as DE
-import numpy as np
-import os
-import matplotlib.pyplot as plt
 
 from src.config import APP_TITLE
-from src.ui.WorkflowUI import WorkflowUI
+from src.components.data_source import DataSourceSelector
+from src.components.file_validation import (
+    FileCountValidator,
+    FileStructureValidator,
+    FilePreview,
+)
+from src.components.extraction import ExtractionControls, ExtractionHandler
+from src.components.plots import PlotViewer
+from src.components.conversion import ConversionControls, ConversionHandler
 
 
-# --- Streamlit Configuration ---
-st.set_page_config(layout="wide", initial_sidebar_state="expanded")
+def main():
+    """Main application flow using modular components."""
+    # Page configuration
+    st.set_page_config(layout="wide", initial_sidebar_state="expanded")
 
-# Set page title
-st.title(APP_TITLE)
-st.write("Web-based data analysis and visualization platform for thermal analysis.")
-st.write("Built with Streamlit, Pandas, Plotly, and SciPy for interactive thermal data processing.")
-st.write("Learn more about thermal analysis: [GitHub - Picnik](https://github.com/ErickErock/pICNIK)")
+    # Page title and description
+    st.title(APP_TITLE)
+    st.write(
+        "Web-based data analysis and visualization platform for thermal analysis."
+    )
+    st.write(
+        "Built with Streamlit, Pandas, Plotly, and SciPy for interactive thermal data processing."
+    )
+    st.write(
+        "Learn more about thermal analysis: [GitHub - Picnik](https://github.com/ErickErock/pICNIK)"
+    )
+
+    # Component 1: Data Source Selection
+    data_source_selector = DataSourceSelector()
+    file_paths = data_source_selector.render()
+    if not file_paths:
+        return
+
+    # Component 2: File Count Validation
+    file_count_validator = FileCountValidator()
+    if not file_count_validator.validate(file_paths):
+        return
+
+    # Component 3: File Structure Validation
+    file_structure_validator = FileStructureValidator()
+    valid_files, invalid_files = file_structure_validator.validate(file_paths)
+    if not valid_files:
+        return
+
+    # Component 4: File Preview
+    file_preview = FilePreview()
+    file_preview.render(valid_files, file_paths)
+
+    # Component 5: Extraction Controls and Handler
+    extraction_controls = ExtractionControls()
+    extraction_controls.render()
+
+    extraction_handler = ExtractionHandler()
+    if not extraction_handler.handle_extraction():
+        return
+
+    # Component 6: Plot Viewer
+    plot_viewer = PlotViewer()
+    plot_viewer.render()
+
+    # Component 7: Conversion Controls and Handler
+    conversion_controls = ConversionControls()
+    conversion_controls.render()
+
+    conversion_handler = ConversionHandler()
+    conversion_handler.handle_conversion()
 
 
-# Initialize WorkflowUI
-workflow_ui = WorkflowUI()
-
-# Step 1: Data source selection
-file_paths = workflow_ui.choose_input_source()
-
-# Step 2: File validation
-if file_paths:
-    if workflow_ui.verify_file_count(file_paths):
-        valid_files, invalid_files = workflow_ui.verify_file_structure(file_paths)
-        
-        if valid_files:
-            # Display preview of validated files
-            workflow_ui.display_file_preview(valid_files, file_paths)
-            
-            # Step 3: Data extraction controls
-            workflow_ui.display_extraction_controls()
-            
-            # Step 4: Handle data extraction
-            if workflow_ui.handle_data_extraction():
-                # Step 5: Display plots
-                workflow_ui.display_plots()
-                
-                # Step 6: Display conversion controls
-                workflow_ui.display_conversion_controls()
+if __name__ == "__main__":
+    main()
 
 

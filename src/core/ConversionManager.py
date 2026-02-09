@@ -23,30 +23,6 @@ class ConversionManager:
         """
         self.data_extractor = data_extractor
 
-    def get_temperature_ranges(self) -> Optional[List[Tuple[float, float]]]:
-        """
-        Get temperature ranges for conversion.
-        
-        Uses stored ranges if available, otherwise extracts from data.
-        
-        Returns:
-            List of (Ti, Tf) tuples or None if data unavailable.
-        """
-        Bnum = SessionManager.get('Bnum')
-        if Bnum is None:
-            return None
-
-        ranges = SessionManager.get('conversion_ranges')
-        if ranges and len(ranges) == len(Bnum):
-            return ranges
-
-        # Extract from data
-        try:
-            Ti_list = [self.data_extractor.DFlis[k]['Temperature [K]'].values[0] for k in range(len(Bnum))]
-            Tf_list = [self.data_extractor.DFlis[k]['Temperature [K]'].values[-1] for k in range(len(Bnum))]
-            return list(zip(Ti_list, Tf_list))
-        except Exception:
-            return None
 
     def run_conversion(self, Ti_list: List[float], Tf_list: List[float]):
         """
