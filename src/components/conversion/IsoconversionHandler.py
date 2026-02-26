@@ -147,7 +147,8 @@ class IsoconversionHandler:
             )
 
         # Store results in session for later use
-        SessionManager.set("isoconversion_results", {
+        SessionManager.set("isoconversion_results", [temp_df, time_df, diff_df])
+        SessionManager.set("isoconversion_results_dict", {
             "temperature": temp_df,
             "time": time_df,
             "conversion_rate": diff_df
