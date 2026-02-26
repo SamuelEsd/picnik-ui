@@ -114,7 +114,7 @@ class IsoconversionHandler:
         )
 
         with tab1:
-            st.dataframe(temp_df, use_container_width=True)
+            st.dataframe(temp_df, width='stretch')
             csv_temp = self._dataframe_to_csv(temp_df, "Isoconversion_Temperature")
             st.download_button(
                 label="Download Temperature Data (CSV)",
@@ -125,7 +125,7 @@ class IsoconversionHandler:
             )
 
         with tab2:
-            st.dataframe(time_df, use_container_width=True)
+            st.dataframe(time_df, width='stretch')
             csv_time = self._dataframe_to_csv(time_df, "Isoconversion_Time")
             st.download_button(
                 label="Download Time Data (CSV)",
@@ -136,7 +136,7 @@ class IsoconversionHandler:
             )
 
         with tab3:
-            st.dataframe(diff_df, use_container_width=True)
+            st.dataframe(diff_df, width='stretch')
             csv_diff = self._dataframe_to_csv(diff_df, "Isoconversion_Rate")
             st.download_button(
                 label="Download Conversion Rate Data (CSV)",
