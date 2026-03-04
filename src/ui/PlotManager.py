@@ -9,6 +9,7 @@ from src.config import (
     PLOT_X_DATA_OPTIONS, PLOT_Y_DATA_OPTIONS,
     PLOT_X_UNITS, PLOT_Y_UNITS
 )
+import streamlit.components.v1 as components
 
 
 class PlotManager:
@@ -167,35 +168,143 @@ class PlotManager:
             return curr_min, curr_max
         except Exception:
             return default_min, default_max
+        
+    def _colored_slider(self,label, min_value, max_value, value, key, color, unselected_color="#e0e0e0"):
+        st.markdown(f"""
+            <style>
+                /* Thumb circles */
+                [data-baseweb="slider"]:has([aria-label="{label}"])
+                [role="slider"] {{
+                    background-color: {color} !important;
+                    border-color: {color} !important;
+                }}
+            </style>
+        """, unsafe_allow_html=True)
+        result = st.slider(label, min_value=min_value, max_value=max_value, value=value, key=key)
 
+        components.html(f"""
+            <script>
+            function updateSliderColor() {{
+                const doc = window.parent.document;
+                const sliders = doc.querySelectorAll('[data-baseweb="slider"]');
+
+                for (const slider of sliders) {{
+                    // Match slider by aria-label on the thumb
+                    const thumb = slider.querySelector('[aria-label="{label}"]');
+                    if (!thumb) continue;
+
+                    const track = slider.querySelector('[style*="height: 0.25rem"]');
+                    const thumbs = slider.querySelectorAll('[role="slider"]');
+                    if (!track || thumbs.length < 2) continue;
+
+                    const min  = parseFloat(thumbs[0].getAttribute('aria-valuemin'));
+                    const max  = parseFloat(thumbs[1].getAttribute('aria-valuemax'));
+                    const val1 = parseFloat(thumbs[0].getAttribute('aria-valuenow'));
+                    const val2 = parseFloat(thumbs[1].getAttribute('aria-valuenow'));
+
+                    const pct1 = ((val1 - min) / (max - min)) * 100;
+                    const pct2 = ((val2 - min) / (max - min)) * 100;
+
+                    track.style.setProperty(
+                        'background',
+                        `linear-gradient(to right,
+                            {unselected_color} ${{pct1}}%,
+                            {color} ${{pct1}}%,
+                            {color} ${{pct2}}%,
+                            {unselected_color} ${{pct2}}%
+                        )`,
+                        'important'
+                    );
+                }}
+            }}
+
+            // Run once on load, then watch for thumb movement
+            updateSliderColor();
+
+            const observer = new MutationObserver(updateSliderColor);
+            observer.observe(window.parent.document.body, {{
+                subtree: true,
+                attributes: true,
+                attributeFilter: ['aria-valuenow']
+            }});
+            </script>
+        """, height=0)
+
+        return result
     def _render_styled_slider(self, name: str, bound_min: float, bound_max: float,
                             curr_min: float, curr_max: float, key: str, plotter: PP, trace_idx: int) -> None:
-        """Render a slider with color styling for a trace."""
+        """Render a slider with color styling and synchronized number inputs for a trace."""
         try:
             curve_color = plotter.get_curve_color_rgb_string(trace_idx)
-            col1, col2 = st.columns([4, 1])
-            with col1:
-                st.slider(
-                    f"{name} — x range",
-                    min_value=bound_min,
-                    max_value=bound_max,
-                    value=(float(curr_min), float(curr_max)),
-                    key=key
-                )
-            with col2:
-                st.markdown(
-                    f"<div style='background-color: {curve_color}; width: 40px; height: 40px; border-radius: 5px; border: 1px solid #ccc;'></div>",
-                    unsafe_allow_html=True
-                )
         except Exception as e:
+            curve_color = None
             st.warning(f"Color error for {name}: {str(e)}")
-            st.slider(
-                f"{name} — x range",
+
+        # Initialize session state keys for min/max inputs BEFORE any widget rendering
+        key_min_input = f"{key}_min_input"
+        key_max_input = f"{key}_max_input"
+        
+        if key_min_input not in st.session_state:
+            st.session_state[key_min_input] = float(curr_min)
+        if key_max_input not in st.session_state:
+            st.session_state[key_max_input] = float(curr_max)
+        if key not in st.session_state:
+            st.session_state[key] = (float(curr_min), float(curr_max))
+
+
+        # Main layout: slider | inputs+color
+        col1, col2 = st.columns([3, 1])
+        
+        with col1:
+            slider_value = self._colored_slider(
+                label=f"{name} — x range",
                 min_value=bound_min,
                 max_value=bound_max,
-                value=(float(curr_min), float(curr_max)),
-                key=key
+                value=(st.session_state[key_min_input], st.session_state[key_max_input]),
+                key=key + "_slider",
+                color=curve_color or "#1f77b4"
             )
+            # Update session state AFTER slider is created
+            st.session_state[key_min_input] = slider_value[0]
+            st.session_state[key_max_input] = slider_value[1]
+        
+        with col2:
+            # Subcolumns for min/max inputs
+            input_col1, input_col2 = st.columns(2)
+            
+            with input_col1:
+                min_input = st.number_input(
+                    "Min",
+                    min_value=bound_min,
+                    max_value=bound_max,
+                    value=st.session_state[key_min_input],
+                    key=key_min_input,
+                    label_visibility="collapsed"
+                )
+                # Validate and sync min input with slider
+                """
+                 min_input = max(bound_min, min(min_input, bound_max))
+                if min_input > st.session_state[key_max_input]:
+                    min_input = st.session_state[key_max_input]
+                st.session_state[key_min_input] = min_input """
+            
+            with input_col2:
+                max_input = st.number_input(
+                    "Max",
+                    min_value=bound_min,
+                    max_value=bound_max,
+                    value=st.session_state[key_max_input],
+                    key=key_max_input,
+                    label_visibility="collapsed"
+                )
+                """             
+                # Validate and sync max input with slider
+                max_input = max(bound_min, min(max_input, bound_max))
+                if max_input < st.session_state[key_min_input]:
+                    max_input = st.session_state[key_min_input]
+                st.session_state[key_max_input] = max_input
+                """
+
 
     def _render_range_buttons(self, plot_idx: int, plotter: PP, placeholder, slider_keys: List[Tuple[int, str]]) -> None:
         """Render Apply and Reset buttons for range adjustments."""
