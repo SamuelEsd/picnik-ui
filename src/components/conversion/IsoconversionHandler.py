@@ -27,13 +27,11 @@ class IsoconversionHandler:
             return
 
         try:
-            st.info("Running isoconversion analysis...")
-
             # Get d_a parameter from session or use default
             d_a = SessionManager.get("isoconversion_d_a", DEFAULT_ISO_DA)
 
-            # Execute isoconversion
-            temp_df, time_df, diff_df = self._run_isoconversion(data_extractor, d_a)
+            with st.spinner("Running isoconversion analysis..."):
+                temp_df, time_df, diff_df = self._run_isoconversion(data_extractor, d_a)
 
             if temp_df is None:
                 st.error("Isoconversion calculation failed.")

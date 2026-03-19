@@ -16,16 +16,23 @@ from src.components.file_validation import (
 )
 from src.components.extraction import ExtractionControls, ExtractionHandler
 from src.components.plots import PlotViewer
-from src.components.conversion import ConversionControls, ConversionHandler, IsoconversionHandler, ActivationEnergyHandler
+from src.components.conversion import (
+    ConversionControls,
+    ConversionHandler,
+    IsoconversionHandler,
+    ActivationEnergyHandler,
+)
+from src.components.kinetics import (
+    CompensationEffectHandler,
+    ReconstructionHandler,
+    PredictionHandler,
+)
 from src.utils.SessionManager import SessionManager
 from picnick_dev import ActivationEnergy
 
 
 def main():
     """Main application flow using modular components."""
-    # Page configuration
-    st.set_page_config(layout="wide", initial_sidebar_state="expanded")
-
     # Page title and description
     st.title(APP_TITLE)
     st.write(
@@ -37,6 +44,10 @@ def main():
     st.write(
         "Learn more about thermal analysis: [GitHub - Picnik](https://github.com/ErickErock/pICNIK)"
     )
+
+    # ------------------------------------------------------------------ #
+    # STEP 1-2: Data Input                                                 #
+    # ------------------------------------------------------------------ #
 
     # Component 1: Data Source Selection
     data_source_selector = DataSourceSelector()
@@ -59,6 +70,10 @@ def main():
     file_preview = FilePreview()
     file_preview.render(valid_files, file_paths)
 
+    # ------------------------------------------------------------------ #
+    # STEP 2: Data Extraction                                              #
+    # ------------------------------------------------------------------ #
+
     # Component 5: Extraction Controls and Handler
     extraction_controls = ExtractionControls()
     extraction_controls.render()
@@ -70,6 +85,10 @@ def main():
     # Component 6: Plot Viewer
     plot_viewer = PlotViewer()
     plot_viewer.render()
+
+    # ------------------------------------------------------------------ #
+    # STEP 3-4: Conversion & Isoconversion                                 #
+    # ------------------------------------------------------------------ #
 
     # Component 7: Conversion Controls and Handler
     conversion_controls = ConversionControls()
@@ -83,29 +102,57 @@ def main():
     isoconversion_handler.render_isoconversion_controls()
     isoconversion_handler.handle_isoconversion()
 
-    # Component 9: Activation Energy Calculation and Plotting
+    # ------------------------------------------------------------------ #
+    # STEP 5: Activation Energy                                            #
+    # ------------------------------------------------------------------ #
+
     data_extractor = SessionManager.get("data_extractor")
     b_num = SessionManager.get("Bnum")
     t0_num = SessionManager.get("T0num")
     isoconversion_results = SessionManager.get("isoconversion_results")
+
     if data_extractor is not None and isoconversion_results is not None:
         try:
             activation_energy_object = ActivationEnergy(
                 Beta=b_num,
                 T0=t0_num,
-                IsoTables=isoconversion_results
+                IsoTables=isoconversion_results,
             )
             SessionManager.set("activation_energy_object", activation_energy_object)
-            
-            # Component 9a: Activation Energy Controls and Handler
+
+            # Component 9: Activation Energy Controls and Handler
             activation_energy_handler = ActivationEnergyHandler()
             activation_energy_handler.render_activation_energy_controls()
             activation_energy_handler.handle_activation_energy()
-            
+
         except Exception as e:
             st.error(f"Error creating Activation Energy object: {str(e)}")
+            return
+
+    # ------------------------------------------------------------------ #
+    # STEP 6: Compensation Effect (Pre-exponential Factor)                 #
+    # ------------------------------------------------------------------ #
+
+    comp_handler = CompensationEffectHandler()
+    comp_handler.render_compensation_controls()
+    comp_handler.handle_compensation_effect()
+
+    # ------------------------------------------------------------------ #
+    # STEP 7: Reaction Model Reconstruction — g(alpha)                    #
+    # ------------------------------------------------------------------ #
+
+    recon_handler = ReconstructionHandler()
+    recon_handler.render_reconstruction_controls()
+    recon_handler.handle_reconstruction()
+
+    # ------------------------------------------------------------------ #
+    # STEP 8: Kinetic Predictions                                          #
+    # ------------------------------------------------------------------ #
+
+    pred_handler = PredictionHandler()
+    pred_handler.render_prediction_controls()
+    pred_handler.handle_predictions()
+
 
 if __name__ == "__main__":
     main()
-
-

@@ -75,7 +75,6 @@ class PlotViewer:
             if idx == 0:
                 plot_manager.display_plot_range_controls(idx, plotter, placeholder)
                 plotter_current_ranges = plotter.get_current_ranges()
-                st.write(f"Current x ranges: {plotter_current_ranges}")
                 SessionManager.set("conversion_ranges", plotter_current_ranges)
 
         except KeyError as e:

@@ -45,6 +45,19 @@ class ActivationEnergyHandler:
             )
             SessionManager.set("selected_ae_method", selected_method)
 
+            # Display P parameter input for aVy method, inside col1
+            if selected_method == "aVy":
+                p_value = st.slider(
+                    "P value (Advanced Vyazovkin)",
+                    min_value=0.50,
+                    max_value=0.99,
+                    step=0.01,
+                    value=SessionManager.get("avy_p_value", 0.50),
+                    help="Set the P parameter for Advanced Vyazovkin method (0.50 to 0.99)",
+                    key="avy_p_slider",
+                )
+                SessionManager.set("avy_p_value", p_value)
+
         with col2:
             st.write("")
             st.write("")
@@ -68,12 +81,8 @@ class ActivationEnergyHandler:
             return
 
         try:
-            st.info(
-                f"Running {self.METHODS[selected_method]} calculation..."
-            )
-
-            # Execute the selected method
-            result = self._execute_method(activation_energy_object, selected_method)
+            with st.spinner(f"Running {self.METHODS[selected_method]} calculation..."):
+                result = self._execute_method(activation_energy_object, selected_method)
 
             if result is None:
                 st.error(
@@ -119,7 +128,8 @@ class ActivationEnergyHandler:
             elif method == "Vy":
                 result = activation_energy_object.Vy(bounds=(1, 300))
             elif method == "aVy":
-                result = activation_energy_object.aVy(bounds=(1, 300))
+                p_value = SessionManager.get("avy_p_value", 0.50)
+                result = activation_energy_object.aVy(bounds=(1, 300), p=p_value)
             else:
                 st.error(f"Unknown method: {method}")
                 return None
@@ -136,16 +146,58 @@ class ActivationEnergyHandler:
         Display activation energy calculation results.
 
         Args:
-            result: Calculation result (typically DataFrame or array).
+            result: Tuple (alpha, T_avg, E, error, ...) returned by each method.
             method: Method used for calculation.
         """
-        st.subheader(f"Activation Energy Results - {self.METHODS[method]}")
+        st.subheader(f"Activation Energy Results — {self.METHODS[method]}")
 
-        # Display the result
-        if isinstance(result, pd.DataFrame):
-            st.dataframe(result, width='stretch')
-            csv_data = result.to_csv(index=True)
-        else:
+        # All methods return a tuple: (alpha, T_avg, E, error, ...)
+        try:
+            import numpy as np
+            import plotly.graph_objects as go
+
+            alpha_vals = result[0]
+            E_vals = result[2]
+            error_vals = result[3]
+
+            # Interactive E(alpha) chart with error bars
+            fig = go.Figure()
+            fig.add_trace(
+                go.Scatter(
+                    x=alpha_vals,
+                    y=E_vals,
+                    mode="lines+markers",
+                    name=f"E ({method})",
+                    error_y=dict(type="data", array=error_vals, visible=True),
+                    marker=dict(size=5),
+                )
+            )
+            fig.update_layout(
+                title=f"Activation Energy E(α) — {self.METHODS[method]}",
+                xaxis_title="Conversion (α)",
+                yaxis_title="E [kJ/mol]",
+                height=400,
+            )
+            st.plotly_chart(fig, use_container_width=True)
+
+            # Summary metrics
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("Mean E", f"{float(np.mean(E_vals)):.2f} kJ/mol")
+            with col2:
+                st.metric("Min E", f"{float(np.min(E_vals)):.2f} kJ/mol")
+            with col3:
+                st.metric("Max E", f"{float(np.max(E_vals)):.2f} kJ/mol")
+
+            # DataFrame display
+            df_result = pd.DataFrame(
+                {"alpha": alpha_vals, "E [kJ/mol]": E_vals, "error [kJ/mol]": error_vals}
+            )
+            st.dataframe(df_result, use_container_width=True)
+            csv_data = df_result.to_csv(index=False)
+
+        except (TypeError, IndexError, Exception):
+            # Fallback for unexpected result formats
             st.write(result)
             csv_data = str(result)
 
@@ -158,7 +210,7 @@ class ActivationEnergyHandler:
             key=f"download_ae_{method}",
         )
 
-        # Store results in session for later use
+        # Store results in session for later use (compensation effect, predictions)
         SessionManager.set("activation_energy_results", {
             "method": method,
             "method_label": self.METHODS[method],
