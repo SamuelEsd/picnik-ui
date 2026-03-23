@@ -9,7 +9,8 @@ import streamlit as st
 import pandas as pd
 
 from src.utils.SessionManager import SessionManager
-from src.config import DEFAULT_ISO_DA, SESS_DATA_EXTRACTOR
+from src.config import DEFAULT_ISO_DA, SESS_DATA_EXTRACTOR, SESS_ISOCONVERSION_RESULT
+from src.models.results import IsoconversionResults
 
 
 class IsoconversionHandler:
@@ -33,12 +34,14 @@ class IsoconversionHandler:
                         st.error("Isoconversion calculation failed.")
                     else:
                         st.success("Isoconversion analysis completed")
-                        SessionManager.set("isoconversion_results", [temp_df, time_df, diff_df])
-                        SessionManager.set("isoconversion_results_dict", {
-                            "temperature": temp_df,
-                            "time": time_df,
-                            "conversion_rate": diff_df,
-                        })
+                        SessionManager.set(
+                            SESS_ISOCONVERSION_RESULT,
+                            IsoconversionResults(
+                                temperature=temp_df,
+                                time=time_df,
+                                conversion_rate=diff_df,
+                            ),
+                        )
 
                 except Exception as e:
                     st.error(f"Error during isoconversion analysis: {str(e)}")
@@ -46,13 +49,9 @@ class IsoconversionHandler:
             SessionManager.set("run_isoconversion_clicked", False)
 
         # Always display from session if results exist
-        results_dict = SessionManager.get("isoconversion_results_dict")
-        if results_dict is not None:
-            self._display_isoconversion_results(
-                results_dict["temperature"],
-                results_dict["time"],
-                results_dict["conversion_rate"],
-            )
+        iso_results = SessionManager.get(SESS_ISOCONVERSION_RESULT)
+        if iso_results is not None:
+            self._display_isoconversion_results(iso_results)
 
     def render_isoconversion_controls(self) -> None:
         """Display isoconversion parameter controls."""
@@ -103,68 +102,44 @@ class IsoconversionHandler:
             st.error(f"Isoconversion failed: {str(e)}")
             return None, None, None
 
-    def _display_isoconversion_results(
-        self, temp_df: pd.DataFrame, time_df: pd.DataFrame, diff_df: pd.DataFrame
-    ) -> None:
-        """
-        Display isoconversion results with download options.
-
-        Args:
-            temp_df: Temperature isoconversion DataFrame.
-            time_df: Time isoconversion DataFrame.
-            diff_df: Conversion rate isoconversion DataFrame.
-        """
+    def _display_isoconversion_results(self, results: IsoconversionResults) -> None:
+        """Display isoconversion results with download options."""
         st.subheader("Isoconversion Results")
 
-        # Create tabs for different data types
         tab1, tab2, tab3 = st.tabs(
             ["Temperature (K)", "Time (min)", "Conversion Rate (da/dt)"]
         )
 
         with tab1:
-            st.dataframe(temp_df, width='stretch')
-            csv_temp = self._dataframe_to_csv(temp_df, "Isoconversion_Temperature")
+            st.dataframe(results.temperature, width='stretch')
             st.download_button(
                 label="Download Temperature Data (CSV)",
-                data=csv_temp,
+                data=self._dataframe_to_csv(results.temperature),
                 file_name="isoconversion_temperature.csv",
                 mime="text/csv",
                 key="download_temp_iso",
             )
 
         with tab2:
-            st.dataframe(time_df, width='stretch')
-            csv_time = self._dataframe_to_csv(time_df, "Isoconversion_Time")
+            st.dataframe(results.time, width='stretch')
             st.download_button(
                 label="Download Time Data (CSV)",
-                data=csv_time,
+                data=self._dataframe_to_csv(results.time),
                 file_name="isoconversion_time.csv",
                 mime="text/csv",
                 key="download_time_iso",
             )
 
         with tab3:
-            st.dataframe(diff_df, width='stretch')
-            csv_diff = self._dataframe_to_csv(diff_df, "Isoconversion_Rate")
+            st.dataframe(results.conversion_rate, width='stretch')
             st.download_button(
                 label="Download Conversion Rate Data (CSV)",
-                data=csv_diff,
+                data=self._dataframe_to_csv(results.conversion_rate),
                 file_name="isoconversion_rate.csv",
                 mime="text/csv",
                 key="download_diff_iso",
             )
 
 
-    def _dataframe_to_csv(self, df: pd.DataFrame, label: str = "") -> str:
-        """
-        Convert DataFrame to CSV string.
-
-        Args:
-            df: DataFrame to convert.
-            label: Optional label for the CSV.
-
-        Returns:
-            CSV string.
-        """
-        csv_string = df.to_csv(index=True)
-        return csv_string
+    def _dataframe_to_csv(self, df: pd.DataFrame) -> str:
+        return df.to_csv(index=True)

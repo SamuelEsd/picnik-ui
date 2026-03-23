@@ -14,7 +14,14 @@ import pandas as pd
 import plotly.graph_objects as go
 
 from src.utils.SessionManager import SessionManager
-from src.config import SESS_BNUM, SESS_ACTIVATION_ENERGY_OBJECT, SESS_ACTIVATION_ENERGY_RESULTS, SESS_COMP_LN_A
+from src.config import (
+    SESS_BNUM,
+    SESS_ACTIVATION_ENERGY_OBJECT,
+    SESS_ACTIVATION_ENERGY_RESULTS,
+    SESS_COMP_RESULTS,
+    SESS_RECON_RESULTS,
+)
+from src.models.results import ReconstructionResults
 
 
 class ReconstructionHandler:
@@ -25,17 +32,16 @@ class ReconstructionHandler:
         if SessionManager.get("run_recon_clicked"):
             activation_energy_object = SessionManager.get(SESS_ACTIVATION_ENERGY_OBJECT)
             ae_results = SessionManager.get(SESS_ACTIVATION_ENERGY_RESULTS)
-            ln_A = SessionManager.get(SESS_COMP_LN_A)
+            comp_results = SessionManager.get(SESS_COMP_RESULTS)
 
-            if activation_energy_object is None or ae_results is None or ln_A is None:
+            if activation_energy_object is None or ae_results is None or comp_results is None:
                 st.error(
                     "Missing data. Ensure activation energy and compensation effect have been computed."
                 )
             else:
                 try:
-                    result = ae_results["result"]
-                    E = np.array(result[2])
-                    A = np.exp(ln_A)
+                    E = ae_results.E
+                    A = np.exp(comp_results.ln_A)
 
                     b_num = SessionManager.get(SESS_BNUM)
                     beta_idx = SessionManager.get("recon_beta_idx", 0)
@@ -51,8 +57,10 @@ class ReconstructionHandler:
                     if len(alpha_plot) > len(g_r):
                         alpha_plot = alpha_plot[: len(g_r)]
 
-                    SessionManager.set("recon_g_r", g_r)
-                    SessionManager.set("recon_alpha_plot", alpha_plot)
+                    SessionManager.set(
+                        SESS_RECON_RESULTS,
+                        ReconstructionResults(g_r=g_r, alpha_plot=alpha_plot),
+                    )
 
                 except AttributeError:
                     st.error(
@@ -65,19 +73,19 @@ class ReconstructionHandler:
             SessionManager.set("run_recon_clicked", False)
 
         # Always display from session if results exist
-        g_r = SessionManager.get("recon_g_r")
-        if g_r is not None:
-            self._display_results(g_r, SessionManager.get("recon_alpha_plot"))
+        recon_results = SessionManager.get(SESS_RECON_RESULTS)
+        if recon_results is not None:
+            self._display_results(recon_results)
 
-    def _display_results(self, g_r, alpha_plot) -> None:
+    def _display_results(self, results: ReconstructionResults) -> None:
         """Display the reconstructed g(alpha) model."""
         st.subheader("Reconstructed Integral Model g(α)")
 
         fig = go.Figure()
         fig.add_trace(
             go.Scatter(
-                x=alpha_plot,
-                y=g_r,
+                x=results.alpha_plot,
+                y=results.g_r,
                 mode="lines+markers",
                 name="g(α) reconstructed",
                 marker=dict(size=4, symbol="star"),
@@ -88,13 +96,13 @@ class ReconstructionHandler:
             title="Numerically Reconstructed Integral Model g(α)",
             xaxis_title="Conversion (α)",
             yaxis_title="g(α)",
-            yaxis_range=[0, min(2.0, float(np.max(g_r)) * 1.2)],
+            yaxis_range=[0, min(2.0, float(np.max(results.g_r)) * 1.2)],
             xaxis_range=[0, 1],
             height=400,
         )
         st.plotly_chart(fig, use_container_width=True)
 
-        df_recon = pd.DataFrame({"alpha": alpha_plot, "g_alpha": g_r})
+        df_recon = pd.DataFrame({"alpha": results.alpha_plot, "g_alpha": results.g_r})
         st.download_button(
             label="Download g(α) Data (CSV)",
             data=df_recon.to_csv(index=False),

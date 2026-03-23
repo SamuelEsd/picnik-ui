@@ -7,6 +7,7 @@ Renders the UI controls for activation energy method selection.
 import streamlit as st
 
 from src.utils.SessionManager import SessionManager
+from src.config import SESS_ISOCONVERSION_RESULT
 
 AE_METHODS = {
     "Fr": "Friedman method",
@@ -25,7 +26,7 @@ class ActivationEnergyControls:
         st.divider()
         st.subheader("Step 7: Activation Energy Analysis")
 
-        if SessionManager.get("isoconversion_results") is None:
+        if SessionManager.get(SESS_ISOCONVERSION_RESULT) is None:
             st.info("Complete Step 6 (Isoconversion) first to enable activation energy analysis.")
             return
 

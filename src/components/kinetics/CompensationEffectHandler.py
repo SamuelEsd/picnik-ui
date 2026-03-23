@@ -13,7 +13,8 @@ import pandas as pd
 import plotly.graph_objects as go
 
 from src.utils.SessionManager import SessionManager
-from src.config import SESS_ACTIVATION_ENERGY_OBJECT, SESS_ACTIVATION_ENERGY_RESULTS, SESS_COMP_LN_A
+from src.config import SESS_ACTIVATION_ENERGY_OBJECT, SESS_ACTIVATION_ENERGY_RESULTS, SESS_COMP_RESULTS
+from src.models.results import CompensationEffectResults
 
 
 class CompensationEffectHandler:
@@ -29,9 +30,8 @@ class CompensationEffectHandler:
                 st.error("Activation energy object or results not available.")
             else:
                 try:
-                    result = ae_results["result"]
-                    E = np.array(result[2])
-                    errorE = np.array(result[3])
+                    E = ae_results.E
+                    errorE = ae_results.error
                     col = SessionManager.get("comp_col", 0)
 
                     with st.spinner(
@@ -49,15 +49,20 @@ class CompensationEffectHandler:
                     else:
                         ln_A, errorlnA, a, errora, b, errorb, Afit, Efit, r_sq, mod = comp_result
                         st.success("Compensation effect computed successfully")
-                        SessionManager.set(SESS_COMP_LN_A, ln_A)
-                        SessionManager.set("comp_errorlnA", errorlnA)
-                        SessionManager.set("comp_a", a)
-                        SessionManager.set("comp_errora", errora)
-                        SessionManager.set("comp_b", b)
-                        SessionManager.set("comp_errorb", errorb)
-                        SessionManager.set("comp_Afit", Afit)
-                        SessionManager.set("comp_Efit", Efit)
-                        SessionManager.set("comp_alpha", result[0])
+                        SessionManager.set(
+                            SESS_COMP_RESULTS,
+                            CompensationEffectResults(
+                                alpha=ae_results.alpha,
+                                ln_A=ln_A,
+                                error_ln_A=errorlnA,
+                                a=a,
+                                error_a=errora,
+                                b=b,
+                                error_b=errorb,
+                                A_fit=Afit,
+                                E_fit=Efit,
+                            ),
+                        )
 
                 except Exception as e:
                     st.error(f"Error during compensation effect calculation: {str(e)}")
@@ -65,56 +70,35 @@ class CompensationEffectHandler:
             SessionManager.set("run_comp_clicked", False)
 
         # Always display from session if results exist
-        ln_A = SessionManager.get(SESS_COMP_LN_A)
-        if ln_A is not None:
-            self._display_results(
-                ln_A,
-                SessionManager.get("comp_errorlnA"),
-                SessionManager.get("comp_a"),
-                SessionManager.get("comp_errora"),
-                SessionManager.get("comp_b"),
-                SessionManager.get("comp_errorb"),
-                SessionManager.get("comp_Afit"),
-                SessionManager.get("comp_Efit"),
-                SessionManager.get("comp_alpha"),
-            )
+        comp_results = SessionManager.get(SESS_COMP_RESULTS)
+        if comp_results is not None:
+            self._display_results(comp_results)
 
-    def _display_results(
-        self,
-        ln_A,
-        errorlnA,
-        a,
-        errora,
-        b,
-        errorb,
-        Afit,
-        Efit,
-        alpha,
-    ) -> None:
+    def _display_results(self, results: CompensationEffectResults) -> None:
         """Display compensation effect results."""
         st.subheader("Compensation Effect Results")
 
         col1, col2, col3 = st.columns(3)
         with col1:
-            st.metric("Slope a", f"{a:.5f}", delta=f"±{errora:.5f} (stderr)")
+            st.metric("Slope a", f"{results.a:.5f}", delta=f"±{results.error_a:.5f} (stderr)")
         with col2:
-            st.metric("Intercept b", f"{b:.4f}", delta=f"±{errorb:.4f} (stderr)")
+            st.metric("Intercept b", f"{results.b:.4f}", delta=f"±{results.error_b:.4f} (stderr)")
         with col3:
-            st.metric("Accepted models", f"{len(Afit)}")
+            st.metric("Accepted models", f"{len(results.A_fit)}")
 
         st.markdown(
-            f"**Compensation effect equation:** `ln(A) = {a:.4f} · E + {b:.4f}`"
+            f"**Compensation effect equation:** `ln(A) = {results.a:.4f} · E + {results.b:.4f}`"
         )
 
         # Plot 1: ln(A) vs alpha
         fig1 = go.Figure()
         fig1.add_trace(
             go.Scatter(
-                x=alpha,
-                y=ln_A,
+                x=results.alpha,
+                y=results.ln_A,
                 mode="lines+markers",
                 name="ln(A)",
-                error_y=dict(type="data", array=errorlnA, visible=True),
+                error_y=dict(type="data", array=results.error_ln_A, visible=True),
                 marker=dict(size=5),
             )
         )
@@ -127,15 +111,15 @@ class CompensationEffectHandler:
         st.plotly_chart(fig1, use_container_width=True)
 
         # Plot 2: compensation effect scatter — ln(A) vs E
-        if len(Efit) > 1:
-            E_line = np.linspace(min(Efit) * 0.8, max(Efit) * 1.2, 100)
-            lnA_line = a * E_line + b
+        if len(results.E_fit) > 1:
+            E_line = np.linspace(min(results.E_fit) * 0.8, max(results.E_fit) * 1.2, 100)
+            lnA_line = results.a * E_line + results.b
 
             fig2 = go.Figure()
             fig2.add_trace(
                 go.Scatter(
-                    x=Efit,
-                    y=np.log(Afit),
+                    x=results.E_fit,
+                    y=np.log(results.A_fit),
                     mode="markers",
                     name="Model fits (Eᵢ, ln Aᵢ)",
                     marker=dict(size=9, symbol="circle"),
@@ -146,7 +130,7 @@ class CompensationEffectHandler:
                     x=E_line,
                     y=lnA_line,
                     mode="lines",
-                    name=f"ln(A) = {a:.3f}·E + {b:.3f}",
+                    name=f"ln(A) = {results.a:.3f}·E + {results.b:.3f}",
                     line=dict(dash="dash", width=2),
                 )
             )
@@ -158,10 +142,11 @@ class CompensationEffectHandler:
             )
             st.plotly_chart(fig2, use_container_width=True)
 
-        # Download
-        df_out = pd.DataFrame(
-            {"alpha": alpha, "ln_A": ln_A, "error_ln_A": errorlnA}
-        )
+        df_out = pd.DataFrame({
+            "alpha": results.alpha,
+            "ln_A": results.ln_A,
+            "error_ln_A": results.error_ln_A,
+        })
         st.download_button(
             label="Download ln(A) Data (CSV)",
             data=df_out.to_csv(index=False),

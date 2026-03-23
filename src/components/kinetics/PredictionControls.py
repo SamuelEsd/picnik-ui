@@ -7,7 +7,7 @@ Renders the UI controls for model-free and model-based kinetic predictions.
 import streamlit as st
 
 from src.utils.SessionManager import SessionManager
-from src.config import SESS_BNUM, SESS_ACTIVATION_ENERGY_RESULTS, SESS_COMP_LN_A
+from src.config import SESS_BNUM, SESS_ACTIVATION_ENERGY_RESULTS, SESS_COMP_RESULTS, SESS_RECON_RESULTS
 
 
 class PredictionControls:
@@ -110,10 +110,7 @@ class PredictionControls:
 
     def _render_modelbased_controls(self) -> None:
         """Controls for model-based isothermal prediction."""
-        g_r = SessionManager.get("recon_g_r")
-        ln_A = SessionManager.get(SESS_COMP_LN_A)
-
-        if g_r is None or ln_A is None:
+        if SessionManager.get(SESS_COMP_RESULTS) is None or SessionManager.get(SESS_RECON_RESULTS) is None:
             st.info(
                 "Complete Steps 8 (Compensation Effect) and 9 (Reconstruction) "
                 "to enable model-based predictions."

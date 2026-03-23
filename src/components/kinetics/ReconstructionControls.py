@@ -7,7 +7,7 @@ Renders the UI controls for g(alpha) reaction model reconstruction.
 import streamlit as st
 
 from src.utils.SessionManager import SessionManager
-from src.config import SESS_BNUM, SESS_COMP_LN_A
+from src.config import SESS_BNUM, SESS_COMP_RESULTS
 
 
 class ReconstructionControls:
@@ -18,8 +18,7 @@ class ReconstructionControls:
         st.divider()
         st.subheader("Step 9: Reaction Model Reconstruction — g(α)")
 
-        ln_A = SessionManager.get(SESS_COMP_LN_A)
-        if ln_A is None:
+        if SessionManager.get(SESS_COMP_RESULTS) is None:
             st.info("Complete Step 8 (Compensation Effect) first to enable reconstruction.")
             return
 
