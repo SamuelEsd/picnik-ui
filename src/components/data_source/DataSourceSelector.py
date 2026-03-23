@@ -34,7 +34,8 @@ class DataSourceSelector:
         Returns:
             List of selected file paths or None if no selection made.
         """
-        st.subheader("Data Source Selection")
+        st.divider()
+        st.subheader("Step 1: Data Source Selection")
 
         choice = st.radio(
             "Data source:",

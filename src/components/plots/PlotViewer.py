@@ -22,7 +22,8 @@ class PlotViewer:
             st.info("Extract data first to display plots.")
             return
 
-        st.header("Interactive Plots")
+        st.divider()
+        st.subheader("Step 4: Interactive Plots")
 
         plot_manager = PlotManager(data_extractor)
         plot_tabs = plot_manager.generate_plot_tabs()

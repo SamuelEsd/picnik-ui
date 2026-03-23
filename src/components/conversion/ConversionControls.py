@@ -7,7 +7,7 @@ Displays buttons for conversion analysis workflow.
 import streamlit as st
 
 from src.utils.SessionManager import SessionManager
-from src.config import SESS_CONVERSION_RANGES
+from src.config import SESS_CONVERSION_RANGES, SESS_DATA_EXTRACTOR
 
 
 class ConversionControls:
@@ -16,7 +16,11 @@ class ConversionControls:
     def render(self) -> None:
         """Display buttons for conversion analysis workflow."""
         st.divider()
-        st.subheader("Conversion Analysis")
+        st.subheader("Step 5: Conversion Analysis")
+
+        if SessionManager.get(SESS_DATA_EXTRACTOR) is None:
+            st.info("Complete Step 3 (Data Extraction) first to enable conversion analysis.")
+            return
 
         col1, col2 = st.columns(2)
 

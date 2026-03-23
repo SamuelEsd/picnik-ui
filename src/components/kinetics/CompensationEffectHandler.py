@@ -13,111 +13,71 @@ import pandas as pd
 import plotly.graph_objects as go
 
 from src.utils.SessionManager import SessionManager
-from src.config import SESS_BNUM, SESS_ACTIVATION_ENERGY_OBJECT, SESS_ACTIVATION_ENERGY_RESULTS, SESS_COMP_LN_A
+from src.config import SESS_ACTIVATION_ENERGY_OBJECT, SESS_ACTIVATION_ENERGY_RESULTS, SESS_COMP_LN_A
 
 
 class CompensationEffectHandler:
     """Handles the computation of the pre-exponential factor via the compensation effect."""
 
-    def render_compensation_controls(self) -> None:
-        """Display controls for compensation effect calculation."""
-        st.divider()
-        st.subheader("Step 7: Pre-exponential Factor — Compensation Effect")
-
-        ae_results = SessionManager.get(SESS_ACTIVATION_ENERGY_RESULTS)
-        if ae_results is None:
-            st.info("Complete Step 6 (Activation Energy) first to enable this step.")
-            return
-
-        b_num = SessionManager.get(SESS_BNUM)
-        if b_num is None:
-            st.info("Heating rate data not available.")
-            return
-
-        col1, col2 = st.columns([3, 1])
-
-        with col1:
-            beta_options = {
-                i: f"β = {b:.2f} K/min (column {i})"
-                for i, b in enumerate(b_num)
-            }
-            selected_col = st.selectbox(
-                "Reference heating rate for model fitting",
-                options=list(beta_options.keys()),
-                format_func=lambda x: beta_options[x],
-                help=(
-                    "The compensation effect fits reaction models to data at this heating rate. "
-                    "The last (highest) heating rate often gives the best signal."
-                ),
-                key="comp_col_selector",
-            )
-            SessionManager.set("comp_col", selected_col)
-
-        with col2:
-            st.write("")
-            st.write("")
-            if st.button(
-                "Calculate Compensation Effect",
-                type="primary",
-                key="comp_calc_btn",
-            ):
-                SessionManager.set("run_comp_clicked", True)
-
     def handle_compensation_effect(self) -> None:
         """Execute compensation effect calculation and display results."""
-        if not SessionManager.get("run_comp_clicked"):
-            return
+        if SessionManager.get("run_comp_clicked"):
+            activation_energy_object = SessionManager.get(SESS_ACTIVATION_ENERGY_OBJECT)
+            ae_results = SessionManager.get(SESS_ACTIVATION_ENERGY_RESULTS)
 
-        activation_energy_object = SessionManager.get(SESS_ACTIVATION_ENERGY_OBJECT)
-        ae_results = SessionManager.get(SESS_ACTIVATION_ENERGY_RESULTS)
+            if activation_energy_object is None or ae_results is None:
+                st.error("Activation energy object or results not available.")
+            else:
+                try:
+                    result = ae_results["result"]
+                    E = np.array(result[2])
+                    errorE = np.array(result[3])
+                    col = SessionManager.get("comp_col", 0)
 
-        if activation_energy_object is None or ae_results is None:
-            st.error("Activation energy object or results not available.")
-            return
+                    with st.spinner(
+                        "Computing compensation effect — fitting reaction models to data..."
+                    ):
+                        comp_result = activation_energy_object.compensation_effect(
+                            col=col, E=E, errorE=errorE
+                        )
 
-        try:
-            result = ae_results["result"]
-            # All methods return (alpha, T_avg, E, error, ...) as a tuple
-            E = np.array(result[2])
-            errorE = np.array(result[3])
-            col = SessionManager.get("comp_col", 0)
+                    if comp_result is None:
+                        st.error(
+                            "Compensation effect could not be computed. "
+                            "Try a different reference heating rate column or a different activation energy method."
+                        )
+                    else:
+                        ln_A, errorlnA, a, errora, b, errorb, Afit, Efit, r_sq, mod = comp_result
+                        st.success("Compensation effect computed successfully")
+                        SessionManager.set(SESS_COMP_LN_A, ln_A)
+                        SessionManager.set("comp_errorlnA", errorlnA)
+                        SessionManager.set("comp_a", a)
+                        SessionManager.set("comp_errora", errora)
+                        SessionManager.set("comp_b", b)
+                        SessionManager.set("comp_errorb", errorb)
+                        SessionManager.set("comp_Afit", Afit)
+                        SessionManager.set("comp_Efit", Efit)
+                        SessionManager.set("comp_alpha", result[0])
 
-            with st.spinner(
-                "Computing compensation effect — fitting reaction models to data..."
-            ):
-                comp_result = activation_energy_object.compensation_effect(
-                    col=col, E=E, errorE=errorE
-                )
+                except Exception as e:
+                    st.error(f"Error during compensation effect calculation: {str(e)}")
 
-            if comp_result is None:
-                st.error(
-                    "Compensation effect could not be computed. "
-                    "Try a different reference heating rate column or a different activation energy method."
-                )
-                SessionManager.set("run_comp_clicked", False)
-                return
+            SessionManager.set("run_comp_clicked", False)
 
-            ln_A, errorlnA, a, errora, b, errorb, Afit, Efit, r_sq, mod = comp_result
-
-            st.success("Compensation effect computed successfully")
-
-            # Store results in session for downstream use (reconstruction, predictions)
-            SessionManager.set(SESS_COMP_LN_A, ln_A)
-            SessionManager.set("comp_errorlnA", errorlnA)
-            SessionManager.set("comp_a", a)
-            SessionManager.set("comp_b", b)
-            SessionManager.set("comp_Afit", Afit)
-            SessionManager.set("comp_Efit", Efit)
-            SessionManager.set("comp_alpha", result[0])  # alpha values
-
+        # Always display from session if results exist
+        ln_A = SessionManager.get(SESS_COMP_LN_A)
+        if ln_A is not None:
             self._display_results(
-                ln_A, errorlnA, a, errora, b, errorb, Afit, Efit, result[0]
+                ln_A,
+                SessionManager.get("comp_errorlnA"),
+                SessionManager.get("comp_a"),
+                SessionManager.get("comp_errora"),
+                SessionManager.get("comp_b"),
+                SessionManager.get("comp_errorb"),
+                SessionManager.get("comp_Afit"),
+                SessionManager.get("comp_Efit"),
+                SessionManager.get("comp_alpha"),
             )
-            SessionManager.set("run_comp_clicked", False)
-
-        except Exception as e:
-            st.error(f"Error during compensation effect calculation: {str(e)}")
-            SessionManager.set("run_comp_clicked", False)
 
     def _display_results(
         self,

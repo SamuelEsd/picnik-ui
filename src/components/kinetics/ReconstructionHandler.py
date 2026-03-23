@@ -20,99 +20,58 @@ from src.config import SESS_BNUM, SESS_ACTIVATION_ENERGY_OBJECT, SESS_ACTIVATION
 class ReconstructionHandler:
     """Handles the numerical reconstruction of the integral reaction model g(alpha)."""
 
-    def render_reconstruction_controls(self) -> None:
-        """Display controls for g(alpha) reconstruction."""
-        st.divider()
-        st.subheader("Step 8: Reaction Model Reconstruction — g(α)")
-
-        ln_A = SessionManager.get(SESS_COMP_LN_A)
-        if ln_A is None:
-            st.info("Complete Step 7 (Compensation Effect) first to enable reconstruction.")
-            return
-
-        b_num = SessionManager.get(SESS_BNUM)
-        if b_num is None:
-            return
-
-        col1, col2 = st.columns([3, 1])
-
-        with col1:
-            beta_options = {i: f"β = {b:.2f} K/min" for i, b in enumerate(b_num)}
-            selected_beta_idx = st.selectbox(
-                "Heating rate for temperature integration",
-                options=list(beta_options.keys()),
-                format_func=lambda x: beta_options[x],
-                help=(
-                    "The reconstruction integrates exp(-E/RT(t))dt along the temperature "
-                    "profile of the selected experiment. Using the first (lowest) heating rate "
-                    "is common."
-                ),
-                key="recon_beta_selector",
-            )
-            SessionManager.set("recon_beta_idx", selected_beta_idx)
-
-        with col2:
-            st.write("")
-            st.write("")
-            if st.button("Reconstruct g(α)", type="primary", key="recon_calc_btn"):
-                SessionManager.set("run_recon_clicked", True)
-
     def handle_reconstruction(self) -> None:
         """Execute model reconstruction and display results."""
-        if not SessionManager.get("run_recon_clicked"):
-            return
+        if SessionManager.get("run_recon_clicked"):
+            activation_energy_object = SessionManager.get(SESS_ACTIVATION_ENERGY_OBJECT)
+            ae_results = SessionManager.get(SESS_ACTIVATION_ENERGY_RESULTS)
+            ln_A = SessionManager.get(SESS_COMP_LN_A)
 
-        activation_energy_object = SessionManager.get(SESS_ACTIVATION_ENERGY_OBJECT)
-        ae_results = SessionManager.get(SESS_ACTIVATION_ENERGY_RESULTS)
-        ln_A = SessionManager.get(SESS_COMP_LN_A)
+            if activation_energy_object is None or ae_results is None or ln_A is None:
+                st.error(
+                    "Missing data. Ensure activation energy and compensation effect have been computed."
+                )
+            else:
+                try:
+                    result = ae_results["result"]
+                    E = np.array(result[2])
+                    A = np.exp(ln_A)
 
-        if activation_energy_object is None or ae_results is None or ln_A is None:
-            st.error(
-                "Missing data. Ensure activation energy and compensation effect have been computed."
-            )
-            return
+                    b_num = SessionManager.get(SESS_BNUM)
+                    beta_idx = SessionManager.get("recon_beta_idx", 0)
+                    B = float(b_num[beta_idx])
 
-        try:
-            result = ae_results["result"]
-            E = np.array(result[2])
-            # reconstruction() takes A (not ln_A), so we exponentiate
-            A = np.exp(ln_A)
+                    with st.spinner("Reconstructing g(α)..."):
+                        g_r = activation_energy_object.reconstruction(E, A, B)
 
-            b_num = SessionManager.get(SESS_BNUM)
-            beta_idx = SessionManager.get("recon_beta_idx", 0)
-            B = float(b_num[beta_idx])
+                    st.success("Reaction model g(α) reconstructed successfully")
 
-            with st.spinner("Reconstructing g(α)..."):
-                g_r = activation_energy_object.reconstruction(E, A, B)
+                    alpha_full = activation_energy_object.timeAdvIsoDF.index.values
+                    alpha_plot = alpha_full[1: len(g_r) + 1]
+                    if len(alpha_plot) > len(g_r):
+                        alpha_plot = alpha_plot[: len(g_r)]
 
-            st.success("Reaction model g(α) reconstructed successfully")
+                    SessionManager.set("recon_g_r", g_r)
+                    SessionManager.set("recon_alpha_plot", alpha_plot)
 
-            # Store for downstream predictions
-            SessionManager.set("recon_g_r", g_r)
+                except AttributeError:
+                    st.error(
+                        "Reconstruction requires accepted_models from the compensation effect step. "
+                        "Please re-run Step 8 before this step."
+                    )
+                except Exception as e:
+                    st.error(f"Error during reconstruction: {str(e)}")
 
-            self._display_results(g_r, activation_energy_object)
             SessionManager.set("run_recon_clicked", False)
 
-        except AttributeError:
-            st.error(
-                "Reconstruction requires accepted_models from the compensation effect step. "
-                "Please re-run Step 7 before this step."
-            )
-            SessionManager.set("run_recon_clicked", False)
-        except Exception as e:
-            st.error(f"Error during reconstruction: {str(e)}")
-            SessionManager.set("run_recon_clicked", False)
+        # Always display from session if results exist
+        g_r = SessionManager.get("recon_g_r")
+        if g_r is not None:
+            self._display_results(g_r, SessionManager.get("recon_alpha_plot"))
 
-    def _display_results(self, g_r, activation_energy_object) -> None:
+    def _display_results(self, g_r, alpha_plot) -> None:
         """Display the reconstructed g(alpha) model."""
         st.subheader("Reconstructed Integral Model g(α)")
-
-        # Align alpha values with g_r (reconstruction returns len(E)-1 points)
-        alpha_full = activation_energy_object.timeAdvIsoDF.index.values
-        # g_r has one fewer element than E (due to summation from i=0 to len(E)-2)
-        alpha_plot = alpha_full[1 : len(g_r) + 1]
-        if len(alpha_plot) > len(g_r):
-            alpha_plot = alpha_plot[: len(g_r)]
 
         fig = go.Figure()
         fig.add_trace(

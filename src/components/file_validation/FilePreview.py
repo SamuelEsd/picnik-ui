@@ -26,7 +26,8 @@ class FilePreview:
             st.warning("No valid files to display.")
             return
 
-        st.header("Files Preview")
+        st.divider()
+        st.subheader("Step 2: File Validation & Preview")
 
         # Create tabs for each valid file
         tab_names = [

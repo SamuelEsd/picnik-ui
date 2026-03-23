@@ -22,10 +22,10 @@ from src.components.conversion import (
     IsoconversionHandler,
 )
 from src.components.kinetics import (
-    ActivationEnergyHandler,
-    CompensationEffectHandler,
-    ReconstructionHandler,
-    PredictionHandler,
+    ActivationEnergyControls, ActivationEnergyHandler,
+    CompensationEffectControls, CompensationEffectHandler,
+    ReconstructionControls, ReconstructionHandler,
+    PredictionControls, PredictionHandler,
 )
 
 
@@ -44,7 +44,7 @@ def main():
     )
 
     # ------------------------------------------------------------------ #
-    # STEP 1-2: Data Input                                                 #
+    # STEP 1: Data Source Selection  /  STEP 2: File Validation & Preview  #
     # ------------------------------------------------------------------ #
 
     # Component 1: Data Source Selection
@@ -69,7 +69,7 @@ def main():
     file_preview.render(valid_files, file_paths)
 
     # ------------------------------------------------------------------ #
-    # STEP 2: Data Extraction                                              #
+    # STEP 3: Data Extraction  /  STEP 4: Interactive Plots               #
     # ------------------------------------------------------------------ #
 
     # Component 5: Extraction Controls and Handler
@@ -77,15 +77,14 @@ def main():
     extraction_controls.render()
 
     extraction_handler = ExtractionHandler()
-    if not extraction_handler.handle_extraction():
-        return
+    extraction_handler.handle_extraction()
 
     # Component 6: Plot Viewer
     plot_viewer = PlotViewer()
     plot_viewer.render()
 
     # ------------------------------------------------------------------ #
-    # STEP 3-4: Conversion & Isoconversion                                 #
+    # STEP 5: Conversion  /  STEP 6: Isoconversion                        #
     # ------------------------------------------------------------------ #
 
     # Component 7: Conversion Controls and Handler
@@ -101,37 +100,34 @@ def main():
     isoconversion_handler.handle_isoconversion()
 
     # ------------------------------------------------------------------ #
-    # STEP 5: Activation Energy                                            #
+    # STEP 7: Activation Energy                                            #
     # ------------------------------------------------------------------ #
 
-    activation_energy_handler = ActivationEnergyHandler()
-    if activation_energy_handler.setup():
-        activation_energy_handler.render_activation_energy_controls()
-        activation_energy_handler.handle_activation_energy()
+    ActivationEnergyControls().render()
+    ae_handler = ActivationEnergyHandler()
+    if ae_handler.setup():
+        ae_handler.handle_activation_energy()
 
     # ------------------------------------------------------------------ #
-    # STEP 6: Compensation Effect (Pre-exponential Factor)                 #
+    # STEP 8: Compensation Effect (Pre-exponential Factor)                 #
     # ------------------------------------------------------------------ #
 
-    comp_handler = CompensationEffectHandler()
-    comp_handler.render_compensation_controls()
-    comp_handler.handle_compensation_effect()
+    CompensationEffectControls().render()
+    CompensationEffectHandler().handle_compensation_effect()
 
     # ------------------------------------------------------------------ #
-    # STEP 7: Reaction Model Reconstruction — g(alpha)                    #
+    # STEP 9: Reaction Model Reconstruction — g(alpha)                    #
     # ------------------------------------------------------------------ #
 
-    recon_handler = ReconstructionHandler()
-    recon_handler.render_reconstruction_controls()
-    recon_handler.handle_reconstruction()
+    ReconstructionControls().render()
+    ReconstructionHandler().handle_reconstruction()
 
     # ------------------------------------------------------------------ #
-    # STEP 8: Kinetic Predictions                                          #
+    # STEP 10: Kinetic Predictions                                         #
     # ------------------------------------------------------------------ #
 
-    pred_handler = PredictionHandler()
-    pred_handler.render_prediction_controls()
-    pred_handler.handle_predictions()
+    PredictionControls().render()
+    PredictionHandler().handle_predictions()
 
 
 if __name__ == "__main__":

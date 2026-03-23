@@ -17,41 +17,51 @@ class IsoconversionHandler:
 
     def handle_isoconversion(self) -> None:
         """Execute isoconversion analysis and display results."""
-        if not SessionManager.get("run_isoconversion_clicked"):
-            return
+        if SessionManager.get("run_isoconversion_clicked"):
+            data_extractor = SessionManager.get(SESS_DATA_EXTRACTOR)
 
-        data_extractor = SessionManager.get(SESS_DATA_EXTRACTOR)
+            if data_extractor is None:
+                st.error("No extracted data available for isoconversion.")
+            else:
+                try:
+                    d_a = SessionManager.get("isoconversion_d_a", DEFAULT_ISO_DA)
 
-        if data_extractor is None:
-            st.error("No extracted data available for isoconversion.")
-            return
+                    with st.spinner("Running isoconversion analysis..."):
+                        temp_df, time_df, diff_df = self._run_isoconversion(data_extractor, d_a)
 
-        try:
-            # Get d_a parameter from session or use default
-            d_a = SessionManager.get("isoconversion_d_a", DEFAULT_ISO_DA)
+                    if temp_df is None:
+                        st.error("Isoconversion calculation failed.")
+                    else:
+                        st.success("Isoconversion analysis completed")
+                        SessionManager.set("isoconversion_results", [temp_df, time_df, diff_df])
+                        SessionManager.set("isoconversion_results_dict", {
+                            "temperature": temp_df,
+                            "time": time_df,
+                            "conversion_rate": diff_df,
+                        })
 
-            with st.spinner("Running isoconversion analysis..."):
-                temp_df, time_df, diff_df = self._run_isoconversion(data_extractor, d_a)
+                except Exception as e:
+                    st.error(f"Error during isoconversion analysis: {str(e)}")
 
-            if temp_df is None:
-                st.error("Isoconversion calculation failed.")
-                return
-
-            st.success("Isoconversion analysis completed")
-
-            # Display results
-            self._display_isoconversion_results(temp_df, time_df, diff_df)
-
-            # Clear the button state
             SessionManager.set("run_isoconversion_clicked", False)
 
-        except Exception as e:
-            st.error(f"Error during isoconversion analysis: {str(e)}")
+        # Always display from session if results exist
+        results_dict = SessionManager.get("isoconversion_results_dict")
+        if results_dict is not None:
+            self._display_isoconversion_results(
+                results_dict["temperature"],
+                results_dict["time"],
+                results_dict["conversion_rate"],
+            )
 
     def render_isoconversion_controls(self) -> None:
         """Display isoconversion parameter controls."""
         st.divider()
-        st.subheader("Isoconversion Analysis")
+        st.subheader("Step 6: Isoconversion Analysis")
+
+        if SessionManager.get("conversion_metadata") is None:
+            st.info("Complete Step 5 (Conversion) first to enable isoconversion analysis.")
+            return
 
         col1, col2 = st.columns([3, 1])
 
@@ -144,13 +154,6 @@ class IsoconversionHandler:
                 key="download_diff_iso",
             )
 
-        # Store results in session for later use
-        SessionManager.set("isoconversion_results", [temp_df, time_df, diff_df])
-        SessionManager.set("isoconversion_results_dict", {
-            "temperature": temp_df,
-            "time": time_df,
-            "conversion_rate": diff_df
-        })
 
     def _dataframe_to_csv(self, df: pd.DataFrame, label: str = "") -> str:
         """

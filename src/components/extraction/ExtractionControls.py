@@ -15,7 +15,7 @@ class ExtractionControls:
     def render(self) -> None:
         """Display Reset and Extract Data buttons."""
         st.divider()
-        st.subheader("Data Extraction")
+        st.subheader("Step 3: Data Extraction")
 
         col1, col2 = st.columns(2)
 
