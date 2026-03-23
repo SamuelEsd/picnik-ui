@@ -10,7 +10,7 @@ import streamlit as st
 import pandas as pd
 
 from src.utils.SessionManager import SessionManager
-from src.config import SESS_ACTIVATION_ENERGY_OBJECT, SESS_ACTIVATION_ENERGY_RESULTS
+from src.config import SESS_BNUM, SESS_DATA_EXTRACTOR, SESS_ACTIVATION_ENERGY_OBJECT, SESS_ACTIVATION_ENERGY_RESULTS
 from picnick_dev import ActivationEnergy
 
 
@@ -25,6 +25,34 @@ class ActivationEnergyHandler:
         "Vy": "Vyazovkin method",
         "aVy": "Advanced Vyazovkin method",
     }
+
+    def setup(self) -> bool:
+        """
+        Build and store the ActivationEnergy object from session prerequisites.
+
+        Returns True if the object was created successfully, False otherwise.
+        Silently returns False when isoconversion has not been run yet.
+        """
+        data_extractor = SessionManager.get(SESS_DATA_EXTRACTOR)
+        isoconversion_results = SessionManager.get("isoconversion_results")
+
+        if data_extractor is None or isoconversion_results is None:
+            return False
+
+        b_num = SessionManager.get(SESS_BNUM)
+        t0_num = SessionManager.get("T0num")
+
+        try:
+            ae_object = ActivationEnergy(
+                Beta=b_num,
+                T0=t0_num,
+                IsoTables=isoconversion_results,
+            )
+            SessionManager.set(SESS_ACTIVATION_ENERGY_OBJECT, ae_object)
+            return True
+        except Exception as e:
+            st.error(f"Error creating Activation Energy object: {str(e)}")
+            return False
 
     def render_activation_energy_controls(self) -> None:
         """Display activation energy method selection controls."""

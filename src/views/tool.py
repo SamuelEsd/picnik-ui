@@ -27,9 +27,6 @@ from src.components.kinetics import (
     ReconstructionHandler,
     PredictionHandler,
 )
-from src.utils.SessionManager import SessionManager
-from src.config import SESS_BNUM, SESS_DATA_EXTRACTOR, SESS_ACTIVATION_ENERGY_OBJECT
-from picnick_dev import ActivationEnergy
 
 
 def main():
@@ -107,28 +104,10 @@ def main():
     # STEP 5: Activation Energy                                            #
     # ------------------------------------------------------------------ #
 
-    data_extractor = SessionManager.get(SESS_DATA_EXTRACTOR)
-    b_num = SessionManager.get(SESS_BNUM)
-    t0_num = SessionManager.get("T0num")
-    isoconversion_results = SessionManager.get("isoconversion_results")
-
-    if data_extractor is not None and isoconversion_results is not None:
-        try:
-            activation_energy_object = ActivationEnergy(
-                Beta=b_num,
-                T0=t0_num,
-                IsoTables=isoconversion_results,
-            )
-            SessionManager.set(SESS_ACTIVATION_ENERGY_OBJECT, activation_energy_object)
-
-            # Component 9: Activation Energy Controls and Handler
-            activation_energy_handler = ActivationEnergyHandler()
-            activation_energy_handler.render_activation_energy_controls()
-            activation_energy_handler.handle_activation_energy()
-
-        except Exception as e:
-            st.error(f"Error creating Activation Energy object: {str(e)}")
-            return
+    activation_energy_handler = ActivationEnergyHandler()
+    if activation_energy_handler.setup():
+        activation_energy_handler.render_activation_energy_controls()
+        activation_energy_handler.handle_activation_energy()
 
     # ------------------------------------------------------------------ #
     # STEP 6: Compensation Effect (Pre-exponential Factor)                 #
