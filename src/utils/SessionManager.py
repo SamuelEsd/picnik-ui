@@ -3,8 +3,8 @@ Session state management utilities.
 """
 
 import streamlit as st
-from typing import Any, Dict
-from src.config import SESSION_KEYS
+from typing import Any
+from src.config import SESS_FILE_PATHS
 
 
 class SessionManager:
@@ -12,42 +12,16 @@ class SessionManager:
 
     @staticmethod
     def get(key: str, default: Any = None) -> Any:
-        """
-        Get a value from session state.
-        
-        Args:
-            key (str): The session key name or SESSION_KEYS reference.
-            default (Any): Default value if key not found.
-            
-        Returns:
-            Any: The value from session state or default.
-        """
-        session_key = SESSION_KEYS.get(key, key)
-        return st.session_state.get(session_key, default)
+        return st.session_state.get(key, default)
 
     @staticmethod
     def set(key: str, value: Any) -> None:
-        """
-        Set a value in session state.
-        
-        Args:
-            key (str): The session key name or SESSION_KEYS reference.
-            value (Any): The value to store.
-        """
-        session_key = SESSION_KEYS.get(key, key)
-        st.session_state[session_key] = value
+        st.session_state[key] = value
 
     @staticmethod
     def delete(key: str) -> None:
-        """
-        Delete a key from session state if it exists.
-        
-        Args:
-            key (str): The session key name or SESSION_KEYS reference.
-        """
-        session_key = SESSION_KEYS.get(key, key)
-        if session_key in st.session_state:
-            del st.session_state[session_key]
+        if key in st.session_state:
+            del st.session_state[key]
 
     @staticmethod
     def delete_multiple(keys: list) -> None:
@@ -65,7 +39,7 @@ class SessionManager:
         """Clear all extraction-related session state."""
         keys_to_clear = [
             'data_extractor', 'Bnum', 'T0num', 'conversion_ready',
-            'last_conversion_figure', 'file_paths', 'extract_data_clicked',
+            'last_conversion_figure', SESS_FILE_PATHS, 'extract_data_clicked',
             'conversion_ranges', 'plotly_plotters'
         ]
         SessionManager.delete_multiple(keys_to_clear)
@@ -78,7 +52,7 @@ class SessionManager:
     @staticmethod
     def get_file_paths() -> list:
         """Get current file paths from session state."""
-        return SessionManager.get('file_paths', [])
+        return SessionManager.get(SESS_FILE_PATHS, [])
 
     @staticmethod
     def set_file_paths(paths: list, source: str = 'default', folder: str = '') -> None:
@@ -90,7 +64,7 @@ class SessionManager:
             source (str): Source of files ('default' or 'upload').
             folder (str): Folder path if from default files.
         """
-        SessionManager.set('file_paths', paths)
+        SessionManager.set(SESS_FILE_PATHS, paths)
         SessionManager.set('file_paths_source', source)
         if folder:
             SessionManager.set('file_paths_folder', folder)

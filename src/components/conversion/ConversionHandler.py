@@ -11,6 +11,7 @@ import streamlit as st
 from src.core.ConversionManager import ConversionManager
 from src.utils.SessionManager import SessionManager
 from src.ui.PlotlyPlotter import PlotlyPlotter as PP
+from src.config import SESS_BNUM, SESS_DATA_EXTRACTOR, SESS_CONVERSION_RANGES
 
 
 class ConversionHandler:
@@ -21,8 +22,8 @@ class ConversionHandler:
         if not SessionManager.get("run_conversion_clicked"):
             return
 
-        data_extractor = SessionManager.get("data_extractor")
-        Bnum = SessionManager.get("Bnum")
+        data_extractor = SessionManager.get(SESS_DATA_EXTRACTOR)
+        Bnum = SessionManager.get(SESS_BNUM)
 
         if data_extractor is None or Bnum is None:
             st.error("No extracted data available for conversion.")
@@ -34,7 +35,7 @@ class ConversionHandler:
             conversion_manager = ConversionManager(data_extractor)
 
             # Get temperature ranges
-            ranges = SessionManager.get("conversion_ranges")
+            ranges = SessionManager.get(SESS_CONVERSION_RANGES)
             Ti_list, Tf_list = self._prepare_temperature_ranges(
                 ranges, Bnum, data_extractor
             )
@@ -120,7 +121,7 @@ class ConversionHandler:
             )
 
             # Apply saved ranges from session if available
-            saved_ranges = SessionManager.get("conversion_ranges", {})
+            saved_ranges = SessionManager.get(SESS_CONVERSION_RANGES, {})
             if saved_ranges:
                 for trace_idx, (x_min, x_max) in saved_ranges.items():
                     if x_min is not None or x_max is not None:
@@ -146,5 +147,5 @@ class ConversionHandler:
         SessionManager.set("conversion_metadata", {
             "Ti_list": Ti_list,
             "Tf_list": Tf_list,
-            "Bnum": Bnum,
+            SESS_BNUM: Bnum,
         })

@@ -9,6 +9,7 @@ import streamlit as st
 from src.utils.SessionManager import SessionManager
 from src.ui.PlotManager import PlotManager
 from src.ui.PlotlyPlotter import PlotlyPlotter as PP
+from src.config import SESS_DATA_EXTRACTOR, SESS_CONVERSION_RANGES
 
 
 class PlotViewer:
@@ -16,7 +17,7 @@ class PlotViewer:
 
     def render(self) -> None:
         """Display all available plot combinations with interactive controls."""
-        data_extractor = SessionManager.get("data_extractor")
+        data_extractor = SessionManager.get(SESS_DATA_EXTRACTOR)
         if data_extractor is None:
             st.info("Extract data first to display plots.")
             return
@@ -52,7 +53,7 @@ class PlotViewer:
                 return
 
             # Apply saved ranges from session if available
-            saved_ranges = SessionManager.get("conversion_ranges", {})
+            saved_ranges = SessionManager.get(SESS_CONVERSION_RANGES, {})
             if saved_ranges:
                 for trace_idx, (x_min, x_max) in saved_ranges.items():
                     if x_min is not None or x_max is not None:
@@ -75,7 +76,7 @@ class PlotViewer:
             if idx == 0:
                 plot_manager.display_plot_range_controls(idx, plotter, placeholder)
                 plotter_current_ranges = plotter.get_current_ranges()
-                SessionManager.set("conversion_ranges", plotter_current_ranges)
+                SessionManager.set(SESS_CONVERSION_RANGES, plotter_current_ranges)
 
         except KeyError as e:
             st.error(f"Invalid plot combination: {str(e)}")

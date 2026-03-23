@@ -21,6 +21,7 @@ import pandas as pd
 import plotly.graph_objects as go
 
 from src.utils.SessionManager import SessionManager
+from src.config import SESS_BNUM, SESS_ACTIVATION_ENERGY_OBJECT, SESS_ACTIVATION_ENERGY_RESULTS, SESS_COMP_LN_A
 
 
 class PredictionHandler:
@@ -35,7 +36,7 @@ class PredictionHandler:
         st.divider()
         st.subheader("Step 9: Kinetic Predictions")
 
-        ae_results = SessionManager.get("activation_energy_results")
+        ae_results = SessionManager.get(SESS_ACTIVATION_ENERGY_RESULTS)
         if ae_results is None:
             st.info("Complete Step 6 (Activation Energy) first to enable predictions.")
             return
@@ -130,7 +131,7 @@ class PredictionHandler:
     def _render_modelbased_controls(self) -> None:
         """Controls for model-based isothermal prediction."""
         g_r = SessionManager.get("recon_g_r")
-        ln_A = SessionManager.get("comp_ln_A")
+        ln_A = SessionManager.get(SESS_COMP_LN_A)
 
         if g_r is None or ln_A is None:
             st.info(
@@ -139,7 +140,7 @@ class PredictionHandler:
             )
             return
 
-        b_num = SessionManager.get("Bnum")
+        b_num = SessionManager.get(SESS_BNUM)
 
         col1, col2 = st.columns(2)
         with col1:
@@ -187,8 +188,8 @@ class PredictionHandler:
 
     def _handle_modelfree_prediction(self) -> None:
         """Execute model-free prediction."""
-        activation_energy_object = SessionManager.get("activation_energy_object")
-        ae_results = SessionManager.get("activation_energy_results")
+        activation_energy_object = SessionManager.get(SESS_ACTIVATION_ENERGY_OBJECT)
+        ae_results = SessionManager.get(SESS_ACTIVATION_ENERGY_RESULTS)
 
         if activation_energy_object is None or ae_results is None:
             st.error("Activation energy object not available.")
@@ -234,10 +235,10 @@ class PredictionHandler:
 
     def _handle_modelbased_prediction(self) -> None:
         """Execute model-based isothermal prediction using t_isothermal."""
-        activation_energy_object = SessionManager.get("activation_energy_object")
-        ae_results = SessionManager.get("activation_energy_results")
+        activation_energy_object = SessionManager.get(SESS_ACTIVATION_ENERGY_OBJECT)
+        ae_results = SessionManager.get(SESS_ACTIVATION_ENERGY_RESULTS)
         g_r = SessionManager.get("recon_g_r")
-        ln_A = SessionManager.get("comp_ln_A")
+        ln_A = SessionManager.get(SESS_COMP_LN_A)
 
         if (
             activation_energy_object is None

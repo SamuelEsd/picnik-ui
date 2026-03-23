@@ -28,6 +28,7 @@ from src.components.kinetics import (
     PredictionHandler,
 )
 from src.utils.SessionManager import SessionManager
+from src.config import SESS_BNUM, SESS_DATA_EXTRACTOR, SESS_ACTIVATION_ENERGY_OBJECT
 from picnick_dev import ActivationEnergy
 
 
@@ -106,8 +107,8 @@ def main():
     # STEP 5: Activation Energy                                            #
     # ------------------------------------------------------------------ #
 
-    data_extractor = SessionManager.get("data_extractor")
-    b_num = SessionManager.get("Bnum")
+    data_extractor = SessionManager.get(SESS_DATA_EXTRACTOR)
+    b_num = SessionManager.get(SESS_BNUM)
     t0_num = SessionManager.get("T0num")
     isoconversion_results = SessionManager.get("isoconversion_results")
 
@@ -118,7 +119,7 @@ def main():
                 T0=t0_num,
                 IsoTables=isoconversion_results,
             )
-            SessionManager.set("activation_energy_object", activation_energy_object)
+            SessionManager.set(SESS_ACTIVATION_ENERGY_OBJECT, activation_energy_object)
 
             # Component 9: Activation Energy Controls and Handler
             activation_energy_handler = ActivationEnergyHandler()

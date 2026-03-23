@@ -46,22 +46,18 @@ FILE_UPLOADER_LABEL: str = f"Choose CSV files (minimum {DEFAULT_MIN_FILES}, maxi
 APP_TITLE: str = "Picnik UI"
 APP_ICON: str = ":material/analytics:"
 
+
 # ============================================================================
-# SESSION STATE KEYS
+# SESSION STATE KEY CONSTANTS  (cross-component keys only)
+# Single-owner keys stay as inline strings in their own component.
 # ============================================================================
-SESSION_KEYS: Dict[str, str] = {
-    'file_paths': 'file_paths',
-    'file_paths_source': 'file_paths_source',
-    'file_paths_folder': 'file_paths_folder',
-    'data_extractor': 'data_extractor',
-    'Bnum': 'Bnum',
-    'T0num': 'T0num',
-    'conversion_ready': 'conversion_ready',
-    'last_conversion_figure': 'last_conversion_figure',
-    'extract_data_clicked': 'extract_data_clicked',
-    'conversion_ranges': 'conversion_ranges',
-    'plotly_plotters': 'plotly_plotters',
-}
+SESS_FILE_PATHS: str = 'file_paths'
+SESS_BNUM: str = 'Bnum'
+SESS_DATA_EXTRACTOR: str = 'data_extractor'
+SESS_ACTIVATION_ENERGY_OBJECT: str = 'activation_energy_object'
+SESS_ACTIVATION_ENERGY_RESULTS: str = 'activation_energy_results'
+SESS_COMP_LN_A: str = 'comp_ln_A'
+SESS_CONVERSION_RANGES: str = 'conversion_ranges'
 
 # ============================================================================
 # PLOT CONFIGURATION

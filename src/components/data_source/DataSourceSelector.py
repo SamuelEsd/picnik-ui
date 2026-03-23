@@ -11,7 +11,7 @@ from typing import List, Optional
 
 import streamlit as st
 
-from src.config import DEFAULT_FILES_DIR, DEFAULT_FILE_TYPES, DEFAULT_MIN_FILES, DEFAULT_MAX_FILES
+from src.config import DEFAULT_FILES_DIR, DEFAULT_FILE_TYPES, DEFAULT_MIN_FILES, DEFAULT_MAX_FILES, SESS_FILE_PATHS
 from src.utils.SessionManager import SessionManager
 from .DefaultDatasetSelector import DefaultDatasetSelector
 
@@ -57,7 +57,7 @@ class DataSourceSelector:
         """
         file_paths = self._upload_files_widget()
         if file_paths:
-            SessionManager.set("file_paths", file_paths)
+            SessionManager.set(SESS_FILE_PATHS, file_paths)
             SessionManager.set("file_paths_source", "upload")
             return file_paths
         return None

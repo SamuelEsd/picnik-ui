@@ -12,6 +12,7 @@ import streamlit as st
 
 from src.utils.FileValidator import FileValidator
 from src.utils.SessionManager import SessionManager
+from src.config import SESS_FILE_PATHS
 
 
 class FileStructureValidator:
@@ -30,7 +31,7 @@ class FileStructureValidator:
             Tuple of (valid_dataframes, invalid_file_errors).
         """
         if file_paths is None:
-            file_paths = SessionManager.get("file_paths", [])
+            file_paths = SessionManager.get(SESS_FILE_PATHS, [])
 
         if not file_paths:
             st.error("No files to validate.")

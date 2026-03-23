@@ -11,7 +11,7 @@ from typing import List, Optional
 
 import streamlit as st
 
-from src.config import DEFAULT_FILES_DIR, DEFAULT_FILE_TYPES
+from src.config import DEFAULT_FILES_DIR, DEFAULT_FILE_TYPES, SESS_FILE_PATHS
 from src.utils.SessionManager import SessionManager
 
 
@@ -104,7 +104,7 @@ class DefaultDatasetSelector:
             List of full file paths.
         """
         chosen_paths = [os.path.join(folder_path, c) for c in chosen]
-        SessionManager.set("file_paths", chosen_paths)
+        SessionManager.set(SESS_FILE_PATHS, chosen_paths)
         SessionManager.set("file_paths_source", "default")
         SessionManager.set("file_paths_folder", folder_path)
         st.success(f"Selected {len(chosen_paths)} file(s) from '{folder_name}'")

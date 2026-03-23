@@ -13,6 +13,7 @@ import streamlit as st
 
 from src.utils.FileValidator import FileValidator
 from src.utils.SessionManager import SessionManager
+from src.config import SESS_FILE_PATHS, SESS_BNUM, SESS_DATA_EXTRACTOR
 
 
 class ExtractionHandler:
@@ -28,7 +29,7 @@ class ExtractionHandler:
         if not SessionManager.get("extract_data_clicked"):
             return False
 
-        file_paths = SessionManager.get("file_paths", [])
+        file_paths = SessionManager.get(SESS_FILE_PATHS, [])
         if not file_paths:
             st.error("No files available for extraction.")
             return False
@@ -43,8 +44,8 @@ class ExtractionHandler:
             Bnum, T0num = data_extractor.read_files(file_paths)
 
             # Store extraction results in session
-            SessionManager.set("data_extractor", data_extractor)
-            SessionManager.set("Bnum", Bnum)
+            SessionManager.set(SESS_DATA_EXTRACTOR, data_extractor)
+            SessionManager.set(SESS_BNUM, Bnum)
             SessionManager.set("T0num", T0num)
             SessionManager.set("conversion_ready", True)
 
@@ -90,8 +91,8 @@ class ExtractionHandler:
                     data_extractor = DE()
                     Bnum, T0num = data_extractor.read_files(temp_paths)
 
-                    SessionManager.set("data_extractor", data_extractor)
-                    SessionManager.set("Bnum", Bnum)
+                    SessionManager.set(SESS_DATA_EXTRACTOR, data_extractor)
+                    SessionManager.set(SESS_BNUM, Bnum)
                     SessionManager.set("T0num", T0num)
                     SessionManager.set("conversion_ready", True)
 

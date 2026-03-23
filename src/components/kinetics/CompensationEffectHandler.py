@@ -13,6 +13,7 @@ import pandas as pd
 import plotly.graph_objects as go
 
 from src.utils.SessionManager import SessionManager
+from src.config import SESS_BNUM, SESS_ACTIVATION_ENERGY_OBJECT, SESS_ACTIVATION_ENERGY_RESULTS, SESS_COMP_LN_A
 
 
 class CompensationEffectHandler:
@@ -23,12 +24,12 @@ class CompensationEffectHandler:
         st.divider()
         st.subheader("Step 7: Pre-exponential Factor — Compensation Effect")
 
-        ae_results = SessionManager.get("activation_energy_results")
+        ae_results = SessionManager.get(SESS_ACTIVATION_ENERGY_RESULTS)
         if ae_results is None:
             st.info("Complete Step 6 (Activation Energy) first to enable this step.")
             return
 
-        b_num = SessionManager.get("Bnum")
+        b_num = SessionManager.get(SESS_BNUM)
         if b_num is None:
             st.info("Heating rate data not available.")
             return
@@ -67,8 +68,8 @@ class CompensationEffectHandler:
         if not SessionManager.get("run_comp_clicked"):
             return
 
-        activation_energy_object = SessionManager.get("activation_energy_object")
-        ae_results = SessionManager.get("activation_energy_results")
+        activation_energy_object = SessionManager.get(SESS_ACTIVATION_ENERGY_OBJECT)
+        ae_results = SessionManager.get(SESS_ACTIVATION_ENERGY_RESULTS)
 
         if activation_energy_object is None or ae_results is None:
             st.error("Activation energy object or results not available.")
@@ -101,7 +102,7 @@ class CompensationEffectHandler:
             st.success("Compensation effect computed successfully")
 
             # Store results in session for downstream use (reconstruction, predictions)
-            SessionManager.set("comp_ln_A", ln_A)
+            SessionManager.set(SESS_COMP_LN_A, ln_A)
             SessionManager.set("comp_errorlnA", errorlnA)
             SessionManager.set("comp_a", a)
             SessionManager.set("comp_b", b)

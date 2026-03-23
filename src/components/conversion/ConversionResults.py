@@ -7,6 +7,7 @@ Displays conversion analysis results and data.
 import streamlit as st
 
 from src.utils.SessionManager import SessionManager
+from src.config import SESS_BNUM, SESS_CONVERSION_RANGES
 
 
 class ConversionResults:
@@ -14,7 +15,7 @@ class ConversionResults:
 
     def render(self) -> None:
         """Display conversion analysis results."""
-        Bnum = SessionManager.get("Bnum")
+        Bnum = SessionManager.get(SESS_BNUM)
         if Bnum is None:
             st.info("No conversion data available.")
             return
@@ -26,8 +27,8 @@ class ConversionResults:
 
     def render_summary(self) -> None:
         """Display a summary of conversion analysis."""
-        ranges = SessionManager.get("conversion_ranges")
-        Bnum = SessionManager.get("Bnum")
+        ranges = SessionManager.get(SESS_CONVERSION_RANGES)
+        Bnum = SessionManager.get(SESS_BNUM)
 
         if ranges and Bnum:
             st.write("**Conversion Analysis Summary:**")

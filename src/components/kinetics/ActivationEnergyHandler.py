@@ -10,6 +10,7 @@ import streamlit as st
 import pandas as pd
 
 from src.utils.SessionManager import SessionManager
+from src.config import SESS_ACTIVATION_ENERGY_OBJECT, SESS_ACTIVATION_ENERGY_RESULTS
 from picnick_dev import ActivationEnergy
 
 
@@ -73,7 +74,7 @@ class ActivationEnergyHandler:
         if not SessionManager.get("run_ae_clicked"):
             return
 
-        activation_energy_object = SessionManager.get("activation_energy_object")
+        activation_energy_object = SessionManager.get(SESS_ACTIVATION_ENERGY_OBJECT)
         selected_method = SessionManager.get("selected_ae_method", "Fr")
 
         if activation_energy_object is None:
@@ -211,7 +212,7 @@ class ActivationEnergyHandler:
         )
 
         # Store results in session for later use (compensation effect, predictions)
-        SessionManager.set("activation_energy_results", {
+        SessionManager.set(SESS_ACTIVATION_ENERGY_RESULTS, {
             "method": method,
             "method_label": self.METHODS[method],
             "result": result,

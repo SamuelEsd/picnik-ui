@@ -8,7 +8,7 @@ from typing import List, Optional
 
 import streamlit as st
 
-from src.config import DEFAULT_MIN_FILES, DEFAULT_MAX_FILES
+from src.config import DEFAULT_MIN_FILES, DEFAULT_MAX_FILES, SESS_FILE_PATHS
 from src.utils.SessionManager import SessionManager
 
 
@@ -37,7 +37,7 @@ class FileCountValidator:
             True if count is valid, False otherwise.
         """
         if file_paths is None:
-            file_paths = SessionManager.get("file_paths", [])
+            file_paths = SessionManager.get(SESS_FILE_PATHS, [])
 
         num_files = len(file_paths)
 

@@ -14,6 +14,7 @@ import pandas as pd
 import plotly.graph_objects as go
 
 from src.utils.SessionManager import SessionManager
+from src.config import SESS_BNUM, SESS_ACTIVATION_ENERGY_OBJECT, SESS_ACTIVATION_ENERGY_RESULTS, SESS_COMP_LN_A
 
 
 class ReconstructionHandler:
@@ -24,12 +25,12 @@ class ReconstructionHandler:
         st.divider()
         st.subheader("Step 8: Reaction Model Reconstruction — g(α)")
 
-        ln_A = SessionManager.get("comp_ln_A")
+        ln_A = SessionManager.get(SESS_COMP_LN_A)
         if ln_A is None:
             st.info("Complete Step 7 (Compensation Effect) first to enable reconstruction.")
             return
 
-        b_num = SessionManager.get("Bnum")
+        b_num = SessionManager.get(SESS_BNUM)
         if b_num is None:
             return
 
@@ -61,9 +62,9 @@ class ReconstructionHandler:
         if not SessionManager.get("run_recon_clicked"):
             return
 
-        activation_energy_object = SessionManager.get("activation_energy_object")
-        ae_results = SessionManager.get("activation_energy_results")
-        ln_A = SessionManager.get("comp_ln_A")
+        activation_energy_object = SessionManager.get(SESS_ACTIVATION_ENERGY_OBJECT)
+        ae_results = SessionManager.get(SESS_ACTIVATION_ENERGY_RESULTS)
+        ln_A = SessionManager.get(SESS_COMP_LN_A)
 
         if activation_energy_object is None or ae_results is None or ln_A is None:
             st.error(
@@ -77,7 +78,7 @@ class ReconstructionHandler:
             # reconstruction() takes A (not ln_A), so we exponentiate
             A = np.exp(ln_A)
 
-            b_num = SessionManager.get("Bnum")
+            b_num = SessionManager.get(SESS_BNUM)
             beta_idx = SessionManager.get("recon_beta_idx", 0)
             B = float(b_num[beta_idx])
 

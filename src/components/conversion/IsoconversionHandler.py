@@ -9,7 +9,7 @@ import streamlit as st
 import pandas as pd
 
 from src.utils.SessionManager import SessionManager
-from src.config import DEFAULT_ISO_DA
+from src.config import DEFAULT_ISO_DA, SESS_DATA_EXTRACTOR
 
 
 class IsoconversionHandler:
@@ -20,7 +20,7 @@ class IsoconversionHandler:
         if not SessionManager.get("run_isoconversion_clicked"):
             return
 
-        data_extractor = SessionManager.get("data_extractor")
+        data_extractor = SessionManager.get(SESS_DATA_EXTRACTOR)
 
         if data_extractor is None:
             st.error("No extracted data available for isoconversion.")
