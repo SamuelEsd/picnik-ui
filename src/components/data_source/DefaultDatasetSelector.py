@@ -5,6 +5,7 @@ Handles selection of default datasets from predefined folders.
 """
 
 import os
+import re
 from pathlib import Path
 from typing import List, Optional
 
@@ -85,9 +86,8 @@ class DefaultDatasetSelector:
         Returns:
             List of file names matching file types.
         """
-        return [
-            f for f in os.listdir(folder_path) if f.endswith(tuple(self.file_types))
-        ]
+        files = [f for f in os.listdir(folder_path) if f.endswith(tuple(self.file_types))]
+        return sorted(files, key=lambda f: int(m.group()) if (m := re.search(r'\d+', f)) else float('inf'))
 
     def _process_selected_files(
         self, chosen: List[str], folder_path: str, folder_name: str

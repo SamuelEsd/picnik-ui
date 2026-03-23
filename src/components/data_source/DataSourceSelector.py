@@ -5,6 +5,7 @@ Allows users to choose between uploading files or selecting default datasets.
 """
 
 import os
+import re
 from pathlib import Path
 from typing import List, Optional
 
@@ -83,4 +84,4 @@ class DataSourceSelector:
                     f.write(uploaded_file.getbuffer())
                 file_paths.append(temp_path)
 
-        return file_paths
+        return sorted(file_paths, key=lambda p: int(m.group()) if (m := re.search(r'\d+', os.path.basename(p))) else float('inf'))

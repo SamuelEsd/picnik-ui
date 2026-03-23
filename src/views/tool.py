@@ -20,9 +20,9 @@ from src.components.conversion import (
     ConversionControls,
     ConversionHandler,
     IsoconversionHandler,
-    ActivationEnergyHandler,
 )
 from src.components.kinetics import (
+    ActivationEnergyHandler,
     CompensationEffectHandler,
     ReconstructionHandler,
     PredictionHandler,
