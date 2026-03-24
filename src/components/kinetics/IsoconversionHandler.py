@@ -8,7 +8,11 @@ import streamlit as st
 import pandas as pd
 
 from src.utils.SessionManager import SessionManager
-from src.config import DEFAULT_ISO_DA, SESS_DATA_EXTRACTOR, SESS_ISOCONVERSION_RESULT, SESS_RUN_ISOCONVERSION, SESS_ISO_DA
+from src.config import (
+    DEFAULT_ISO_DA, SESS_DATA_EXTRACTOR, SESS_ISOCONVERSION_RESULT,
+    SESS_RUN_ISOCONVERSION, SESS_ISO_DA, SESS_ACTIVATION_ENERGY_OBJECT,
+    SESS_ACTIVATION_ENERGY_RESULTS, SESS_COMP_RESULTS, SESS_RECON_RESULTS,
+)
 from src.models.results import IsoconversionResults
 
 
@@ -38,6 +42,12 @@ class IsoconversionHandler:
                             conversion_rate=diff_df,
                         ),
                     )
+                    # Isoconversion inputs changed — invalidate all downstream objects
+                    # so they are rebuilt with the new tables on the next run.
+                    SessionManager.delete(SESS_ACTIVATION_ENERGY_OBJECT)
+                    SessionManager.delete(SESS_ACTIVATION_ENERGY_RESULTS)
+                    SessionManager.delete(SESS_COMP_RESULTS)
+                    SessionManager.delete(SESS_RECON_RESULTS)
 
                 except Exception as e:
                     st.error(f"Error during isoconversion analysis: {str(e)}")

@@ -34,14 +34,22 @@ class ActivationEnergyHandler:
         """
         Build and store the ActivationEnergy object from session prerequisites.
 
-        Returns True if the object was created successfully, False otherwise.
+        Returns True if the object is ready, False otherwise.
         Silently returns False when isoconversion has not been run yet.
+        The object is only created once and reused across reruns so that
+        stateful attributes set by later steps (e.g. accepted_models from
+        compensation_effect) are not lost.
         """
         data_extractor = SessionManager.get(SESS_DATA_EXTRACTOR)
         iso_results = SessionManager.get(SESS_ISOCONVERSION_RESULT)
 
         if data_extractor is None or iso_results is None:
             return False
+
+        # Reuse the existing object if already created — recreating it would
+        # wipe stateful attributes (e.g. accepted_models) set by later steps.
+        if SessionManager.get(SESS_ACTIVATION_ENERGY_OBJECT) is not None:
+            return True
 
         b_num = SessionManager.get(SESS_BNUM)
         t0_num = SessionManager.get(SESS_T0_NUM)

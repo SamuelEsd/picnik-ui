@@ -10,9 +10,7 @@ from src.utils.SessionManager import SessionManager
 from src.config import (
     SESS_BNUM, SESS_ACTIVATION_ENERGY_RESULTS, SESS_COMP_RESULTS, SESS_RECON_RESULTS,
     SESS_RUN_PRED_MF, SESS_RUN_PRED_MB,
-    SESS_PRED_MODE, SESS_PRED_ALPHA_TARGET, SESS_PRED_BOUNDS,
-    SESS_PRED_ISO_T, SESS_PRED_LINEAR_B,
-    SESS_PRED_MB_ISO_T, SESS_PRED_MB_COL,
+    SESS_PRED_MODE, SESS_PRED_BOUNDS,
 )
 
 
@@ -54,7 +52,7 @@ class PredictionControls:
 
         with col1:
             if mode == "Isothermal":
-                iso_T = st.number_input(
+                st.number_input(
                     "Isothermal temperature (K)",
                     min_value=273.0,
                     max_value=2000.0,
@@ -62,9 +60,8 @@ class PredictionControls:
                     step=5.0,
                     key="pred_iso_T",
                 )
-                SessionManager.set(SESS_PRED_ISO_T, iso_T)
             else:
-                linear_B = st.number_input(
+                st.number_input(
                     "Heating rate β (K/min)",
                     min_value=0.1,
                     max_value=500.0,
@@ -72,9 +69,8 @@ class PredictionControls:
                     step=0.5,
                     key="pred_linear_B",
                 )
-                SessionManager.set(SESS_PRED_LINEAR_B, linear_B)
 
-            alpha_target = st.number_input(
+            st.number_input(
                 "Target conversion α",
                 min_value=0.001,
                 max_value=0.999,
@@ -84,7 +80,6 @@ class PredictionControls:
                 key="pred_alpha_target",
                 help="Simulation runs until this conversion value is reached.",
             )
-            SessionManager.set(SESS_PRED_ALPHA_TARGET, alpha_target)
 
         with col2:
             st.markdown("**Time search bounds (min)**")
@@ -127,7 +122,7 @@ class PredictionControls:
 
         col1, col2 = st.columns(2)
         with col1:
-            mb_iso_T = st.number_input(
+            st.number_input(
                 "Isothermal temperature (K)",
                 min_value=273.0,
                 max_value=2000.0,
@@ -136,18 +131,16 @@ class PredictionControls:
                 key="pred_mb_iso_T",
                 help="Constant temperature at which to predict conversion vs time.",
             )
-            SessionManager.set(SESS_PRED_MB_ISO_T, mb_iso_T)
 
             if b_num is not None:
                 beta_options = {i: f"β = {b:.2f} K/min" for i, b in enumerate(b_num)}
-                mb_col = st.selectbox(
+                st.selectbox(
                     "Reference heating rate",
                     options=list(beta_options.keys()),
                     format_func=lambda x: beta_options[x],
                     key="pred_mb_col",
                     help="Heating rate whose temperature profile is used for the integral.",
                 )
-                SessionManager.set(SESS_PRED_MB_COL, mb_col)
 
         with col2:
             st.write("")
