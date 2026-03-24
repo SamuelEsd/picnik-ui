@@ -54,10 +54,16 @@ APP_ICON: str = ":material/analytics:"
 SESS_FILE_PATHS: str = 'file_paths'
 SESS_BNUM: str = 'Bnum'
 SESS_DATA_EXTRACTOR: str = 'data_extractor'
-SESS_ACTIVATION_ENERGY_OBJECT: str = 'activation_energy_object'
-SESS_ACTIVATION_ENERGY_RESULTS: str = 'activation_energy_results'
-SESS_COMP_LN_A: str = 'comp_ln_A'
 SESS_CONVERSION_RANGES: str = 'conversion_ranges'
+SESS_ACTIVATION_ENERGY_OBJECT: str = 'activation_energy_object'
+
+# Result objects (one per workflow step — store typed dataclasses from src.models.results)
+SESS_ISOCONVERSION_RESULT: str = 'isoconversion_result'
+SESS_ACTIVATION_ENERGY_RESULTS: str = 'activation_energy_results'
+SESS_COMP_RESULTS: str = 'comp_results'
+SESS_RECON_RESULTS: str = 'recon_results'
+SESS_PRED_MF_RESULTS: str = 'pred_mf_results'
+SESS_PRED_MB_RESULTS: str = 'pred_mb_results'
 
 # ============================================================================
 # PLOT CONFIGURATION

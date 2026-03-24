@@ -16,12 +16,9 @@ from src.components.file_validation import (
 )
 from src.components.extraction import ExtractionControls, ExtractionHandler
 from src.components.plots import PlotViewer
-from src.components.conversion import (
-    ConversionControls,
-    ConversionHandler,
-    IsoconversionHandler,
-)
+from src.components.conversion import ConversionControls, ConversionHandler
 from src.components.kinetics import (
+    IsoconversionHandler,
     ActivationEnergyControls, ActivationEnergyHandler,
     CompensationEffectControls, CompensationEffectHandler,
     ReconstructionControls, ReconstructionHandler,

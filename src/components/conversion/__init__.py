@@ -1,12 +1,10 @@
 """
 Conversion Analysis Components
 
-Handles conversion analysis setup, execution, and results display.
+Handles conversion analysis setup, execution, and results display (Step 5).
 """
 
 from .ConversionControls import ConversionControls
 from .ConversionHandler import ConversionHandler
-from .ConversionResults import ConversionResults
-from .IsoconversionHandler import IsoconversionHandler
 
-__all__ = ["ConversionControls", "ConversionHandler", "ConversionResults", "IsoconversionHandler"]
+__all__ = ["ConversionControls", "ConversionHandler"]
