@@ -29,6 +29,15 @@ from src.config import (
     SESS_RECON_RESULTS,
     SESS_PRED_MF_RESULTS,
     SESS_PRED_MB_RESULTS,
+    SESS_RUN_PRED_MF,
+    SESS_RUN_PRED_MB,
+    SESS_PRED_MODE,
+    SESS_PRED_ALPHA_TARGET,
+    SESS_PRED_BOUNDS,
+    SESS_PRED_ISO_T,
+    SESS_PRED_LINEAR_B,
+    SESS_PRED_MB_ISO_T,
+    SESS_PRED_MB_COL,
 )
 from src.models.results import ModelfreePredictionResults, ModelbasedPredictionResults
 
@@ -38,10 +47,10 @@ class PredictionHandler:
 
     def handle_predictions(self) -> None:
         """Dispatch to the appropriate prediction handler."""
-        if SessionManager.get("run_pred_mf_clicked"):
+        if SessionManager.get(SESS_RUN_PRED_MF):
             self._handle_modelfree_prediction()
 
-        if SessionManager.get("run_pred_mb_clicked"):
+        if SessionManager.get(SESS_RUN_PRED_MB):
             self._handle_modelbased_prediction()
 
         # Always display stored results
@@ -64,13 +73,13 @@ class PredictionHandler:
 
         try:
             E = ae_results.E
-            mode = SessionManager.get("pred_mode", "Isothermal")
-            alpha_target = float(SessionManager.get("pred_alpha_target", 0.999))
-            bounds = SessionManager.get("pred_bounds", (10.0, 10.0))
+            mode = SessionManager.get(SESS_PRED_MODE, "Isothermal")
+            alpha_target = float(SessionManager.get(SESS_PRED_ALPHA_TARGET, 0.999))
+            bounds = SessionManager.get(SESS_PRED_BOUNDS, (10.0, 10.0))
 
             with st.spinner(f"Running {mode} model-free prediction..."):
                 if mode == "Isothermal":
-                    iso_T = float(SessionManager.get("pred_iso_T", 575.0))
+                    iso_T = float(SessionManager.get(SESS_PRED_ISO_T, 575.0))
                     a_prime, T_prime, t_prime = (
                         activation_energy_object.modelfree_prediction(
                             E=E,
@@ -81,7 +90,7 @@ class PredictionHandler:
                         )
                     )
                 else:
-                    B_val = float(SessionManager.get("pred_linear_B", 10.0))
+                    B_val = float(SessionManager.get(SESS_PRED_LINEAR_B, 10.0))
                     a_prime, T_prime, t_prime = (
                         activation_energy_object.modelfree_prediction(
                             E=E,
@@ -105,7 +114,7 @@ class PredictionHandler:
         except Exception as e:
             st.error(f"Error during model-free prediction: {str(e)}")
 
-        SessionManager.set("run_pred_mf_clicked", False)
+        SessionManager.set(SESS_RUN_PRED_MF, False)
 
     def _handle_modelbased_prediction(self) -> None:
         """Execute model-based isothermal prediction using t_isothermal."""
@@ -127,8 +136,8 @@ class PredictionHandler:
             return
 
         try:
-            iso_T = float(SessionManager.get("pred_mb_iso_T", 575.0))
-            col = int(SessionManager.get("pred_mb_col", 0))
+            iso_T = float(SessionManager.get(SESS_PRED_MB_ISO_T, 575.0))
+            col = int(SessionManager.get(SESS_PRED_MB_COL, 0))
 
             with st.spinner(
                 f"Running model-based isothermal prediction at T = {iso_T:.0f} K..."
@@ -155,7 +164,7 @@ class PredictionHandler:
         except Exception as e:
             st.error(f"Error during model-based prediction: {str(e)}")
 
-        SessionManager.set("run_pred_mb_clicked", False)
+        SessionManager.set(SESS_RUN_PRED_MB, False)
 
     # ------------------------------------------------------------------ #
     # Display helpers                                                       #
@@ -182,7 +191,7 @@ class PredictionHandler:
             yaxis_range=[0, 1.05],
             height=400,
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
         col1, col2 = st.columns(2)
         with col1:
@@ -228,7 +237,7 @@ class PredictionHandler:
             yaxis_range=[0, 1.05],
             height=400,
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
         col1, col2 = st.columns(2)
         with col1:

@@ -13,7 +13,7 @@ import pandas as pd
 import plotly.graph_objects as go
 
 from src.utils.SessionManager import SessionManager
-from src.config import SESS_ACTIVATION_ENERGY_OBJECT, SESS_ACTIVATION_ENERGY_RESULTS, SESS_COMP_RESULTS
+from src.config import SESS_ACTIVATION_ENERGY_OBJECT, SESS_ACTIVATION_ENERGY_RESULTS, SESS_COMP_RESULTS, SESS_RUN_COMP, SESS_COMP_COL
 from src.models.results import CompensationEffectResults
 
 
@@ -22,7 +22,7 @@ class CompensationEffectHandler:
 
     def handle_compensation_effect(self) -> None:
         """Execute compensation effect calculation and display results."""
-        if SessionManager.get("run_comp_clicked"):
+        if SessionManager.get(SESS_RUN_COMP):
             activation_energy_object = SessionManager.get(SESS_ACTIVATION_ENERGY_OBJECT)
             ae_results = SessionManager.get(SESS_ACTIVATION_ENERGY_RESULTS)
 
@@ -32,7 +32,7 @@ class CompensationEffectHandler:
                 try:
                     E = ae_results.E
                     errorE = ae_results.error
-                    col = SessionManager.get("comp_col", 0)
+                    col = SessionManager.get(SESS_COMP_COL, 0)
 
                     with st.spinner(
                         "Computing compensation effect — fitting reaction models to data..."
@@ -67,7 +67,7 @@ class CompensationEffectHandler:
                 except Exception as e:
                     st.error(f"Error during compensation effect calculation: {str(e)}")
 
-            SessionManager.set("run_comp_clicked", False)
+            SessionManager.set(SESS_RUN_COMP, False)
 
         # Always display from session if results exist
         comp_results = SessionManager.get(SESS_COMP_RESULTS)
@@ -108,7 +108,7 @@ class CompensationEffectHandler:
             yaxis_title="ln(A / min⁻¹)",
             height=380,
         )
-        st.plotly_chart(fig1, use_container_width=True)
+        st.plotly_chart(fig1, width="stretch")
 
         # Plot 2: compensation effect scatter — ln(A) vs E
         if len(results.E_fit) > 1:
@@ -140,7 +140,7 @@ class CompensationEffectHandler:
                 yaxis_title="ln(A / min⁻¹)",
                 height=380,
             )
-            st.plotly_chart(fig2, use_container_width=True)
+            st.plotly_chart(fig2, width="stretch")
 
         df_out = pd.DataFrame({
             "alpha": results.alpha,

@@ -281,12 +281,6 @@ class PlotManager:
                     key=key_min_input,
                     label_visibility="collapsed"
                 )
-                # Validate and sync min input with slider
-                """
-                 min_input = max(bound_min, min(min_input, bound_max))
-                if min_input > st.session_state[key_max_input]:
-                    min_input = st.session_state[key_max_input]
-                st.session_state[key_min_input] = min_input """
             
             with input_col2:
                 max_input = st.number_input(
@@ -297,13 +291,6 @@ class PlotManager:
                     key=key_max_input,
                     label_visibility="collapsed"
                 )
-                """             
-                # Validate and sync max input with slider
-                max_input = max(bound_min, min(max_input, bound_max))
-                if max_input < st.session_state[key_min_input]:
-                    max_input = st.session_state[key_min_input]
-                st.session_state[key_max_input] = max_input
-                """
 
 
     def _render_range_buttons(self, plot_idx: int, plotter: PP, placeholder, slider_keys: List[Tuple[int, str]]) -> None:

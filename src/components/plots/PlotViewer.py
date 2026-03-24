@@ -9,7 +9,7 @@ import streamlit as st
 from src.utils.SessionManager import SessionManager
 from src.ui.PlotManager import PlotManager
 from src.ui.PlotlyPlotter import PlotlyPlotter as PP
-from src.config import SESS_DATA_EXTRACTOR, SESS_CONVERSION_RANGES
+from src.config import SESS_DATA_EXTRACTOR, SESS_CONVERSION_RANGES, SESS_PLOTLY_PLOTTERS
 
 
 class PlotViewer:
@@ -69,9 +69,9 @@ class PlotViewer:
             plotter.show(container=placeholder)
 
             # Store plotter in session for later manipulation
-            plotters_dict = SessionManager.get("plotly_plotters", {})
+            plotters_dict = SessionManager.get(SESS_PLOTLY_PLOTTERS, {})
             plotters_dict[idx] = {"plotter": plotter, "placeholder": placeholder}
-            SessionManager.set("plotly_plotters", plotters_dict)
+            SessionManager.set(SESS_PLOTLY_PLOTTERS, plotters_dict)
 
             # Display range controls for interactive adjustment
             if idx == 0:

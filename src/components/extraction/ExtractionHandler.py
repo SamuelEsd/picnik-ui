@@ -13,7 +13,10 @@ import streamlit as st
 
 from src.utils.FileValidator import FileValidator
 from src.utils.SessionManager import SessionManager
-from src.config import SESS_FILE_PATHS, SESS_BNUM, SESS_DATA_EXTRACTOR
+from src.config import (
+    SESS_FILE_PATHS, SESS_BNUM, SESS_DATA_EXTRACTOR,
+    SESS_T0_NUM, SESS_CONVERSION_READY, SESS_EXTRACT_CLICKED,
+)
 
 
 class ExtractionHandler:
@@ -26,7 +29,7 @@ class ExtractionHandler:
         Returns:
             True if extraction was successful, False otherwise.
         """
-        if not SessionManager.get("extract_data_clicked"):
+        if not SessionManager.get(SESS_EXTRACT_CLICKED):
             return False
 
         file_paths = SessionManager.get(SESS_FILE_PATHS, [])
@@ -46,8 +49,8 @@ class ExtractionHandler:
             # Store extraction results in session
             SessionManager.set(SESS_DATA_EXTRACTOR, data_extractor)
             SessionManager.set(SESS_BNUM, Bnum)
-            SessionManager.set("T0num", T0num)
-            SessionManager.set("conversion_ready", True)
+            SessionManager.set(SESS_T0_NUM, T0num)
+            SessionManager.set(SESS_CONVERSION_READY, True)
 
             st.success("Data extraction completed successfully")
             st.write(f"Processed files: {', '.join(Path(f).name for f in file_paths)}")
@@ -93,8 +96,8 @@ class ExtractionHandler:
 
                     SessionManager.set(SESS_DATA_EXTRACTOR, data_extractor)
                     SessionManager.set(SESS_BNUM, Bnum)
-                    SessionManager.set("T0num", T0num)
-                    SessionManager.set("conversion_ready", True)
+                    SessionManager.set(SESS_T0_NUM, T0num)
+                    SessionManager.set(SESS_CONVERSION_READY, True)
 
                     st.success("Files recovered with safe encoding")
                     return True

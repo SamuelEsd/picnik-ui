@@ -1,3 +1,4 @@
+from src.components.kinetics.IsoconversionControls import IsoconversionControls
 from src.components.kinetics.IsoconversionHandler import IsoconversionHandler
 from src.components.kinetics.ActivationEnergyControls import ActivationEnergyControls
 from src.components.kinetics.ActivationEnergyHandler import ActivationEnergyHandler
@@ -9,7 +10,7 @@ from src.components.kinetics.PredictionControls import PredictionControls
 from src.components.kinetics.PredictionHandler import PredictionHandler
 
 __all__ = [
-    "IsoconversionHandler",
+    "IsoconversionControls", "IsoconversionHandler",
     "ActivationEnergyControls", "ActivationEnergyHandler",
     "CompensationEffectControls", "CompensationEffectHandler",
     "ReconstructionControls", "ReconstructionHandler",

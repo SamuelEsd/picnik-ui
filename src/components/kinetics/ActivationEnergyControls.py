@@ -7,7 +7,7 @@ Renders the UI controls for activation energy method selection.
 import streamlit as st
 
 from src.utils.SessionManager import SessionManager
-from src.config import SESS_ISOCONVERSION_RESULT
+from src.config import SESS_ISOCONVERSION_RESULT, SESS_RUN_AE, SESS_AE_METHOD, SESS_AVY_P_VALUE
 
 AE_METHODS = {
     "Fr": "Friedman method",
@@ -42,7 +42,7 @@ class ActivationEnergyControls:
                 help="Select one of the five available isoconversional methods for activation energy calculation",
                 key="ae_method_selectbox",
             )
-            SessionManager.set("selected_ae_method", selected_method)
+            SessionManager.set(SESS_AE_METHOD, selected_method)
 
             if selected_method == "aVy":
                 p_value = st.slider(
@@ -50,11 +50,11 @@ class ActivationEnergyControls:
                     min_value=0.50,
                     max_value=0.99,
                     step=0.01,
-                    value=SessionManager.get("avy_p_value", 0.50),
+                    value=SessionManager.get(SESS_AVY_P_VALUE, 0.50),
                     help="Set the P parameter for Advanced Vyazovkin method (0.50 to 0.99)",
                     key="avy_p_slider",
                 )
-                SessionManager.set("avy_p_value", p_value)
+                SessionManager.set(SESS_AVY_P_VALUE, p_value)
 
         with col2:
             st.write("")
@@ -64,4 +64,4 @@ class ActivationEnergyControls:
                 type="primary",
                 key="ae_calculate_btn",
             ):
-                SessionManager.set("run_ae_clicked", True)
+                SessionManager.set(SESS_RUN_AE, True)

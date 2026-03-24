@@ -7,7 +7,7 @@ Renders the UI controls for the compensation effect calculation.
 import streamlit as st
 
 from src.utils.SessionManager import SessionManager
-from src.config import SESS_BNUM, SESS_ACTIVATION_ENERGY_RESULTS
+from src.config import SESS_BNUM, SESS_ACTIVATION_ENERGY_RESULTS, SESS_RUN_COMP, SESS_COMP_COL
 
 
 class CompensationEffectControls:
@@ -45,7 +45,7 @@ class CompensationEffectControls:
                 ),
                 key="comp_col_selector",
             )
-            SessionManager.set("comp_col", selected_col)
+            SessionManager.set(SESS_COMP_COL, selected_col)
 
         with col2:
             st.write("")
@@ -55,4 +55,4 @@ class CompensationEffectControls:
                 type="primary",
                 key="comp_calc_btn",
             ):
-                SessionManager.set("run_comp_clicked", True)
+                SessionManager.set(SESS_RUN_COMP, True)

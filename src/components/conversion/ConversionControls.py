@@ -7,7 +7,7 @@ Displays buttons for conversion analysis workflow.
 import streamlit as st
 
 from src.utils.SessionManager import SessionManager
-from src.config import SESS_CONVERSION_RANGES, SESS_DATA_EXTRACTOR
+from src.config import SESS_CONVERSION_RANGES, SESS_DATA_EXTRACTOR, SESS_RUN_CONVERSION, SESS_CONVERSION_METADATA, SESS_CONVERSION_PLOTTER
 
 
 class ConversionControls:
@@ -26,12 +26,12 @@ class ConversionControls:
 
         with col1:
             if st.button("Reset Conversion", type="secondary", key="conversion_reset_btn"):
-                SessionManager.set("run_conversion_clicked", False)
+                SessionManager.set(SESS_RUN_CONVERSION, False)
                 SessionManager.set(SESS_CONVERSION_RANGES, {})
-                SessionManager.set("conversion_plotter", None)
-                SessionManager.set("conversion_metadata", None)
+                SessionManager.set(SESS_CONVERSION_PLOTTER, None)
+                SessionManager.set(SESS_CONVERSION_METADATA, None)
                 st.success("Conversion state reset.")
 
         with col2:
             if st.button("Run Conversion", type="primary", key="conversion_run_btn"):
-                SessionManager.set("run_conversion_clicked", True)
+                SessionManager.set(SESS_RUN_CONVERSION, True)

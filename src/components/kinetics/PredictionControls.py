@@ -7,7 +7,13 @@ Renders the UI controls for model-free and model-based kinetic predictions.
 import streamlit as st
 
 from src.utils.SessionManager import SessionManager
-from src.config import SESS_BNUM, SESS_ACTIVATION_ENERGY_RESULTS, SESS_COMP_RESULTS, SESS_RECON_RESULTS
+from src.config import (
+    SESS_BNUM, SESS_ACTIVATION_ENERGY_RESULTS, SESS_COMP_RESULTS, SESS_RECON_RESULTS,
+    SESS_RUN_PRED_MF, SESS_RUN_PRED_MB,
+    SESS_PRED_MODE, SESS_PRED_ALPHA_TARGET, SESS_PRED_BOUNDS,
+    SESS_PRED_ISO_T, SESS_PRED_LINEAR_B,
+    SESS_PRED_MB_ISO_T, SESS_PRED_MB_COL,
+)
 
 
 class PredictionControls:
@@ -42,7 +48,7 @@ class PredictionControls:
                 "Linear heating: ramp at a fixed K/min rate."
             ),
         )
-        SessionManager.set("pred_mode", mode)
+        SessionManager.set(SESS_PRED_MODE, mode)
 
         col1, col2 = st.columns(2)
 
@@ -56,7 +62,7 @@ class PredictionControls:
                     step=5.0,
                     key="pred_iso_T",
                 )
-                SessionManager.set("pred_iso_T", iso_T)
+                SessionManager.set(SESS_PRED_ISO_T, iso_T)
             else:
                 linear_B = st.number_input(
                     "Heating rate β (K/min)",
@@ -66,7 +72,7 @@ class PredictionControls:
                     step=0.5,
                     key="pred_linear_B",
                 )
-                SessionManager.set("pred_linear_B", linear_B)
+                SessionManager.set(SESS_PRED_LINEAR_B, linear_B)
 
             alpha_target = st.number_input(
                 "Target conversion α",
@@ -78,7 +84,7 @@ class PredictionControls:
                 key="pred_alpha_target",
                 help="Simulation runs until this conversion value is reached.",
             )
-            SessionManager.set("pred_alpha_target", alpha_target)
+            SessionManager.set(SESS_PRED_ALPHA_TARGET, alpha_target)
 
         with col2:
             st.markdown("**Time search bounds (min)**")
@@ -102,11 +108,11 @@ class PredictionControls:
                 step=1.0,
                 key="pred_bounds_upper",
             )
-            SessionManager.set("pred_bounds", (bounds_lower, bounds_upper))
+            SessionManager.set(SESS_PRED_BOUNDS, (bounds_lower, bounds_upper))
 
         st.write("")
         if st.button("Run Model-free Prediction", type="primary", key="pred_mf_run_btn"):
-            SessionManager.set("run_pred_mf_clicked", True)
+            SessionManager.set(SESS_RUN_PRED_MF, True)
 
     def _render_modelbased_controls(self) -> None:
         """Controls for model-based isothermal prediction."""
@@ -130,7 +136,7 @@ class PredictionControls:
                 key="pred_mb_iso_T",
                 help="Constant temperature at which to predict conversion vs time.",
             )
-            SessionManager.set("pred_mb_iso_T", mb_iso_T)
+            SessionManager.set(SESS_PRED_MB_ISO_T, mb_iso_T)
 
             if b_num is not None:
                 beta_options = {i: f"β = {b:.2f} K/min" for i, b in enumerate(b_num)}
@@ -141,10 +147,10 @@ class PredictionControls:
                     key="pred_mb_col",
                     help="Heating rate whose temperature profile is used for the integral.",
                 )
-                SessionManager.set("pred_mb_col", mb_col)
+                SessionManager.set(SESS_PRED_MB_COL, mb_col)
 
         with col2:
             st.write("")
 
         if st.button("Run Model-based Prediction", type="primary", key="pred_mb_run_btn"):
-            SessionManager.set("run_pred_mb_clicked", True)
+            SessionManager.set(SESS_RUN_PRED_MB, True)

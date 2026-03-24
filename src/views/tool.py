@@ -18,7 +18,7 @@ from src.components.extraction import ExtractionControls, ExtractionHandler
 from src.components.plots import PlotViewer
 from src.components.conversion import ConversionControls, ConversionHandler
 from src.components.kinetics import (
-    IsoconversionHandler,
+    IsoconversionControls, IsoconversionHandler,
     ActivationEnergyControls, ActivationEnergyHandler,
     CompensationEffectControls, CompensationEffectHandler,
     ReconstructionControls, ReconstructionHandler,
@@ -92,9 +92,8 @@ def main():
     conversion_handler.handle_conversion()
 
     # Component 8: Isoconversion Controls and Handler
-    isoconversion_handler = IsoconversionHandler()
-    isoconversion_handler.render_isoconversion_controls()
-    isoconversion_handler.handle_isoconversion()
+    IsoconversionControls().render()
+    IsoconversionHandler().handle_isoconversion()
 
     # ------------------------------------------------------------------ #
     # STEP 7: Activation Energy                                            #

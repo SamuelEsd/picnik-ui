@@ -13,10 +13,14 @@ import pandas as pd
 from src.utils.SessionManager import SessionManager
 from src.config import (
     SESS_BNUM,
+    SESS_T0_NUM,
     SESS_DATA_EXTRACTOR,
     SESS_ACTIVATION_ENERGY_OBJECT,
     SESS_ACTIVATION_ENERGY_RESULTS,
     SESS_ISOCONVERSION_RESULT,
+    SESS_RUN_AE,
+    SESS_AE_METHOD,
+    SESS_AVY_P_VALUE,
 )
 from src.components.kinetics.ActivationEnergyControls import AE_METHODS
 from src.models.results import ActivationEnergyResults
@@ -40,7 +44,7 @@ class ActivationEnergyHandler:
             return False
 
         b_num = SessionManager.get(SESS_BNUM)
-        t0_num = SessionManager.get("T0num")
+        t0_num = SessionManager.get(SESS_T0_NUM)
 
         try:
             ae_object = ActivationEnergy(
@@ -56,9 +60,9 @@ class ActivationEnergyHandler:
 
     def handle_activation_energy(self) -> None:
         """Execute activation energy calculation using the selected method."""
-        if SessionManager.get("run_ae_clicked"):
+        if SessionManager.get(SESS_RUN_AE):
             activation_energy_object = SessionManager.get(SESS_ACTIVATION_ENERGY_OBJECT)
-            selected_method = SessionManager.get("selected_ae_method", "Fr")
+            selected_method = SessionManager.get(SESS_AE_METHOD, "Fr")
 
             if activation_energy_object is None:
                 st.error("No Activation Energy object available for calculation.")
@@ -86,7 +90,7 @@ class ActivationEnergyHandler:
                 except Exception as e:
                     st.error(f"Error during {AE_METHODS[selected_method]} calculation: {str(e)}")
 
-            SessionManager.set("run_ae_clicked", False)
+            SessionManager.set(SESS_RUN_AE, False)
 
         # Always display from session if results exist
         ae_results = SessionManager.get(SESS_ACTIVATION_ENERGY_RESULTS)
@@ -116,7 +120,7 @@ class ActivationEnergyHandler:
             elif method == "Vy":
                 result = activation_energy_object.Vy(bounds=(1, 300))
             elif method == "aVy":
-                p_value = SessionManager.get("avy_p_value", 0.50)
+                p_value = SessionManager.get(SESS_AVY_P_VALUE, 0.50)
                 result = activation_energy_object.aVy(bounds=(1, 300), p=p_value)
             else:
                 st.error(f"Unknown method: {method}")
@@ -150,7 +154,7 @@ class ActivationEnergyHandler:
             yaxis_title="E [kJ/mol]",
             height=400,
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
         col1, col2, col3 = st.columns(3)
         with col1:
@@ -165,7 +169,7 @@ class ActivationEnergyHandler:
             "E [kJ/mol]": ae_results.E,
             "error [kJ/mol]": ae_results.error,
         })
-        st.dataframe(df_result, use_container_width=True)
+        st.dataframe(df_result, width="stretch")
 
         st.download_button(
             label=f"Download {ae_results.method} Results (CSV)",

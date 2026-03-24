@@ -7,7 +7,7 @@ Renders the UI controls for g(alpha) reaction model reconstruction.
 import streamlit as st
 
 from src.utils.SessionManager import SessionManager
-from src.config import SESS_BNUM, SESS_COMP_RESULTS
+from src.config import SESS_BNUM, SESS_COMP_RESULTS, SESS_RUN_RECON, SESS_RECON_BETA_IDX
 
 
 class ReconstructionControls:
@@ -41,10 +41,10 @@ class ReconstructionControls:
                 ),
                 key="recon_beta_selector",
             )
-            SessionManager.set("recon_beta_idx", selected_beta_idx)
+            SessionManager.set(SESS_RECON_BETA_IDX, selected_beta_idx)
 
         with col2:
             st.write("")
             st.write("")
             if st.button("Reconstruct g(α)", type="primary", key="recon_calc_btn"):
-                SessionManager.set("run_recon_clicked", True)
+                SessionManager.set(SESS_RUN_RECON, True)

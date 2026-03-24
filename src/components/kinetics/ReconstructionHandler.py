@@ -20,6 +20,8 @@ from src.config import (
     SESS_ACTIVATION_ENERGY_RESULTS,
     SESS_COMP_RESULTS,
     SESS_RECON_RESULTS,
+    SESS_RUN_RECON,
+    SESS_RECON_BETA_IDX,
 )
 from src.models.results import ReconstructionResults
 
@@ -29,7 +31,7 @@ class ReconstructionHandler:
 
     def handle_reconstruction(self) -> None:
         """Execute model reconstruction and display results."""
-        if SessionManager.get("run_recon_clicked"):
+        if SessionManager.get(SESS_RUN_RECON):
             activation_energy_object = SessionManager.get(SESS_ACTIVATION_ENERGY_OBJECT)
             ae_results = SessionManager.get(SESS_ACTIVATION_ENERGY_RESULTS)
             comp_results = SessionManager.get(SESS_COMP_RESULTS)
@@ -44,7 +46,7 @@ class ReconstructionHandler:
                     A = np.exp(comp_results.ln_A)
 
                     b_num = SessionManager.get(SESS_BNUM)
-                    beta_idx = SessionManager.get("recon_beta_idx", 0)
+                    beta_idx = SessionManager.get(SESS_RECON_BETA_IDX, 0)
                     B = float(b_num[beta_idx])
 
                     with st.spinner("Reconstructing g(α)..."):
@@ -70,7 +72,7 @@ class ReconstructionHandler:
                 except Exception as e:
                     st.error(f"Error during reconstruction: {str(e)}")
 
-            SessionManager.set("run_recon_clicked", False)
+            SessionManager.set(SESS_RUN_RECON, False)
 
         # Always display from session if results exist
         recon_results = SessionManager.get(SESS_RECON_RESULTS)
@@ -100,7 +102,7 @@ class ReconstructionHandler:
             xaxis_range=[0, 1],
             height=400,
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
         df_recon = pd.DataFrame({"alpha": results.alpha_plot, "g_alpha": results.g_r})
         st.download_button(

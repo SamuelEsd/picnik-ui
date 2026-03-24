@@ -48,14 +48,54 @@ APP_ICON: str = ":material/analytics:"
 
 
 # ============================================================================
-# SESSION STATE KEY CONSTANTS  (cross-component keys only)
-# Single-owner keys stay as inline strings in their own component.
+# SESSION STATE KEY CONSTANTS
 # ============================================================================
+
+# Core data objects
 SESS_FILE_PATHS: str = 'file_paths'
 SESS_BNUM: str = 'Bnum'
+SESS_T0_NUM: str = 'T0num'
 SESS_DATA_EXTRACTOR: str = 'data_extractor'
 SESS_CONVERSION_RANGES: str = 'conversion_ranges'
 SESS_ACTIVATION_ENERGY_OBJECT: str = 'activation_energy_object'
+
+# Extraction
+SESS_CONVERSION_READY: str = 'conversion_ready'
+SESS_EXTRACT_CLICKED: str = 'extract_data_clicked'
+SESS_PLOTLY_PLOTTERS: str = 'plotly_plotters'
+
+# Conversion (Step 5)
+SESS_RUN_CONVERSION: str = 'run_conversion_clicked'
+SESS_CONVERSION_METADATA: str = 'conversion_metadata'
+SESS_CONVERSION_PLOTTER: str = 'conversion_plotter'
+
+# Isoconversion (Step 6)
+SESS_RUN_ISOCONVERSION: str = 'run_isoconversion_clicked'
+SESS_ISO_DA: str = 'isoconversion_d_a'
+
+# Activation Energy (Step 7)
+SESS_RUN_AE: str = 'run_ae_clicked'
+SESS_AE_METHOD: str = 'selected_ae_method'
+SESS_AVY_P_VALUE: str = 'avy_p_value'
+
+# Compensation Effect (Step 8)
+SESS_RUN_COMP: str = 'run_comp_clicked'
+SESS_COMP_COL: str = 'comp_col'
+
+# Reconstruction (Step 9)
+SESS_RUN_RECON: str = 'run_recon_clicked'
+SESS_RECON_BETA_IDX: str = 'recon_beta_idx'
+
+# Predictions (Step 10)
+SESS_RUN_PRED_MF: str = 'run_pred_mf_clicked'
+SESS_RUN_PRED_MB: str = 'run_pred_mb_clicked'
+SESS_PRED_MODE: str = 'pred_mode'
+SESS_PRED_ALPHA_TARGET: str = 'pred_alpha_target'
+SESS_PRED_BOUNDS: str = 'pred_bounds'
+SESS_PRED_ISO_T: str = 'pred_iso_T'
+SESS_PRED_LINEAR_B: str = 'pred_linear_B'
+SESS_PRED_MB_ISO_T: str = 'pred_mb_iso_T'
+SESS_PRED_MB_COL: str = 'pred_mb_col'
 
 # Result objects (one per workflow step — store typed dataclasses from src.models.results)
 SESS_ISOCONVERSION_RESULT: str = 'isoconversion_result'

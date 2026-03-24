@@ -4,7 +4,17 @@ Session state management utilities.
 
 import streamlit as st
 from typing import Any
-from src.config import SESS_FILE_PATHS
+from src.config import (
+    SESS_FILE_PATHS,
+    SESS_BNUM,
+    SESS_DATA_EXTRACTOR,
+    SESS_CONVERSION_RANGES,
+    SESS_CONVERSION_READY,
+    SESS_EXTRACT_CLICKED,
+    SESS_PLOTLY_PLOTTERS,
+    SESS_CONVERSION_PLOTTER,
+    SESS_T0_NUM,
+)
 
 
 class SessionManager:
@@ -38,16 +48,16 @@ class SessionManager:
     def clear_extraction_state() -> None:
         """Clear all extraction-related session state."""
         keys_to_clear = [
-            'data_extractor', 'Bnum', 'T0num', 'conversion_ready',
-            'last_conversion_figure', SESS_FILE_PATHS, 'extract_data_clicked',
-            'conversion_ranges', 'plotly_plotters'
+            SESS_DATA_EXTRACTOR, SESS_BNUM, SESS_T0_NUM, SESS_CONVERSION_READY,
+            SESS_FILE_PATHS, SESS_EXTRACT_CLICKED,
+            SESS_CONVERSION_RANGES, SESS_PLOTLY_PLOTTERS, SESS_CONVERSION_PLOTTER,
         ]
         SessionManager.delete_multiple(keys_to_clear)
 
     @staticmethod
     def is_conversion_ready() -> bool:
         """Check if conversion data is ready."""
-        return SessionManager.get('conversion_ready', False)
+        return SessionManager.get(SESS_CONVERSION_READY, False)
 
     @staticmethod
     def get_file_paths() -> list:

@@ -350,8 +350,11 @@ class PlotlyPlotter:
 
     def _from_matplotlib(self, mpl_fig):
         try:
+            import warnings
             import plotly.tools as tls
-            plotly_fig = tls.mpl_to_plotly(mpl_fig)
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore", message="I found a path object")
+                plotly_fig = tls.mpl_to_plotly(mpl_fig)
             return plotly_fig
         except ImportError:
             raise ImportError("plotly.tools.mpl_to_plotly is required for matplotlib conversion. Please install plotly >=4.0.")
