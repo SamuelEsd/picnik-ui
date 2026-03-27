@@ -109,8 +109,8 @@ class ConversionHandler:
         with col1:
             plotly_plotter = PP(
                 title="Conversion",
-                x_label="Temperature [K]",
-                y_label="TG [%]",
+                y_label="<b>Conversion (α)</b>",
+                x_label="<b>Temperature [K]</b>",
                 from_matplotlib_fig=conversion_figure,
             )
 

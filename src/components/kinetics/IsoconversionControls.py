@@ -26,7 +26,7 @@ class IsoconversionControls:
 
         with col1:
             d_a = st.slider(
-                "Conversion step size (d_a)",
+                "Conversion step size (∆α)",
                 min_value=0.001,
                 max_value=0.1,
                 value=SessionManager.get(SESS_ISO_DA, DEFAULT_ISO_DA),

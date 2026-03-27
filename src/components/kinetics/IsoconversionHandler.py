@@ -64,7 +64,7 @@ class IsoconversionHandler:
         st.subheader("Isoconversion Results")
 
         tab1, tab2, tab3 = st.tabs(
-            ["Temperature (K)", "Time (min)", "Conversion Rate (da/dt)"]
+            ["Temperature (K)", "Time (min)", "Conversion Rate (∆α/∆t)"]
         )
 
         with tab1:

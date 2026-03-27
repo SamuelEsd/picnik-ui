@@ -88,9 +88,9 @@ class PlotManager:
             )
             
             plotly_plotter = PP(
-                title=f"{x_data} ({x_unit}) vs {y_data} ({y_unit})",
-                x_label=f"{x_data} [{x_unit}]",
-                y_label=f"{y_data} [{y_unit}]",
+                title=f"<b>{x_data} ({x_unit}) vs {y_data} ({y_unit})</b>",
+                x_label=f"<b>{x_data} [{x_unit}]</b>",
+                y_label=f"<b>{y_data} [{y_unit}]</b>",
                 from_matplotlib_fig=matplotlib_figure
             )
             return plotly_plotter
@@ -169,7 +169,7 @@ class PlotManager:
         except Exception:
             return default_min, default_max
         
-    def _colored_slider(self,label, min_value, max_value, value, key, color, unselected_color="#e0e0e0"):
+    def _colored_slider(self, label, min_value, max_value, key, color, unselected_color="#e0e0e0", on_change=None):
         st.markdown(f"""
             <style>
                 /* Thumb circles */
@@ -180,7 +180,7 @@ class PlotManager:
                 }}
             </style>
         """, unsafe_allow_html=True)
-        result = st.slider(label, min_value=min_value, max_value=max_value, value=value, key=key)
+        result = st.slider(label, min_value=min_value, max_value=max_value, key=key, on_change=on_change)
 
         components.html(f"""
             <script>
@@ -240,55 +240,61 @@ class PlotManager:
             curve_color = None
             st.warning(f"Color error for {name}: {str(e)}")
 
-        # Initialize session state keys for min/max inputs BEFORE any widget rendering
+        key_slider    = f"{key}_slider"
         key_min_input = f"{key}_min_input"
         key_max_input = f"{key}_max_input"
-        
+
+        # Seed session state on first render only
+        if key_slider not in st.session_state:
+            st.session_state[key_slider] = (float(curr_min), float(curr_max))
         if key_min_input not in st.session_state:
             st.session_state[key_min_input] = float(curr_min)
         if key_max_input not in st.session_state:
             st.session_state[key_max_input] = float(curr_max)
-        if key not in st.session_state:
-            st.session_state[key] = (float(curr_min), float(curr_max))
 
+        # Slider moved → push new values into the number inputs
+        def on_slider_change(sk=key_slider, mk=key_min_input, xk=key_max_input):
+            val = st.session_state[sk]
+            st.session_state[mk] = val[0]
+            st.session_state[xk] = val[1]
 
-        # Main layout: slider | inputs+color
+        # Number input changed → push new value into the slider
+        def on_input_change(sk=key_slider, mk=key_min_input, xk=key_max_input):
+            st.session_state[sk] = (float(st.session_state[mk]), float(st.session_state[xk]))
+
+        # Main layout: slider | inputs
         col1, col2 = st.columns([3, 1])
-        
+
         with col1:
-            slider_value = self._colored_slider(
+            self._colored_slider(
                 label=f"{name} — x range",
                 min_value=bound_min,
                 max_value=bound_max,
-                value=(st.session_state[key_min_input], st.session_state[key_max_input]),
-                key=key + "_slider",
-                color=curve_color or "#1f77b4"
+                key=key_slider,
+                color=curve_color or "#1f77b4",
+                on_change=on_slider_change,
             )
-            # Update session state AFTER slider is created
-            st.session_state[key_min_input] = slider_value[0]
-            st.session_state[key_max_input] = slider_value[1]
-        
+
         with col2:
-            # Subcolumns for min/max inputs
             input_col1, input_col2 = st.columns(2)
-            
+
             with input_col1:
-                min_input = st.number_input(
+                st.number_input(
                     "Min",
                     min_value=bound_min,
                     max_value=bound_max,
-                    value=st.session_state[key_min_input],
                     key=key_min_input,
+                    on_change=on_input_change,
                     label_visibility="collapsed"
                 )
-            
+
             with input_col2:
-                max_input = st.number_input(
+                st.number_input(
                     "Max",
                     min_value=bound_min,
                     max_value=bound_max,
-                    value=st.session_state[key_max_input],
                     key=key_max_input,
+                    on_change=on_input_change,
                     label_visibility="collapsed"
                 )
 
@@ -299,21 +305,32 @@ class PlotManager:
         with col_apply:
             if st.button("Apply changes", key=f"apply_ranges_{plot_idx}"):
                 applied = 0
+                log_lines = []
                 for ti, key in slider_keys:
-                    vals = st.session_state.get(key)
-                    if vals is None:
+                    key_min = f"{key}_min_input"
+                    key_max = f"{key}_max_input"
+                    mn = st.session_state.get(key_min)
+                    mx = st.session_state.get(key_max)
+                    log_lines.append(f"Trace {ti}: min={mn}, max={mx}")
+                    if mn is None or mx is None:
+                        log_lines.append(f"  ⚠ Skipped — key not found in session state")
                         continue
                     try:
-                        mn, mx = float(vals[0]), float(vals[1])
+                        mn, mx = float(mn), float(mx)
                         plotter.update_curve_xrange(ti, x_min=mn, x_max=mx)
+                        log_lines.append(f"  ✓ Range set to [{mn:.4g}, {mx:.4g}]")
                         applied += 1
-                    except Exception:
+                    except Exception as e:
+                        log_lines.append(f"  ✗ Error: {e}")
                         continue
+                with st.expander(f"Apply log ({applied}/{len(slider_keys)} traces updated)", expanded=applied == 0):
+                    for line in log_lines:
+                        st.caption(line)
                 if applied:
                     try:
                         plotter.show(container=placeholder) if placeholder is not None else plotter.show()
-                    except Exception:
-                        pass
+                    except Exception as e:
+                        st.error(f"Error rendering plot: {e}")
                     st.success(f"Applied ranges to {applied} trace(s) on this plot")
         with col_reset:
             if st.button("Reset sliders", key=f"reset_ranges_{plot_idx}"):
