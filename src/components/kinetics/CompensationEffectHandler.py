@@ -15,6 +15,7 @@ import plotly.graph_objects as go
 from src.utils.SessionManager import SessionManager
 from src.config import SESS_ACTIVATION_ENERGY_OBJECT, SESS_ACTIVATION_ENERGY_RESULTS, SESS_COMP_RESULTS, SESS_RUN_COMP, SESS_COMP_COL
 from src.models.results import CompensationEffectResults
+from src.components.kinetics.ActivationEnergyHandler import get_active_ae_result
 
 
 class CompensationEffectHandler:
@@ -24,7 +25,7 @@ class CompensationEffectHandler:
         """Execute compensation effect calculation and display results."""
         if SessionManager.get(SESS_RUN_COMP):
             activation_energy_object = SessionManager.get(SESS_ACTIVATION_ENERGY_OBJECT)
-            ae_results = SessionManager.get(SESS_ACTIVATION_ENERGY_RESULTS)
+            ae_results = get_active_ae_result()
 
             if activation_energy_object is None or ae_results is None:
                 st.error("Activation energy object or results not available.")

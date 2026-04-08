@@ -75,8 +75,12 @@ SESS_ISO_DA: str = 'isoconversion_d_a'
 
 # Activation Energy (Step 7)
 SESS_RUN_AE: str = 'run_ae_clicked'
-SESS_AE_METHOD: str = 'selected_ae_method'
+SESS_AE_METHOD: str = 'selected_ae_method'        # legacy single-method key (kept for compat)
+SESS_AE_METHODS: str = 'selected_ae_methods'       # list[str] of checked methods
+SESS_AE_ACTIVE_METHOD: str = 'ae_active_method'    # which method's E to feed downstream steps
+SESS_AE_SHOW_ERROR: str = 'ae_show_error_bars'     # bool toggle for error bars in chart
 SESS_AVY_P_VALUE: str = 'avy_p_value'
+SESS_VY_BOUNDS: str = 'vy_bounds'
 
 # Compensation Effect (Step 8)
 SESS_RUN_COMP: str = 'run_comp_clicked'

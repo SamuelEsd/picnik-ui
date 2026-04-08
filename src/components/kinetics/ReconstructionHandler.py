@@ -24,6 +24,7 @@ from src.config import (
     SESS_RECON_BETA_IDX,
 )
 from src.models.results import ReconstructionResults
+from src.components.kinetics.ActivationEnergyHandler import get_active_ae_result
 
 
 class ReconstructionHandler:
@@ -33,7 +34,7 @@ class ReconstructionHandler:
         """Execute model reconstruction and display results."""
         if SessionManager.get(SESS_RUN_RECON):
             activation_energy_object = SessionManager.get(SESS_ACTIVATION_ENERGY_OBJECT)
-            ae_results = SessionManager.get(SESS_ACTIVATION_ENERGY_RESULTS)
+            ae_results = get_active_ae_result()
             comp_results = SessionManager.get(SESS_COMP_RESULTS)
 
             if activation_energy_object is None or ae_results is None or comp_results is None:

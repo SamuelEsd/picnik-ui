@@ -40,6 +40,7 @@ from src.config import (
     SESS_PRED_MB_COL,
 )
 from src.models.results import ModelfreePredictionResults, ModelbasedPredictionResults
+from src.components.kinetics.ActivationEnergyHandler import get_active_ae_result
 
 
 class PredictionHandler:
@@ -65,7 +66,7 @@ class PredictionHandler:
     def _handle_modelfree_prediction(self) -> None:
         """Execute model-free prediction."""
         activation_energy_object = SessionManager.get(SESS_ACTIVATION_ENERGY_OBJECT)
-        ae_results = SessionManager.get(SESS_ACTIVATION_ENERGY_RESULTS)
+        ae_results = get_active_ae_result()
 
         if activation_energy_object is None or ae_results is None:
             st.error("Activation energy object not available.")
@@ -119,7 +120,7 @@ class PredictionHandler:
     def _handle_modelbased_prediction(self) -> None:
         """Execute model-based isothermal prediction using t_isothermal."""
         activation_energy_object = SessionManager.get(SESS_ACTIVATION_ENERGY_OBJECT)
-        ae_results = SessionManager.get(SESS_ACTIVATION_ENERGY_RESULTS)
+        ae_results = get_active_ae_result()
         comp_results = SessionManager.get(SESS_COMP_RESULTS)
         recon_results = SessionManager.get(SESS_RECON_RESULTS)
 

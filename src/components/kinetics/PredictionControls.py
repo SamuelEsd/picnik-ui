@@ -12,6 +12,7 @@ from src.config import (
     SESS_RUN_PRED_MF, SESS_RUN_PRED_MB,
     SESS_PRED_MODE, SESS_PRED_BOUNDS,
 )
+from src.components.kinetics.ActivationEnergyHandler import get_active_ae_result
 
 
 class PredictionControls:
@@ -22,7 +23,7 @@ class PredictionControls:
         st.divider()
         st.subheader("Step 10: Kinetic Predictions")
 
-        ae_results = SessionManager.get(SESS_ACTIVATION_ENERGY_RESULTS)
+        ae_results = get_active_ae_result()
         if ae_results is None:
             st.info("Complete Step 7 (Activation Energy) first to enable predictions.")
             return

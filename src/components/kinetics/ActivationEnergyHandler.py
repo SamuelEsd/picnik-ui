@@ -1,14 +1,15 @@
 """
 Activation Energy Handler Component
 
-Manages activation energy analysis method selection and execution.
-Supports five isoconversional methods: Friedman, KAS, OFW, Vyazovkin, and Advanced Vyazovkin.
+Manages activation energy analysis: runs all user-selected isoconversional methods,
+stores results as a dict keyed by method name, and displays them in a combined chart.
 """
 
 from typing import Optional
 import streamlit as st
 import numpy as np
 import pandas as pd
+import plotly.graph_objects as go
 
 from src.utils.SessionManager import SessionManager
 from src.config import (
@@ -19,26 +20,50 @@ from src.config import (
     SESS_ACTIVATION_ENERGY_RESULTS,
     SESS_ISOCONVERSION_RESULT,
     SESS_RUN_AE,
-    SESS_AE_METHOD,
+    SESS_AE_METHODS,
+    SESS_AE_ACTIVE_METHOD,
+    SESS_AE_SHOW_ERROR,
     SESS_AVY_P_VALUE,
+    SESS_VY_BOUNDS,
 )
-from src.components.kinetics.ActivationEnergyControls import AE_METHODS
+from src.components.kinetics.ActivationEnergyControls import AE_METHODS, AE_METHOD_COLORS
 from src.models.results import ActivationEnergyResults
 from picnick_dev import ActivationEnergy
 
 
+def get_active_ae_result() -> Optional[ActivationEnergyResults]:
+    """
+    Return the single ActivationEnergyResults that downstream steps should use.
+
+    If results is a dict (new multi-method format), picks by SESS_AE_ACTIVE_METHOD,
+    falling back to the best available method (aVy > Vy > KAS > OFW > Fr).
+    Also handles the legacy single-result format for backward compatibility.
+    """
+    results = SessionManager.get(SESS_ACTIVATION_ENERGY_RESULTS)
+    if results is None:
+        return None
+    if isinstance(results, dict):
+        active = SessionManager.get(SESS_AE_ACTIVE_METHOD)
+        if active and active in results:
+            return results[active]
+        for method in ("aVy", "Vy", "KAS", "OFW", "Fr"):
+            if method in results:
+                return results[method]
+        return None
+    # Legacy: stored as a single ActivationEnergyResults
+    return results
+
+
 class ActivationEnergyHandler:
-    """Executes activation energy calculations and displays results."""
+    """Executes activation energy calculations and displays combined results."""
 
     def setup(self) -> bool:
         """
         Build and store the ActivationEnergy object from session prerequisites.
 
         Returns True if the object is ready, False otherwise.
-        Silently returns False when isoconversion has not been run yet.
-        The object is only created once and reused across reruns so that
-        stateful attributes set by later steps (e.g. accepted_models from
-        compensation_effect) are not lost.
+        The object is only created once per session to preserve stateful
+        attributes (e.g. accepted_models) set by later steps.
         """
         data_extractor = SessionManager.get(SESS_DATA_EXTRACTOR)
         iso_results = SessionManager.get(SESS_ISOCONVERSION_RESULT)
@@ -46,8 +71,6 @@ class ActivationEnergyHandler:
         if data_extractor is None or iso_results is None:
             return False
 
-        # Reuse the existing object if already created — recreating it would
-        # wipe stateful attributes (e.g. accepted_models) set by later steps.
         if SessionManager.get(SESS_ACTIVATION_ENERGY_OBJECT) is not None:
             return True
 
@@ -67,123 +90,191 @@ class ActivationEnergyHandler:
             return False
 
     def handle_activation_energy(self) -> None:
-        """Execute activation energy calculation using the selected method."""
+        """Run all selected methods and display results."""
         if SessionManager.get(SESS_RUN_AE):
             activation_energy_object = SessionManager.get(SESS_ACTIVATION_ENERGY_OBJECT)
-            selected_method = SessionManager.get(SESS_AE_METHOD, "Fr")
+            selected_methods = SessionManager.get(SESS_AE_METHODS, [])
 
             if activation_energy_object is None:
                 st.error("No Activation Energy object available for calculation.")
+            elif not selected_methods:
+                st.warning("No methods selected.")
             else:
-                try:
-                    with st.spinner(f"Running {AE_METHODS[selected_method]} calculation..."):
-                        result = self._execute_method(activation_energy_object, selected_method)
+                # Preserve any previously computed results and add/overwrite with new ones.
+                existing = SessionManager.get(SESS_ACTIVATION_ENERGY_RESULTS)
+                results_dict: dict[str, ActivationEnergyResults] = (
+                    existing if isinstance(existing, dict) else {}
+                )
+
+                for method in selected_methods:
+                    with st.spinner(f"Running {AE_METHODS[method]}..."):
+                        result = self._execute_method(activation_energy_object, method)
 
                     if result is None:
-                        st.error(f"{AE_METHODS[selected_method]} calculation failed.")
+                        st.error(f"{AE_METHODS[method]} calculation failed.")
                     else:
-                        st.success(f"{AE_METHODS[selected_method]} calculation completed successfully")
-                        SessionManager.set(
-                            SESS_ACTIVATION_ENERGY_RESULTS,
-                            ActivationEnergyResults(
-                                method=selected_method,
-                                method_label=AE_METHODS[selected_method],
-                                alpha=np.array(result[0]),
-                                E=np.array(result[2]),
-                                error=np.array(result[3]),
-                                raw_result=result,
-                            ),
+                        alpha, E, error = self._parse_result(result, method)
+                        results_dict[method] = ActivationEnergyResults(
+                            method=method,
+                            method_label=AE_METHODS[method],
+                            alpha=alpha,
+                            E=E,
+                            error=error,
+                            raw_result=result,
                         )
+                        st.success(f"{AE_METHODS[method]} completed")
 
-                except Exception as e:
-                    st.error(f"Error during {AE_METHODS[selected_method]} calculation: {str(e)}")
+                if results_dict:
+                    SessionManager.set(SESS_ACTIVATION_ENERGY_RESULTS, results_dict)
+                    # Default active method to the best one computed
+                    current_active = SessionManager.get(SESS_AE_ACTIVE_METHOD)
+                    if current_active not in results_dict:
+                        for m in ("aVy", "Vy", "KAS", "OFW", "Fr"):
+                            if m in results_dict:
+                                SessionManager.set(SESS_AE_ACTIVE_METHOD, m)
+                                break
 
             SessionManager.set(SESS_RUN_AE, False)
 
         # Always display from session if results exist
-        ae_results = SessionManager.get(SESS_ACTIVATION_ENERGY_RESULTS)
-        if ae_results is not None:
-            self._display_activation_energy_results(ae_results)
+        results = SessionManager.get(SESS_ACTIVATION_ENERGY_RESULTS)
+        if results is not None:
+            results_dict = results if isinstance(results, dict) else {}
+            if results_dict:
+                self._display_results(results_dict)
 
     def _execute_method(
-        self, activation_energy_object: ActivationEnergy, method: str
-    ) -> Optional[pd.DataFrame]:
-        """
-        Execute the selected activation energy method.
-
-        Args:
-            activation_energy_object: ActivationEnergy instance.
-            method: Method to execute ('Fr', 'KAS', 'OFW', 'Vy', or 'aVy').
-
-        Returns:
-            Result DataFrame or None on error.
-        """
+        self, ae_object: ActivationEnergy, method: str
+    ) -> Optional[object]:
+        """Execute a single activation energy method and return its raw result."""
         try:
             if method == "Fr":
-                result = activation_energy_object.Fr()
+                return ae_object.Fr()
             elif method == "KAS":
-                result = activation_energy_object.KAS()
+                return ae_object.KAS()
             elif method == "OFW":
-                result = activation_energy_object.OFW()
+                return ae_object.OFW()
             elif method == "Vy":
-                result = activation_energy_object.Vy(bounds=(1, 300))
+                bounds = SessionManager.get(SESS_VY_BOUNDS, (1.0, 300.0))
+                return ae_object.Vy(bounds=bounds)
             elif method == "aVy":
+                bounds = SessionManager.get(SESS_VY_BOUNDS, (1.0, 300.0))
                 p_value = SessionManager.get(SESS_AVY_P_VALUE, 0.50)
-                result = activation_energy_object.aVy(bounds=(1, 300), p=p_value)
+                return ae_object.aVy(bounds=bounds, p=p_value)
             else:
                 st.error(f"Unknown method: {method}")
                 return None
-
-            return result
         except Exception as e:
-            st.error(f"Method execution failed: {str(e)}")
+            st.error(f"{method} execution failed: {str(e)}")
             return None
 
-    def _display_activation_energy_results(self, ae_results: ActivationEnergyResults) -> None:
-        """Display activation energy calculation results."""
-        import plotly.graph_objects as go
+    def _parse_result(
+        self, result: object, method: str
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """
+        Extract (alpha, E, error) arrays from a raw pICNIK method result.
 
-        st.subheader(f"Activation Energy Results — {ae_results.method_label}")
+        pICNIK return shapes:
+          Fr  → (alpha, intercepts, E, error)   4-tuple
+          OFW → (alpha, E, error)               3-tuple
+          KAS → (alpha, E, error)               3-tuple
+          Vy  → (alpha, E)                      2-tuple  (error via Vy_error)
+          aVy → (alpha, E)                      2-tuple  (error via aVy_error)
+        """
+        result = tuple(result)
+        if method == "Fr":
+            alpha, _, E, error = result[0], result[1], result[2], result[3]
+        elif method in ("OFW", "KAS"):
+            alpha, E, error = result[0], result[1], result[2]
+        else:
+            # Vy / aVy — no error array in the main return
+            alpha, E = result[0], result[1]
+            error = np.zeros_like(E)
+
+        return np.array(alpha), np.array(E), np.array(error)
+
+    def _display_results(self, results_dict: dict[str, ActivationEnergyResults]) -> None:
+        """Display all computed methods in one combined chart."""
+        st.subheader("Activation Energy Results — E(α)")
+
+        show_error = SessionManager.get(SESS_AE_SHOW_ERROR, True)
 
         fig = go.Figure()
-        fig.add_trace(
-            go.Scatter(
-                x=ae_results.alpha,
-                y=ae_results.E,
-                mode="lines+markers",
-                name=f"E ({ae_results.method})",
-                error_y=dict(type="data", array=ae_results.error, visible=True),
-                marker=dict(size=5),
+        for method, res in results_dict.items():
+            color = AE_METHOD_COLORS.get(method, "#888888")
+            has_error = show_error and bool(np.any(res.error != 0))
+            fig.add_trace(
+                go.Scatter(
+                    x=res.alpha,
+                    y=res.E,
+                    mode="lines+markers",
+                    name=res.method_label,
+                    marker=dict(size=5, color=color),
+                    line=dict(color=color),
+                    error_y=dict(
+                        type="data",
+                        array=res.error,
+                        visible=has_error,
+                        color=color,
+                        thickness=1.2,
+                    ),
+                )
             )
-        )
+
         fig.update_layout(
-            title=f"Activation Energy E(α) — {ae_results.method_label}",
             xaxis_title="Conversion (α)",
             yaxis_title="E [kJ/mol]",
-            height=400,
+            height=440,
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
         )
-        st.plotly_chart(fig, width="stretch")
+        st.plotly_chart(fig, use_container_width=True)
 
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            st.metric("Mean E", f"{float(np.mean(ae_results.E)):.2f} kJ/mol")
-        with col2:
-            st.metric("Min E", f"{float(np.min(ae_results.E)):.2f} kJ/mol")
-        with col3:
-            st.metric("Max E", f"{float(np.max(ae_results.E)):.2f} kJ/mol")
+        # Active method selector — drives downstream steps
+        active_method = SessionManager.get(SESS_AE_ACTIVE_METHOD)
+        if active_method not in results_dict:
+            active_method = next(iter(results_dict))
 
-        df_result = pd.DataFrame({
-            "alpha": ae_results.alpha,
-            "E [kJ/mol]": ae_results.E,
-            "error [kJ/mol]": ae_results.error,
-        })
-        st.dataframe(df_result, width="stretch")
-
-        st.download_button(
-            label=f"Download {ae_results.method} Results (CSV)",
-            data=df_result.to_csv(index=False),
-            file_name=f"activation_energy_{ae_results.method}.csv",
-            mime="text/csv",
-            key=f"download_ae_{ae_results.method}",
+        new_active = st.selectbox(
+            "Use for downstream steps (Compensation Effect, Reconstruction, Prediction):",
+            options=list(results_dict.keys()),
+            format_func=lambda k: AE_METHODS[k],
+            index=list(results_dict.keys()).index(active_method),
+            key="ae_active_method_selector",
+            help=(
+                "The E(α) from this method will be passed to Steps 8–10. "
+                "aVy is the most rigorous choice when methods disagree."
+            ),
         )
+        SessionManager.set(SESS_AE_ACTIVE_METHOD, new_active)
 
+        # Per-method metrics and download buttons
+        with st.expander("Method details & downloads", expanded=False):
+            for method, res in results_dict.items():
+                color = AE_METHOD_COLORS.get(method, "#888888")
+                st.markdown(
+                    f'<span style="display:inline-block;width:12px;height:12px;'
+                    f'border-radius:2px;background:{color};margin-right:6px"></span>'
+                    f"**{res.method_label}**",
+                    unsafe_allow_html=True,
+                )
+                mc1, mc2, mc3 = st.columns(3)
+                with mc1:
+                    st.metric("Mean E", f"{float(np.mean(res.E)):.2f} kJ/mol")
+                with mc2:
+                    st.metric("Min E", f"{float(np.min(res.E)):.2f} kJ/mol")
+                with mc3:
+                    st.metric("Max E", f"{float(np.max(res.E)):.2f} kJ/mol")
+
+                df = pd.DataFrame({
+                    "alpha": res.alpha,
+                    "E [kJ/mol]": res.E,
+                    "error [kJ/mol]": res.error,
+                })
+                st.download_button(
+                    label=f"Download {method} results (CSV)",
+                    data=df.to_csv(index=False),
+                    file_name=f"activation_energy_{method}.csv",
+                    mime="text/csv",
+                    key=f"download_ae_{method}",
+                )
+                st.divider()
