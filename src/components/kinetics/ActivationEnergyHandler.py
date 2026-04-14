@@ -174,24 +174,17 @@ class ActivationEnergyHandler:
         """
         Extract (alpha, E, error) arrays from a raw pICNIK method result.
 
-        pICNIK return shapes:
-          Fr  → (alpha, intercepts, E, error)   4-tuple
-          OFW → (alpha, E, error)               3-tuple
-          KAS → (alpha, E, error)               3-tuple
-          Vy  → (alpha, E)                      2-tuple  (error via Vy_error)
-          aVy → (alpha, E)                      2-tuple  (error via aVy_error)
+        All methods in picnick_dev return: (alpha, T_mean, E, error[, extras])
+          index [0] = alpha (conversion values)
+          index [1] = T_mean (mean temperatures — not used here)
+          index [2] = E (activation energies in kJ/mol)
+          index [3] = error (uncertainty)
         """
         result = tuple(result)
-        if method == "Fr":
-            alpha, _, E, error = result[0], result[1], result[2], result[3]
-        elif method in ("OFW", "KAS"):
-            alpha, E, error = result[0], result[1], result[2]
-        else:
-            # Vy / aVy — no error array in the main return
-            alpha, E = result[0], result[1]
-            error = np.zeros_like(E)
-
-        return np.array(alpha), np.array(E), np.array(error)
+        alpha = np.array(result[0])
+        E     = np.array(result[2])
+        error = np.array(result[3])
+        return alpha, E, error
 
     def _display_results(self, results_dict: dict[str, ActivationEnergyResults]) -> None:
         """Display all computed methods in one combined chart."""
