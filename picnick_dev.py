@@ -98,7 +98,7 @@ class DataExtraction:
         Beta     =   self.Beta
         BetaEr   =   self.BetaError
         T0       =   self.T0
-        print(f'Reading files and creating DataFrames...\n')
+        #print(f'Reading files and creating DataFrames...\n')
         for item in flist:
             #csv files can use a tab or a coma as separator.
             try:
@@ -1795,7 +1795,7 @@ class ActivationEnergy:
                         # noinspection PyTupleAssignmentBalance
                         popt, pcov = curve_fit(g, x, y)
                     except RuntimeError:
-                        pass
+                        continue
                     residuals = y - g(x, *popt)
                     ss_res = np.sum(residuals ** 2)
                     ss_tot = np.sum((y - np.mean(y)) ** 2)
