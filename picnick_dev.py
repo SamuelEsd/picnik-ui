@@ -42,12 +42,12 @@ For information about the depencies we refer the user to:
 #-----------------------------------------------------------------------------------------------------------
 class DataExtraction:
     """
-    Extractor to manipulate raw data to create lists and Data Frames 
+    Class to extract data from raw data to create lists and Data Frames
     that will be used to compute the Activation Energy.
     """
     def __init__(self):
         """
-        Constructor. 
+        Constructor.
 
         Parameters:    None
 
@@ -71,28 +71,27 @@ class DataExtraction:
         self.diffAdvIsoDF   = pd.DataFrame()  #Advanced isoconversional conversion rate DataFrame
 #-----------------------------------------------------------------------------------------------------------    
     def read_files(self, flist, encoding='utf8', diff_smoother = 'SG', summary=True):
-        """ 
-        Reads each TGA file as a pandas DataFrame and calculates de heating rate. Each DataFrame is stored
-        as an element of the attribute 'DFlis'. 
-        The columns of each DataFrame are: 'time [min]', 'Temperature [C]', 'mass [mg]', '%m', 'Temperature [K]', 
-        
-        Parameters:    flist : list object containing the paths of the files to be used.
-        
-                       encoding : The available encodings for pandas.read_csv() method. Includes but not limited 
-                                  to 'utf8', 'utf16','latin1'. For more information on the python standar encoding:
-                                  (https://docs.python.org/3/library/codecs.html#standard-encodings).
-
-                       diff_smoother: String. Method to smooth the numerical derivative: Available options are 'SG'
-                                      for a Savitzky-Golay filter with a window on i% the lenght of the array and
-                                      cubic polynomial. Or 'Sp3' for a B cubic spline with smoothing parameter lambda=0.5.
-
-                       summary: Bool. True for a graphic summary of the data.
-
-        Returns:       Beta: Array of the fitted heating rates.
-                       
-                       T0: Array of experimental initial temperatures.
         """
-    
+        Reads each file as a pandas DataFrame and calculates the heating rate. Each DataFrame is stored
+        as an element of the attribute 'DFlis'.
+
+        The columns of each final DataFrame are: 'time [min]', 'Temperature [C]', 'mass [mg]', '%m', 'Temperature [K]',
+
+        Args:
+            flist (list): list object containing the paths of the files to be used.
+            encoding (str): The available encodings for pandas.read_csv() method. Includes but not limited
+                         to 'utf8', 'utf16','latin1'. For more information on the python standard encoding:
+                         (https://docs.python.org/3/library/codecs.html#standard-encodings).
+            diff_smoother (str): Method to smooth the numerical derivative: Available options are 'SG'
+                                 for a Savitzky-Golay filter with a window on i% the length of the array and
+                                 cubic polynomial. Or 'Sp3' for a B cubic spline with smoothing parameter lambda=0.5.
+            summary (bool): True for a graphic summary of the data.
+
+        Returns:
+            Beta: Array of the fitted heating rates.
+            T0: Array of experimental initial temperatures.
+        """
+
         #print("Files to be used: \n{}\n ".format(flist))
         DFlis    =   self.DFlis
         Beta     =   self.Beta
@@ -103,17 +102,17 @@ class DataExtraction:
             #csv files can use a tab or a coma as separator.
             try:
                 DF = pd.read_csv(item,  sep = '\t', encoding = encoding)
-                #stores the initial temperature of the ith experiment
+                #stores the initial temperature in kelvin of the i-th experiment
                 T0.append(DF[DF.columns[1]][0]+273.15)                       
             except IndexError:
                 DF = pd.read_csv(item,  sep = ',', encoding = encoding)
-                #stores the initial temperature of the ith experiment
+                #stores the initial temperature in kelvin of the i-th experiment
                 T0.append(DF[DF.columns[1]][0]+273.15)                       
             #computes the mass loss percentage
             DF['%m'] = 100*(DF[DF.columns[2]]/DF[DF.columns[2]][0])
             #creates a column for the temperature in Kelvin
             DF['Temperature [K]'] = DF[DF.columns[1]] + 273.15      
-            #Derivatives with smoothing filters
+            #Derivatives without smoothing filters
             dwdt = np.gradient(DF[DF.columns[2]].values,
                        DF[DF.columns[0]].values,
                                edge_order=2)
@@ -122,6 +121,7 @@ class DataExtraction:
                                  edge_order=2)
             dTdt = np.gradient(DF['Temperature [K]'].values,
                                DF[DF.columns[0]].values)
+            #Smoothing filters
             if diff_smoother == 'SG':
                 try:
                     dwdt_sm = savgol_filter(dwdt,
@@ -166,33 +166,36 @@ class DataExtraction:
                 dTdt_sm = spl_dTdt(DF[DF.columns[0]])
             else:
                 raise ValueError("Smoothing method not available. Type 'SG' for a Savitxky-Golay filter or 'Sp3' for a B-cubic spline.")
+            #Smoothed differencial thermogram
             DF['dw/dt'] = DF[DF.columns[0]]
             DF['dw/dt'] = dwdt_sm
-            #computes the differential thermogram with a Savitzki-Golay filter                                    
-            dwdt_p = np.gradient(DF['%m'].values,
-                                 DF[DF.columns[0]].values)
+            #Smoothed differencial thermogram in percentage
             DF['dw/dt [%/min]'] = DF[DF.columns[0]]
             DF['dw/dt [%/min]'] = dwdt_p_sm
-            #computes the heating rate with a Savitzki-Golay filter
-
-
+            #Smoothed numerical instantaneous heating rate
             DF['dT/dt'] = DF[DF.columns[0]]
             DF['dT/dt'] = dTdt_sm
             
-            #computes the heating rate
+            #Computes the heating rate by means of linear regression
             LR = linregress(DF[DF.columns[0]],                            
                             DF[DF.columns[1]])
-
+            #Stores the slope and associated error of the linear regression of temperature vs time
             BetaEr.append(LR.intercept_stderr)
             Beta.append(LR.slope)
+
             DFlis.append(DF)
 
         self.DFlis     = DFlis                     #List of the DataFrames constructed
         self.Beta      = np.array(Beta)            #Array of heating rates in ascendent order
-        self.BetaError = np.array(BetaEr)   #Array of correlation coefficients for the heating rates
+        self.BetaError = np.array(BetaEr)          #Array of correlation coefficients for the heating rates
         self.T0        = np.array(T0)              #Array of experimental initial temperatures
 
-        if summary == True:
+        """         
+        print(f'The computed heating rates are:\n')
+                for b in range(len(Beta)):
+                    print(f'\n{Beta[b]:6.3f} +/- {BetaEr[b]:.3f} K/min\n')
+        """
+        if summary:
             #TG visualization
             fig, axs = plt.subplots(2 , 3,figsize=(18,8))
             fig.suptitle('Summary of the input data',fontsize=20)
