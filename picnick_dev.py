@@ -260,25 +260,26 @@ class DataExtraction:
 #-----------------------------------------------------------------------------------------------------------
     def plot_data(self,x_data='time',y_data='TG',x_units='min',y_units='%'):
         """
-        Visualizer of the input data. 
+        Visualizer of the input data.
+
         Plots available: mass vs time/temperature ; mass loss rate vs time/temperature; heating rate vs time/temperature.
 
-        Parameters:     x_data: String. Data to plot in the 'x' axis. Options are: 'time'(default) or 'temperature'.
-                        
-                        y_data: String. Data to plot in the 'y' axis. Options are: 'TG'(default) for the thermogram, 
-                                        'DTG' for the differential thermogram or 'dT/dt' for the heating rate.
+        Args:
+            x_data (str): Data to plot in the 'x' axis. Options are: 'time'(default) or 'temperature'.
+            y_data (str): Data to plot in the 'y' axis. Options are: 'TG'(default) for the thermogram,
+                         'DTG' for the differential thermogram or 'dT/dt' for the heating rate.
+            x_units (str): Units of the x-data. Options depend on the x_data parameter. If
+                           x_data='time', the only value for this parameter is: 'min'(default). If x_data='temperature', options
+                           are: 'C' or 'K'.
+            y_units (str): Units of the y-data. Options depend on the y_data parameter:
+                           For 'TG', options are: '%'(default) or 'mg'.
+                           For 'DTG', options are: '%/min', 'mg/min', '%/s' or 'mg/s'.
+                           For 'dT/dt', options are: 'K/min'(default), 'C/min', 'K/s' or 'C/s'.
 
-                        x_units: String. Units of the x-data. Options depend on the x_data parameter. If
-                                 x_data='time', the only value for this parameter is: 'min'(default). If x_data='temperature', options 
-                                 are: 'C' or 'K'.
-
-                        y_units: String. Units of the y-data. Options depend on the y_data parameter:
-                                 For 'TG', options are: '%'(default) or 'mg'.
-                                 For 'DTG', options are: '%/min', 'mg/min', '%/s' or 'mg/s'.
-                                 For 'dT/dt', options are: 'K/min'(default), 'C/min', 'K/s' or 'C/s'.
-        Returns:        A plot of x_data vs y_data.
-                     
+        Returns:
+            A plot of x_data vs y_data.
         """
+
         #Data containers
         DFlis = self.DFlis
         Beta  = self.Beta
@@ -295,6 +296,7 @@ class DataExtraction:
         #Dictionaries of valid combinations of data and units.
         #Keys are formed from the function parameters. 
         #Values correspond to the column index in the DataFrames of the atrribute DFlis.
+
         #Valid combinations of x-data+x-units
         x_dict={x_keys[0]:0,
                 x_keys[4]:4,
@@ -321,31 +323,30 @@ class DataExtraction:
         plt.legend()
         return plot_figure
 #-----------------------------------------------------------------------------------------------------------
- 
-    def hello(self):
-        return "Hello from DataExtraction!"
     # noinspection PyUnboundLocalVariable
     def Conversion(self,T0, Tf, diff_smoother ='SG'):
         """
-        Calculates the conversion values for a given temperature range. 
-        Not all experimental points are suitable for the isoconversional 
-        analysis, so a temperature analysis range must be selected based 
-        on the thermal profile of the sample.
-        
-        Parameters:    T0: List of initial temperatures in Kelvin of the interval where the process to study is.
-                         
-                       Tf: List of final temperatures in Kelvin of the interval where the process to study is.
+        Calculates the conversion values for a given temperature range from T0 to Tf.
 
-                       diff_smoother: String. Method to smooth the numerical derivative: Available options are 'SG'
-                                      for a Savitzky-Golay filter with a window on i% the lenght of the array and
-                                      cubic polynomial. Or 'Sp3' for a B cubic spline with smoothing parameter lambda=0.5.
+        Not all experimental points are suitable for the isoconversional analysis, so a temperature analysis range
+        must be selected based on the thermal profile of the sample.
 
-        Returns:       A plot of the temperature range to be used in the analysis.
-                       
+        Args:
+            T0 (list[float]): List of initial temperatures in Kelvin of the interval where the process to study is.
+            Tf (list[float]): List of final temperatures in Kelvin of the interval where the process to study is.
+            diff_smoother (str): Method to smooth the numerical derivative: Available options are 'SG'
+                                 for a Savitzky-Golay filter with a window on i% the lenght of the array and
+                                 cubic polynomial. Or 'Sp3' for a B cubic spline with smoothing parameter lambda=0.5.
+
+        Returns:
+            A plot of the temperature range to be used in the analysis.
         """
+        self.seg_DFlis = []
+
         DFlist = self.DFlis
-        NDFl = []
+        NDFl   = []
         print(f'Computing conversion values...')
+        #Itertions over each DataFrame (corresponding to an experiment)
         for i in range(len(DFlist)):
             #filters the DataFrames based on the temperature limits
             item = DFlist[i]
@@ -353,9 +354,10 @@ class DataExtraction:
             item = item.reset_index(drop=True)
             #calculates the conversion
             item['alpha'] = (item[item.columns[2]][0]-item[item.columns[2]])/(item[item.columns[2]][0]-item[item.columns[2]][item.shape[0]-1])
-            #computes the cnversion rate with a Savitzki-Golay filter
+            #computes the conversion rate without a smooth filter
             dadt = np.gradient(item['alpha'].values,
                                item[item.columns[0]].values)
+            #Smooth filter
             if diff_smoother == 'SG':
                 try:
                     dadt_sm = savgol_filter(dadt,
@@ -374,14 +376,14 @@ class DataExtraction:
                 dadt_sm = spl(item[item.columns[0]].values)
             item['da/dt'] = item[item.columns[0]]
             item['da/dt'] = dadt_sm
-
+            #Additional filter over conversion values to minimize singularities in the ends of the interval [0,1]
             item = item.loc[(item['alpha'] > 0.002) & (item['alpha'] < 0.998)]
             NDFl.append(item)
 
-        alpha = []
-        T = []
-        t = []
-        da_dt = []
+        alpha = self.alpha
+        T = self.T
+        t = self.t
+        da_dt = self.da_dt
 
         #To create the Isoconversional DataFrames interpolation is needed. 
         #In order to make the interpolation the x values must be strictly in ascending order.
@@ -420,7 +422,7 @@ class DataExtraction:
         #plt.style.use('tableau-colorblind10')
 
         markers = ["o","v","s","*","x","^","p","<","2",">"]
-        #Plot of the thermograms showing the anaysis range.
+        #Plot of the thermograms showing the analysis range.
         fig, ax1 = plt.subplots(figsize=(12,9))
 
         for i in range(len(NDFl)):
@@ -457,9 +459,10 @@ class DataExtraction:
         da_dt = self.da_dt
         Beta  = self.Beta
         
-        TempAdvIsoDF = self.TempAdvIsoDF   
-        timeAdvIsoDF = self.timeAdvIsoDF
-        diffAdvIsoDF = self.diffAdvIsoDF  
+        TempAdvIsoDF = pd.DataFrame()
+        timeAdvIsoDF = pd.DataFrame()
+        diffAdvIsoDF = pd.DataFrame()
+
         print(f'Creating Isoconversion DataFrames...')
         
         adv_alps = np.arange(alpha[-1][0],alpha[-1][-1],d_a)
@@ -491,9 +494,9 @@ class DataExtraction:
             TempAdvIsoDF.index = adv_alps
             diffAdvIsoDF.index = adv_alps
 
-            self.TempAdvIsoDF = TempAdvIsoDF      #Isoconversional DataFrame of temperature for the advanced Vyazovkin method (aVy)
-            self.timeAdvIsoDF = timeAdvIsoDF      #Isoconversional DataFrame of time for the advanced Vyazovkin method (aVy)
-            self.diffAdvIsoDF = diffAdvIsoDF      #Isoconversional DataFrame of conversion rate for the advanced Vyazovkin method (aVy)
+            self.TempAdvIsoDF = TempAdvIsoDF      #Isoconversional DataFrame of temperature
+            self.timeAdvIsoDF = timeAdvIsoDF      #Isoconversional DataFrame of time
+            self.diffAdvIsoDF = diffAdvIsoDF      #Isoconversional DataFrame of conversion rate
             self.d_a          = d_a               #Size of the \Delta\alpha step
         
         print(f'Done')
@@ -688,7 +691,7 @@ class DataExtraction:
                      self.da_dt[i],
                      label=str(np.round(self.Beta[i],decimals=1))+' K/min')
             plt.xlabel(self.DFlis[i].columns[0])
-            plt.ylabel(r'α')
+            plt.ylabel(r'$\alpha$')
             plt.legend()
         return plt.show()
 #-----------------------------------------------------------------------------------------------------------
@@ -696,68 +699,67 @@ class ActivationEnergy:
     """
 	Uses the attributes of DataExtraction to compute activation energy values based on five methods: 
     Friedman, FOW, KAS, Vyazovkin and Advanced Vyazovkin.
-    This class also contains methods to: compute the pre-exponential factor based on the compensation effect, numerically reconstruct the integral reaction model, compute model-based or model-free predictions and export the aforementioned data.
+
+    This class also contains methods to: compute the pre-exponential factor based on the compensation effect,
+    numerically reconstruct the integral reaction model, compute model-based or model-free predictions and export
+    the resultas.
     """
     def __init__(self, Beta, T0, IsoTables):
         """
-		Constructor. Defines variables and the constant R=8.314 J/(mol K)
+        Constructor. Defines variables and the constant R=0.008314 kJ/(mol K)
 
-        Parameters:         Beta         : array object containing the values of heating 
-                                           rate for each experiment.
- 
-                            T0           : array of initial experimental temperatures.
-
-                            TempIsoDF    : pandas DataFrame containing the isoconversional
-                                           temperatures.  
-                      
-                            diffIsoDF    : pandas DataFrame containing the isoconversional
-                                           conversion rate (da_dt).
-
-                            TempAdvIsoDF : pandas DataFrame containing the isoconversional
-                                           temperatures, corresponding to evenly spaced values 
-                                           of conversion. 
-                            
-                            timeAdvIsoDF : pandas DataFrame containing the isoconversional
-                                           times, corresponding to evenly spaced values of  
-                                           conversion.     
+        Args:
+            Beta (list[float]): Array object containing the values of heating rate for each experiment.
+                                See picnik.DataExtraction.read_files().
+            T0 (list[float]): Array of initial experimental temperatures. See picnik.DataExtraction.read_files().
+            IsoTables (list[pd.DataFrame]): List of Isoconversional tables in pandas.DataFrame format.
+                                            See picnik.DataExtraction.Isoconversion().
         """
-        
+
+
         self.Beta         = Beta             #Array of heating rates
         self.logB         = np.log(Beta)     #Array of log10(heating rate) 
         self.TempAdvIsoDF = IsoTables[0]     #Isoconversional DataFrame of temperatures
         self.timeAdvIsoDF = IsoTables[1]     #Isoconversional DataFrame of time
         self.diffAdvIsoDF = IsoTables[2]     #Isoconversional DataFrames of conversion rates
         self.T0           = T0               #Array of initial experimental temperatures
-        self.E_Fr         = [[],[],[],[]]       #Container for the Friedmann (Fr) method results
-        self.E_OFW        = [[],[],[],[]]       #Container for the OFW method (OFW) results
-        self.E_KAS        = [[],[],[],[]]       #Container for the KAS method (KAS) results
-        self.E_Vy         = [[],[],[],[]]       #Container for the Vyazovkin method (Vy) results
-        self.E_aVy        = [[],[],[],[]]       #Container for the advanced Vyazovkin method (aVy)results
+        self.E_Fr         = []               #Container for the Friedmann (Fr) method results
+        self.E_OFW        = []               #Container for the OFW method (OFW) results
+        self.E_KAS        = []               #Container for the KAS method (KAS) results
+        self.E_Vy         = []               #Container for the Vyazovkin method (Vy) results
+        self.E_aVy        = []               #Container for the advanced Vyazovkin method (aVy) results
 
         self.R            = 0.0083144626     #Universal gas constant 0.0083144626 kJ/(mol*K)
-        self.used_methods = []
+        self.used_methods = []               #Stores the methods used in an analysis
+        self.accepted_models = None          #Stores accepted model in compensation effect fits
 #-----------------------------------------------------------------------------------------------------------
     def Fr(self):
         """
         Computes the Activation Energy based on the Friedman treatment.
-        \\ln{(dα/dt)}_{α ,i} = \\ln{[A_{α}f(α)]}-\\frac{E_{α}}{RT_{α ,i}}
+        \ln{(d\alpha/dt)}_{\alpha ,i} = \ln{[A_{\alpha}f(\alpha)]}-\frac{E_{\alpha}}{RT_{\alpha ,i}}
 
-        Parameters:    None
+        Returns:
+            tuple[list[float]] :
+                tuple[0] :  alpha  : Numpy array containing conversion values.
+                tuple[1] :  T_a    : Numpy array containing temperature values associated to the
+                                     conversion values in tupĺe[0] averaged over all the heating rates.
+                tuple[2] :  E_Fr   : Numpy array containing the activation energy values
+                                     obtained by the Friedman method associated to the
+                                     conversion values in tupĺe[0].
+                tuple[3] :  Fr_95e : Numpy array containing the standard deviation of the.
+                                     activation energies obtained by the Friedman method
+                                     associated to the conversion values in tupĺe[0].
+                tuple[4] :  Fr_b   : Numpy array containing the intersection values obtained
+                                     by the linear regression in the Friedman method associated
+                                     to the conversion values in tupĺe[0].
 
-        Returns:       Tuple of arrays:
-                       E_Fr   : numpy array containing the activation energy values 
-                                obtained by the Friedman method.
-             
-                       Fr_95e : numpy array containing the standard deviation of the.
-                                activation energies obtained by the Friedman method.
-                       Fr_b   : numpy array containing the intersection values obtained 
-                                by the linear regression in the Friedman method.
         ----------------------------------------------------------------------------------
         Reference:     H. L. Friedman, Kinetics of thermal degradation of char-forming plastics
                        from thermogravimetry. application to a phenolic plastic, in: Journal of
                        polymer science part C: polymer symposia, Vol. 6, Wiley Online Library,
                        1964, pp. 183–195.
         """
+
         a_Fr      = []
         E_Fr      = []
         E_Fr_err  = []
@@ -771,15 +773,15 @@ class ActivationEnergy:
             try:
             #Linear regression over all the conversion values in the isoconversional Dataframes
                 y     = np.log(diffIsoDF.iloc[i].values)             #log(da_dt)
-                x     = 1/(TempIsoDF.iloc[i].values)                 #1/T
+                x     = 1 / TempIsoDF.iloc[i].values                 #1/T
                 LR    = linregress(x,y)
-                E_a_i = -(self.R)*(LR.slope)                         #Activation Energy
+                E_a_i = -self.R * LR.slope                         #Activation Energy in kJ/mol
 
                 a_Fr.append(TempIsoDF.index.values[i])
                 E_Fr.append(E_a_i)            
                 T_Fr.append(T_prom[i])
                 Fr_b.append(LR.intercept)                            #ln[Af(a)]
-                error = -(self.R)*(LR.stderr)                        #Standard deviation of the activation energy
+                error = -self.R * LR.stderr  #Standard deviation of the activation energy
                 E_Fr_err.append(error)
             except ValueError:
                 pass
@@ -798,18 +800,21 @@ class ActivationEnergy:
 #-----------------------------------------------------------------------------------------------------------
     def OFW(self):
         """
-        Computes the Activation Energy based on the Osawa-Flynn-Wall (OFW) treatment.
-        \\ln{β_{i}} = cnt - 1.052\\frac{E_{α}}{RT_{α ,i}}
+        Computes the Activation Energy based on the Ozawa-Flynn-Wall (OFW) treatment.
+        $\ln{\beta_{i}} = cnt - 1.052\frac{E_{\alpha}}{RT_{\alpha ,i}}$
 
-        Parameters:    None
+        Returns:
+            tuple[list[float]] :
+                tuple[0] :  alpha  : Numpy array containing conversion values.
+                tuple[1] :  T_a    : Numpy array containing temperature values associated to the
+                                     conversion values in tupĺe[0] averaged over all the heating rates.
+                tuple[2] :  E_OFW  : Numpy array containing the activation energy values
+                                     obtained by the Ozawa-Flynn-Wall method associated to the
+                                     conversion values in tupĺe[0].
+                tuple[3] :  OFW_s  : Numpy array containing the standard deviation of the.
+                                     activation energies obtained by the Ozawa-Flynn-Wall method
+                                     associated to the conversion values in tupĺe[0].
 
-        Returns :      Tuple of arrays:
-                       E_OFW   : numpy array containing the activation energy values 
-                                 obtained by the Ozawa_Flynn-Wall method
-             
-                       OFW_s   : numpy array containing the standard deviation of the 
-                                 activation energy values obtained by the linear regression 
-                                 in the Ozawa-Flynn-Wall method
         -----------------------------------------------------------------------------------------------
         References:   T. Ozawa, A new method of analyzing thermogravimetric data, Bulletin
                       of the chemical society of Japan 38 (11) (1965) 1881–1886.
@@ -829,11 +834,11 @@ class ActivationEnergy:
         for i in range(TempIsoDF.shape[0]):
             try:
             #Linear regression over all the conversion values in the isoconversional Dataframes
-                y = (logB)                                           #log(β)
-                x = 1/(TempIsoDF.iloc[i].values)                     #1/T
+                y = logB                                           #log(\beta)
+                x = 1/TempIsoDF.iloc[i].values                     #1/T
                 LR = linregress(x,y)
-                E_a_i = -(self.R/1.052)*(LR.slope)                   #Activation energy
-                error = -(self.R/1.052)*(LR.stderr)                  #Standard deviation of the activation energy
+                E_a_i = -(self.R / 1.052) * LR.slope               #Activation energy
+                error = -(self.R / 1.052) * LR.stderr              #Standard deviation of the activation energy
                 E_OFW_err.append(error)
                 T_OFW.append(T_prom[i])
                 E_OFW.append(E_a_i)
@@ -854,17 +859,20 @@ class ActivationEnergy:
     def KAS(self):
         """
         Computes the Activation Energy based on the Kissinger-Akahira-Sunose (KAS) treatment.
-        \\ln{\\frac{\β_{i}}{T^{2}_{α ,i}} = cnt - \\frac{E_{α}}{RT_{α ,i}}
+        \ln{\frac{\beta_{i}}{T^{2}_{\alpha ,i}} = cnt - \frac{E_{\alpha}}{RT_{\alpha ,i}}
          
-        Parameters:    None
+         Returns:
+            tuple[list[float]] :
+                tuple[0] :  alpha  : Numpy array containing conversion values.
+                tuple[1] :  T_a    : Numpy array containing temperature values associated to the
+                                     conversion values in tupĺe[0] averaged over all the heating rates.
+                tuple[2] :  E_KAS  : Numpy array containing the activation energy values
+                                     obtained by the Kissinger-Akahra-Sunose method associated to the
+                                     conversion values in tupĺe[0].
+                tuple[3] :  KAS_s  : Numpy array containing the standard deviation of the.
+                                     activation energies obtained by the Kissinger-Akahra-Sunose method
+                                     associated to the conversion values in tupĺe[0].
 
-        Returns :      Tuple of arrays:
-                       E_KAS   : numpy array containing the activation energy values 
-                                 obtained by the Kissinger-Akahra-Sunose method.
-             
-                       KAS_s   : numpy array containing the standard deviation of the 
-                                 activation energy values obtained by the linear regression 
-                                 in the Kissinger-Akahra-Sunose method.
         ---------------------------------------------------------------------------------------
         Reference:     H. E. Kissinger, Reaction kinetics in differential thermal analysis, 
                        Analytical chemistry 29 (11) (1957) 1702–1706.
@@ -881,11 +889,11 @@ class ActivationEnergy:
         for i in range(TempIsoDF.shape[0]):
             try:
             #Linear regression over all the conversion values in the isoconversional Dataframes   
-                y = (logB)- np.log((TempIsoDF.iloc[i].values)**1.92)          #log[1/(T**1.92)]
-                x = 1/(TempIsoDF.iloc[i].values)                              #1/T
+                y = logB - np.log(TempIsoDF.iloc[i].values**1.92)          #log[1/(T**1.92)]
+                x = 1 / TempIsoDF.iloc[i].values                              #1/T
                 LR = linregress(x,y) 
-                E_a_i = -(self.R)*(LR.slope)                                  #Activation energy
-                error = -(self.R)*(LR.stderr)                                 #Standard deviation of the activation energy
+                E_a_i = -self.R * LR.slope                                  #Activation energy
+                error = -self.R * LR.stderr                                 #Standard deviation of the activation energy
                 a_KAS.append(TempIsoDF.index.values[i])
                 T_KAS.append(T_prom[i])
                 E_KAS_err.append(error)
@@ -905,23 +913,20 @@ class ActivationEnergy:
 #-----------------------------------------------------------------------------------------------------------
     def I_Temp(self, E, row_i, col_i, method):
         """
-        Temperature integral for the Vyazovkin method: \\int_{T0}^{T} exp[E_{alpha}/RT]dT
+        Temperature integral for the Vyazovkin method: \int_{T0}^{T} exp[E_{alpha}/RT]dT
 
-        Parameters:         E        :  Activation energy value in kJ/mol to compute the integral
- 
-                            row_i    :  DataFrame index value associated to the conversion value of 
-                                        the computation.
-  
-                            col_i    :  DataFrame column associated to the heating rate of the computation
+        Args:
+            E (float):  E_{alpha}  :  Activation energy in kJ/mol for the step from alpha(T0) to alpha(T)
+            row_i (int): alpha  : DataFrame Index value associated to the conversion value of
+                                the computation.
+            col_i (int): beta  : DataFrame column associated to the heating rate of the computation
+            method (str):  Method to compute the integral temperature. The available methods
+                           are: 'senum-yang' for the Senum-Yang approximation, 'trapezoid' for
+                           the trapezoid rule of quadrature and 'quad' for using a technique from the
+                           Fortran library QUADPACK implemented in the scipy.integrate subpackage.
 
-                            method   :  Method to compute the integral temperature. The available methods 
-                                        are: 'senum-yang' for the Senum-Yang approximation, 'trapezoid' for
-                                        the the trapezoid rule of quadrature, 'simpson' for the simpson rule
-                                        and 'quad' for using a technique from the Fortran library QUADPACK 
-                                        implemented in the scipy.integrate subpackage.
-
-        Returns:            Float. Result of the division of the integral value by the heating rate. 
-                                  
+        Returns:
+            float : Result of the division of the integral value by the heating rate.
         """
         
         TempIsoDF = self.TempAdvIsoDF
@@ -933,16 +938,16 @@ class ActivationEnergy:
         #Upper limit in the temperature integral
         T  = TempIsoDF[TempIsoDF.columns[col_i]][TempIsoDF.index.values[row_i]]
         #Value of the Arrhenius exponential for the temperature T0 and the energy E
-        y0 = np.exp(-E/(self.R*(T0)))
+        y0 = np.exp(-E / (self.R * T0))
         #Value of the Arrhenius exponential for the temperature T and the energy E
-        y  = np.exp(-E/(self.R*(T)))
+        y  = np.exp(-E / (self.R * T))
         #Senum-Yang approximation
-        def senum_yang(E):
-            x = E/(self.R*T)
-            num = (x**3) + (18*(x**2)) + (88*x) + (96)
-            den = (x**4) + (20*(x**3)) + (120*(x**2)) +(240*x) +(120)
-            s_y = ((np.exp(-x))/x)*(num/den)
-            return (E/self.R)*s_y
+        def senum_yang(e):
+            x = e/(self.R*T)
+            num = (x**3) + (18*(x**2)) + (88*x) + 96
+            den = (x**4) + (20*(x**3)) + (120*(x**2)) +(240*x) + 120
+            s_y = ((np.exp(-x)) / x) * (num / den)
+            return (e / self.R) * s_y
 
         if method == 'trapezoid':
             I = integrate.trapezoid(y=[y0,y],x=[T0,T])
@@ -955,18 +960,12 @@ class ActivationEnergy:
             #Division of the integral by the heating rate to get the factor $I(E,T)/B$
             I_B = I/B
             return I_B
-        
-        elif method == 'simpson':
-            I = integrate.simpson(y=[y0,y],x=[T0,T])
-            #Division of the integral by the heating rate to get the factor $I(E,T)/B$
-            I_B = I/B
-            return I_B
 
         elif method == 'quad':
-            def Temp_int(T,E):
-                return np.exp(-E/(self. R*(T)))
+            def Temp_int(t,e):
+                return np.exp(-e / (self. R * t))
 
-            I = integrate.quad(Temp_int,T0,T,args=(E))[0]
+            I = integrate.quad(Temp_int,T0,T,args=E)[0]
             #Division of the integral by the heating rate to get the factor $I(E,T)/B$
             I_B = I/B
             return I_B
@@ -976,27 +975,23 @@ class ActivationEnergy:
 #-----------------------------------------------------------------------------------------------------------
     def omega(self,E,row,method):
         """
-        Calculates the function to minimize for the Vyazovkin method:
+         Calculates the function to minimize for the Vyazovkin method:
 
-        \\Omega(Ea) = \\sum_{i}^{n}\\sum_{j}^{n-1}{[B_{j}{I(E,T_{i})]}/[B_{i}{I(E,T_{j})}]}        
+        \Omega(Ea) = \sum_{i}^{n}\sum_{j}^{n-1}{[B_{j}{I(E,T_{i})]}/[B_{i}{I(E,T_{j})}]}
 
-        Parameters:     E      : The activation energy value used to calculate 
-                                 the value of omega.
+        Args:
+            E (float): The activation energy value used to calculate the value of omega.
+            row (int): Index value for the row of conversion in the pandas DataFrame containing
+                       the isoconversional temperatures.
+            method (str): Method to compute the integral temperature. The available methods are: 'senum-yang'
+                          for the Senum-Yang approximation, 'trapezoid' for the trapezoid rule of numerical
+                          integration and 'quad' for using  a technique from the Fortran library QUADPACK
+                          implemented in the scipy.integrate subpackage.
 
-                        row    : index value for the row of conversion in the
-                                 pandas DataFrame containing the isoconversional
-                                 temperatures.         
+        Returns:
+            float  :   Value of the omega function for the given E.
+        """
 
-                        method : Method to compute the integral temperature.
-                                 The available methods are: 'senum-yang' for
-                                 the Senum-Yang approximation, 'trapezoid' for
-                                 the the trapezoid rule of numerical integration,
-                                 'simpson' for the simpson ruleand 'quad' for using 
-                                 a technique from the Fortran library QUADPACK 
-                                 implemented in the scipy.integrate subpackage.
-
-        Returns:        O      : Float. Value of the omega function for the given E.  
-        """ 
         Beta    = self.Beta
         omega_i = []
         method = method
@@ -1004,33 +999,28 @@ class ActivationEnergy:
         p = np.array([self.I_Temp(E,row,i, method=method) for i in range(len(Beta))])
         #Double sum
         for j in range(len(Beta)):
-            y = p[j]*((np.sum(1/(p)))-(1/p[j]))
+            y = p[j] * ( (np.sum( 1 / p ) ) - (1 / p[j]) )
             omega_i.append(y)
-        return np.sum((omega_i))
+        return np.sum(omega_i)
 #-----------------------------------------------------------------------------------------------------------
     def visualize_omega(self,row,bounds=(1,300),N=1000,method = 'senum-yang'):
         """
-        Method to visualize omega function:
+        Function to visualize omega function:
 
-        Parameters:   row    : Int object. Implicit index for the row of conversion in 
-                               the pandas DataFrame containing the isoconversional 
-                               temperatures.
-                             
-      
-                      bounds : Tuple object containing the lower and upper limit values 
-                               for E, to evaluate omega.
- 
-                      N      : Int. Number of points in the E array for the plot.
+        Args:
+            row (int): Implicit index for the row of conversion in the pandas DataFrame containing the isoconversional
+                       temperatures.
+            bounds (tuple[float]): Lower and upper limit values for E, to evaluate omega.
+            N (int): Number of points in the E array for the plot.
+            method (str): Method to compute the integral temperature. The available methods are: 'senum-yang'
+                          for the Senum-Yang approximation, 'trapezoid' for the trapezoid rule of numerical
+                          integration and 'quad' for using  a technique from the Fortran library QUADPACK
+                          implemented in the scipy.integrate subpackage.
 
-                      method : Method to evaluate the temperature integral. The available 
-                               methods are: 'senum-yang' for the Senum-Yang approximation,
-                               'trapezoid' for the the trapezoid rule of numerical integration,
-                               'simpson' for the simpson ruleand 'quad' for using a technique 
-                               from the Fortran library QUADPACK implemented in the scipy.integrate
-                               subpackage.
-
-        Returns:      A matplotlib figure plotting omega vs E. 
+        Returns:
+            plot :  A matplotlib figure plotting omega vs E.
         """
+
         #Temperature DataFrame
         IsoDF   = self.TempAdvIsoDF
         #Quadrature method
@@ -1050,39 +1040,31 @@ class ActivationEnergy:
         return plt.show()
 #-----------------------------------------------------------------------------------------------------------        
     def variance_Vy(self, E,row_i, method):
-
         """
-        Calculates the variance of the activation energy E obtained with the Vyazovkin 
+        Calculates the variance of the activation energy E obtained with the Vyazovkin
         treatment. The variance is computed as:
 
-        S^{2}(E) = {1}/{n(n-1)}\\sum_{i}^{n}\\sum_{j}^{n-1}{[{J(E,T_{i})]}/[{J(E,T_{j})}]-1}^{2}
+        S^{2}(E) = {1}/{n(n-1)}\sum_{i}^{n}\sum_{j}^{n-1}{[{J(E,T_{i})]}/[{J(E,T_{j})}]-1}^{2}
 
-        Parameters:     E      : The activation energy value used to calculate 
-                                 the value of omega.
+        Args:
+            E (float): The activation energy value used to calculate the value of omega.
+            row_i (int): Index value for the row of conversion in the pandas DataFrame containing
+                         the isoconversional temperatures.
+            method (str): Method to compute the integral temperature. The available methods are: 'senum-yang'
+                          for the Senum-Yang approximation, 'trapezoid' for the trapezoid rule of numerical
+                          integration and 'quad' for using  a technique from the Fortran library QUADPACK
+                          implemented in the scipy.integrate subpackage.
 
-                        row_i  : index value for the row of conversion in the
-                                 pandas DataFrame containing the isoconversional
-                                 temperatures.         
-
-                        method : Method to compute the integral temperature.
-                                 The available methods are: 'senum-yang' for
-                                 the Senum-Yang approximation, 'trapezoid' for
-                                 the the trapezoid rule of numerical integration,
-                                 'simpson' for the simpson rule and 'quad' for using
-                                 a technique from the Fortran library QUADPACK 
-                                 implemented in the scipy.integrate subpackage.
-
-        Returns:        Float object. Value of the variance associated to a given E.  
+        Returns:
+            float  :  Value of the variance associated to a given E.
 
         --------------------------------------------------------------------------------------------
-        Reference:     Vyazovkin, S., & Wight, C. A. (2000). Estimating realistic confidence intervals 
-                       for the activation energy determined from thermoanalytical measurements. 
+        Reference:     Vyazovkin, S., & Wight, C. A. (2000). Estimating realistic confidence intervals
+                       for the activation energy determined from thermoanalytical measurements.
                        Analytical chemistry, 72(14), 3171-3175.
-        """ 
+        """
         #Heating rates array
         Beta      = self.Beta
-        #Temperature Dataframes
-        TempIsoDF = self.TempAdvIsoDF
         #Total number of addends
         N = len(Beta)*(len(Beta)-1)
         #Temperature integrals into a list comprehrension
@@ -1095,42 +1077,33 @@ class ActivationEnergy:
     def psi_Vy(self, E, row_i, method):
         """
         Calculates the F distribution to minimize for the Vyazovkin method.
-        The distribution is computed as: 
+        The distribution is computed as:
 
-        \\Psi(E) = S^{2}(E)/S^{2}_{min}
+        \Psi(E) = S^{2}(E)/S^{2}_{min}
 
-        Parameters:     E      : The activation energy value used to calculate 
-                                 the value of omega.
+        Args:
+            E (float): The activation energy value used to calculate the value of omega.
+            row_i (int): Index value for the row of conversion in the pandas DataFrame containing
+                         the isoconversional temperatures.
+            method (str): Method to compute the integral temperature. The available methods are: 'senum-yang'
+                          for the Senum-Yang approximation, 'trapezoid' for the trapezoid rule of numerical
+                          integration and 'quad' for using  a technique from the Fortran library QUADPACK
+                          implemented in the scipy.integrate subpackage.
 
-                        row_i  : index value for the row of conversion in the
-                                 pandas DataFrame containing the isoconversional
-                                 temperatures.         
+        Returns:
+            float  :  Activation energy uncertainty with a 95% confidence.
+         --------------------------------------------------------------------------------------------
 
-                        bounds : Tuple object containing the lower and upper limit values 
-                                 for E, to evaluate the variance.
-
-                        method : Method to compute the integral temperature.
-                                 The available methods are: 'senum-yang' for
-                                 the Senum-Yang approximation, 'trapezoid' for
-                                 the the trapezoid rule of numerical integration,
-                                 'simpson' for the simpson rule and 'quad' for 
-                                 using a technique from the Fortran library QUADPACK 
-                                 implemented in the scipy.integrate subpackage.
-
-        Returns:        error  : Float. Value of the error calculated for a 95% confidence.  
-        --------------------------------------------------------------------------------------------
-        
-        Reference:     Vyazovkin, S., & Wight, C. A. (2000). Estimating realistic confidence intervals 
-                       for the activation energy determined from thermoanalytical measurements. 
+        Reference:     Vyazovkin, S., & Wight, C. A. (2000). Estimating realistic confidence intervals
+                       for the activation energy determined from thermoanalytical measurements.
                        Analytical chemistry, 72(14), 3171-3175.
-        """ 
+       """
         Beta      = self.Beta
-        TempIsoDF = self.TempAdvIsoDF
         #F values for a 95% confidence interval for (n-1) and (n-1) degreees of freedom
         F      = [161.4, 19.00, 9.277, 6.388, 5.050, 4.284, 3.787, 3.438, 3.179,2.978,2.687] 
         #F value for the n-1 degrees of freedom.
-        #Subtracts 1 to n (len(B)) because of degrees of freedom and 1 because of python indexation
-        f      = F[len(Beta)-1-1] 
+        #Subtracts 1 to n (len(B)) because of degrees of freedom and another 1 because of python indexation
+        e      = F[len(Beta) - 1 - 1]
         #quadrature method from parameter "method"
         method = method
         #Psi evaluation interval
@@ -1144,7 +1117,7 @@ class ActivationEnergy:
 
         #Psi function moved towards negative values (f-1) in order 
         #to set the confidence limits such that \psy = 0 for those values
-        Psy_to_cero = (s/s_min)-f-1      
+        Psy_to_cero = (s/s_min) - e - 1
         
         #Interpolation function of \Psy vs E to find the roots
         #which are the confidence limits
@@ -1162,21 +1135,19 @@ class ActivationEnergy:
 #-----------------------------------------------------------------------------------------------------------
     def error_Vy(self,E, method):
         """
-        Method to calculate the distribution to minimize for the Vyazovkin method.
+        Function to calculate the distribution to minimize for the Vyazovkin method.
 
-        Parameters:     bounds   : Tuple object containing the lower and upper limit values 
-                                   for E, to evaluate omega.
+        Args:
+            E (list[float]): Array of activation energy value used to calculate the value of omega.
+            method (str): Method to compute the integral temperature. The available methods are: 'senum-yang'
+                          for the Senum-Yang approximation, 'trapezoid' for the trapezoid rule of numerical
+                          integration and 'quad' for using  a technique from the Fortran library QUADPACK
+                          implemented in the scipy.integrate subpackage.
 
-                        method   : Method to compute the integral temperature. The available 
-                                   methods are: 'senum-yang' for the Senum-Yang approximation,
-                                   'trapezoid' for the the trapezoid rule of numerical integration,
-                                   'simpson' for the Simpson rule and 'quad' for using a technique 
-                                   from the Fortran library QUADPACK implemented in the scipy.integrate 
-                                   subpackage.
-
-        Returns:        error_Vy : Array of error values associated to the array of activation 
-                                   energies obtained by the Vyazovkin method.  
-        """         
+        Returns:
+            list[float]  :  Array of error values associated to the array of activation
+                                   energies obtained by the Vyazovkin method.
+        """
 
         error_Vy = np.array([self.psi_Vy(E[i], i,  method) for i in range(len(E))])
 
@@ -1184,34 +1155,37 @@ class ActivationEnergy:
 #-----------------------------------------------------------------------------------------------------------
     def Vy(self, bounds, method='senum-yang'):
         """
-        Method to compute the Activation Energy based on the Vyazovkin treatment.
-        \\Omega(E_{α})= min[ sum_{i}^{n}\\sum_{j}^{n-1}[J(E,T_{i})]/[J(E,T_{j})] ]
+        Function to compute the Activation Energy based on the Vyazovkin treatment.
+        \Omega(E_{\alpha})= min[ sum_{i}^{n}\sum_{j}^{n-1}[J(E,T_{i})]/[J(E,T_{j})] ]
 
-        Parameters:   bounds : Tuple object containing the lower and upper limit values 
-                               for E, to evaluate omega.
+        Args:
+            bounds (tuple[float]): Tuple of two floats, the lower and upper limits for E, to evaluate omega.
+            method (str): Method to compute the integral temperature. The available methods are: 'senum-yang'
+                          for the Senum-Yang approximation, 'trapezoid' for the trapezoid rule of numerical
+                          integration and 'quad' for using  a technique from the Fortran library QUADPACK
+                          implemented in the scipy.integrate subpackage.
 
-                      method : Method to evaluate the temperature integral. The available 
-                               methods are: 'senum-yang' for the Senum-Yang approximation,
-                               'trapezoid' for the the trapezoid rule of numerical integration,
-                               'simpson' for the Simpson rule and 'quad' for using a technique 
-                               from the Fortran library QUADPACK implemented in the scipy.integrate 
-                               subpackage.
+         Returns:
+            tuple[list[float]] :
+                tuple[0] :  alpha  : Numpy array containing conversion values.
+                tuple[1] :  T_a    : Numpy array containing temperature values associated to the
+                                     conversion values in tupĺe[0] averaged over all the heating rates.
+                tuple[2] :  E_Vy  : Numpy array containing the activation energy values
+                                     obtained by the Vyazovkin method associated to the
+                                     conversion values in tupĺe[0].
+                tuple[3] :  E_Vy_e  : Numpy array containing the standard deviation of the.
+                                      activation energies obtained by the Vyazovkin method
+                                      associated to the conversion values in tupĺe[0].
 
-        Returns :      Tuple of arrays:
-                       E_Vy    : numpy array containing the activation energy values 
-                                 obtained by the first Vyazovkin method.
-             
-                       error   : numpy array containing the error associated to the activation energy 
-                                 within a 95% confidence interval.
-        ------------------------------------------------------------------------------------------------
-        Reference:     S. Vyazovkin, D. Dollimor e, Linear and nonlinear procedures in isoconversional 
-                       computations of the activation energy of nonisothermal reactions in solids, Journal 
+         ------------------------------------------------------------------------------------------------
+        Reference:     S. Vyazovkin, D. Dollimore, Linear and nonlinear procedures in isoconversional
+                       computations of the activation energy of nonisothermal reactions in solids, Journal
                        of Chemical Information and Computer Sciences 36 (1) (1996) 42–45.
         """
+
         a_Vy       = []
         T_Vy       = []
         E_Vy       = []
-        Beta       = self.Beta 
         IsoDF      = self.TempAdvIsoDF
         DF_prom    = IsoDF.mean(axis=1).values
         print(f'Vyazovkin method: Computing activation energies...')    
@@ -1233,21 +1207,20 @@ class ActivationEnergy:
 #-----------------------------------------------------------------------------------------------------------              
     def J_Temp(self, E, inf, sup):
         """
-        Temperature integral for the Advanced Vyazovkin Treatment.
+        Temperature integral for the Advanced Vyazovkin method.
+        Args:
+            E (float): Activation energy to evaluate the integral
+            inf (float): Lower limit of the definite integral.
+            sup (float): Upper limit of the definite integral.
 
-        Prameters:   E   : Float object. Value for the activation energy to evaluate the integral
+        Returns:
+            float  :  Evaluated integral obtained by an analytic expression based on a linear heating rate.
 
-                     inf : Inferior integral evaluation limit.
-
-                     sup : Superior integral evaluation limit.
-
-        Returns:     J   : Float. Value of the integral obtained by an analytic expression. Based 
-                           on a linear heating rate. 
-        """        
-        a = E/(self.R)
+        """
+        a = E / self.R
         b = inf
         c = sup
-        #Computation of the intagral defined in terms of the exponential integral
+        #Computation of the integral defined in terms of the exponential integral
         #calculated with scipy.special
         J = a*(sp.expi(-a/c)-sp.expi(-a/b)) + c*np.exp(-a/c) - b*np.exp(-a/b)
 
@@ -1255,31 +1228,50 @@ class ActivationEnergy:
 #-----------------------------------------------------------------------------------------------------------        
     def J_time(self, E, row_i, col_i,ti=None, tf=None, Beta=None, T_func=None, isothermal=False, isoT=0):
         """
-        Time integral for the Advanced Vyazovkin Treatment. Considering a linear heating rate.
+        Function to evaluate the temperature integral in time domain considering an arbitrary temperature program.
 
-        Prameters:   E       : Float object. Value for the activation energy to evaluate the 
-                               integral
+        The temperature program can be linear, defined by a heating rate, B, and an initial temperature. Or arbitrary
+        defined in an external user made function T_func
 
-                     row_i   : Index value for the row of conversion in the pandas DataFrame
-                               containing the isoconversional times for evenly spaced conversion 
-                               values.
- 
-                     col_i   : Index value for the column of heating rate in the pandas DataFrame 
-                               containing the isoconversional times for evenly spaced conversion 
-                               values.
+        Args:
+            E (float): Activation energy to evaluate the integral
+            row_i (int): Index value for the row of conversion in the picnik.ActivationEnergy.timeIsoDF DataFrame.
+            col_i (int): Index value for the column of heating rate in the picnik.ActivationEnergy.timeIsoDF DataFrame.
+            ti (float): Lower limit for the time integral.
+            tf (float): Upper limit for the time integral.
+            Beta (float): Arbitrary heating rate.
+            T_func (callable): User made temperature program.
+            isothermal (bool): If true, evaluates the temperature integral under isothermal conditions.
+                               isoT must be defined
+            isoT (float): Temperature to evaluate the time integral under isothermal conditions.
 
-        Returns:     J_t     : Float. Value of the integral obtained by a numerical integration method. 
-        """    
+        Returns:
+            float  :  Temperature integral evaluated by the trapezoid method.
+        """
 
-        def time_int(t,*args):
-            T0 = args[0]
-            B  = args[1]
-            E  = args[2]
+        def time_int(s, *args):
+            """
+            Arrhenius function without the pre-exponential factor: \exp(-\frac{E}{RT(t)})
+
+            Args:
+                s (float | list[float]):
+                *args (list[float]): List of three floats: initial temperature, heating rate, activation energy
+
+            Returns:
+
+            """
+            Temp0 : float = args[0]    # Initial temperature
+            b : float  = args[1]    # Heating rate
+            e : float  = args[2]    # Activation energy
+
+            #Condition to evaluate temperature as a linear function defined by T0 and B
+            #Or a custom function, T_func, defined externally by the user
             if T_func is None:
-                T  = T0+(B*t)   
+                T  = Temp0+(b * s)
             else:
-                T  = T_func(np.array([t]))[0]
-            return np.exp(-E/(self.R*(T)))
+                T  = T_func(np.array([s]))[0]
+
+            return np.exp(-e / (self.R * T))
        
         if tf is None:
             timeAdvIsoDF   = self.timeAdvIsoDF
@@ -1292,7 +1284,7 @@ class ActivationEnergy:
         else:
             t0 = ti
             t  = tf
-            if isothermal is False:
+            if not isothermal:
                 T0 = np.mean(self.T0)
                 B  = Beta
             else:
@@ -1305,25 +1297,22 @@ class ActivationEnergy:
         """
         Function to minimize according to the advanced Vyazovkin treatment:
 
-        \\Omega(Ea) = \\sum_{i}^{n}\\sum_{j}^{n-1}{[{J(E,T(t_{i}))]}/[B_{i}{J(E,T(t_{j}))}]}
+        \Omega(Ea) = \sum_{i}^{n}\sum_{j}^{n-1}{[{J(E,T(t_{i}))]}/[B_{i}{J(E,T(t_{j}))}]}
 
-        Parameters:   E       : Float object. Value for the activation energy to evaluate 
-                                the integral
+        Args:
+            E (float): Activation energy to evaluate the integral
+            row (int): Index value for the row of conversion in the picnik.ActivationEnergy.timeIsoDF DataFrame
+            var (str): The variable to evaluate the integral. It can be either 'time'  or 'Temperature'
 
-                      row     : Index value for the row of conversion in the pandas DataFrame
-                                containing the isoconversional times for evenly spaced conversion 
-                                values.
-
-                      var     : The variable to perform the integral with, it can be either 'time' 
-                                or 'Temperature'
-
-        Returns:      O       : Float. Value of the advanced omega function for a given E.
+        Returns:
+            float  :  Value of the advanced omega function for a given E.
         """
         TempAdvIsoDF = self.TempAdvIsoDF
         timeAdvIsoDF = self.timeAdvIsoDF
         Beta         = self.Beta
         j            = row
         n = len(Beta)*(len(Beta)-1)
+        O = 0
         #Array from a comprehension list of factors of \Omega(Ea)
         #The variable of integration depends on the parameter var
         if var == 'Temperature':
@@ -1334,10 +1323,9 @@ class ActivationEnergy:
             #Dividing by beta to get the factor $I(E,T)/B$
             I_B = I_x/Beta
             #Double sum
-            omega_i = np.array([I_B[k]*((np.sum(1/(I_B)))-(1/I_B[k])) for k in range(len(Beta))])
-            O = np.array(np.sum((omega_i)))
-            return O
-  
+            omega_i = np.array([I_B[k] * ((np.sum(1 / I_B)) - (1 / I_B[k])) for k in range(len(Beta))])
+            O = np.array(np.sum(omega_i))
+
         elif var == 'time':
             I_B = np.array([self.J_time(E,
                                         row,
@@ -1346,41 +1334,36 @@ class ActivationEnergy:
             #Double sum
             #omega_i = np.array([I_B[k]*((np.sum(1/(I_B)))-(1/I_B[k])) for k in range(len(Beta))])
             omega_i = np.array([((I_B[k] / I_B) -1)**2 for k in range(len(Beta))])
-            O = np.array(np.sum((omega_i)))/n
-            return O        
+            O = np.array(np.sum(omega_i)) / n
+
+        return O
 #-----------------------------------------------------------------------------------------------------------
     def visualize_advomega(self,row,var='time',bounds=(1,300),n=1000):
         """
-        Method to visualize adv_omega function. 
+        Function to visualize adv_omega function.
 
-        Parameters:   row     : Index value for the row of conversion in the pandas DataFrame
-                                containing the isoconversional times or temperatures.
-                     
-                      var     : The variable to perform the integral with, it can be either
-                                'time' or 'Temperature'. Default 'time'.
-      
-                      bounds  : Tuple object containing the lower limit and the upper limit values 
-                                of E, for evaluating adv_omega. Default (1,300).
+        Args:
+            row (int): Index value for the row of conversion in the picnik.ActivationEnergy.timeIsoDF DataFrame.
+            var (str): The variable to perform the integral with, it can be either 'time' or 'Temperature'.
+                       Default 'time'.
+            bounds (tuple[float]): Tuple of two elements, the lower and upper limits to search for the true activation energy.
+                                   Default (1,300).
+            n (int): Number of points in the E array for the plot. Default 1000.
 
-                      N       : Int. Number of points in the E array for the plot. Default 1000.
-
-
-        Returns:      A matplotlib plot of adv_omega vs E 
+        Returns:
+            A matplotlib plot of adv_omega vs E
         """
-        #Temperature DataFrame
-        TempAdvIsoDF = self.TempAdvIsoDF
+
         #time DataFrame
         timeAdvIsoDF = self.timeAdvIsoDF
-        #Heating Rates
-        Beta         = self.Beta
         #Activation energy (independent variable) array
         E = np.linspace(bounds[0], bounds[1], n)
-        #Evaluation of \\Omega(E)
+        #Evaluation of \Omega(E)
         O = np.array([float(self.adv_omega(E[i],row,var)) for i in range(len(E))])
         plt.style.use('seaborn-v0_8-whitegrid')
-        plt.plot(E,O,color='teal',label=r'α = '+str(np.round(timeAdvIsoDF.index[row],decimals=3)))
-        plt.ylabel(r'\\$\\Omega\\left(E_{α}\\right)\\$')
-        plt.xlabel(r'\\$E_{α}\\$')
+        plt.plot(E,O,color='teal',label=r'$\alpha$ = '+str(np.round(timeAdvIsoDF.index[row],decimals=3)))
+        plt.ylabel(r'$\Omega\left(E_{\alpha}\right)$')
+        plt.xlabel(r'$E_{\alpha}$')
         plt.legend()
         plt.grid(True)
 
@@ -1388,38 +1371,28 @@ class ActivationEnergy:
 #-----------------------------------------------------------------------------------------------------------        
     def variance_aVy(self, E, row_i, var = 'time'):
         """
-        Method to calculate the variance of the activation energy E obtained with the Vyazovkin 
+        Function to calculate the variance of the activation energy E obtained with the Vyazovkin
         treatment. The variance is computed as:
 
-        S^{2}(E) = {1}/{n(n-1)}\\sum_{i}^{n}\\sum_{j}^{n-1}{[{J(E,T(t_{i}))]}/[{J(E,T(t_{j}))}]-1}^{2}
+        S^{2}(E) = {1}/{n(n-1)}\sum_{i}^{n}\sum_{j}^{n-1}{[{J(E,T(t_{i}))]}/[{J(E,T(t_{j}))}]-1}^{2}
 
-        Parameters:     E      : The activation energy value used to calculate 
-                                 the value of omega.
+        Args:
+            E (float): Activation energy value used to calculate the value of omega.
+            row_i (int): Index value for the row of conversion in the picnik.ActivationEnergy.TempIsoDF DataFrame
+            var (str): Variable to perform the integral with. It can be either 'time' or 'Temperature'
 
-                        row_i  : index value for the row of conversion in the
-                                 pandas DataFrame containing the isoconversional
-                                 temperatures.         
-
-                        var    : The variable to perform the integral with, it can be either
-                                'time' or 'Temperature'
-
-        Returns:        Float object. Value of the variance associated to a given E.  
+        Returns:
+            float  :  Variance associated to a given E.
 
         --------------------------------------------------------------------------------------------
-        Reference:     Vyazovkin, S., & Wight, C. A. (2000). Estimating realistic confidence intervals 
-                       for the activation energy determined from thermoanalytical measurements. 
+        Reference:     Vyazovkin, S., & Wight, C. A. (2000). Estimating realistic confidence intervals
+                       for the activation energy determined from thermoanalytical measurements.
                        Analytical chemistry, 72(14), 3171-3175.
         """
-        #Total number of addends
+        #Degrees of freedom
         n = len(self.Beta)*(len(self.Beta)-1)
         #Selection of the integral based on parameter "var"
         if var == 'time':
-            #lower limit 
-            inf = self.timeAdvIsoDF.index.values[row_i] 
-            #upper limit
-            sup = self.timeAdvIsoDF.index.values[row_i+1]
-            #initial temperature
-            T0  = self.T0
             #time integrals into a list comprehension        
             J = np.array([self.J_time(E, row_i, i) for i in range(len(self.Beta))])     
             #Each value to be compared with one (s-1) to compute the variance
@@ -1449,33 +1422,27 @@ class ActivationEnergy:
 #-----------------------------------------------------------------------------------------------------------        
     def psi_aVy(self, E, row_i, var = 'time', p =0.95):
         """
-        Method to calculate the F distribution to minimize for the Vyazovkin method.
-        The distribution is computed as: 
+        Function to calculate the F distribution to minimize for the Vyazovkin method.
+        The distribution is computed as:
 
-        \\Psi(E) = S^{2}(E)/S^{2}_{min}
+        \Psi(E) = S^{2}(E)/S^{2}_{min}
 
-        Parameters:     E      : The activation energy value used to calculate 
-                                 the value of omega.
+        Args:
+            E (float): Activation energy value used to calculate the value of omega.
+            row_i (int): Index value for the row of conversion in the picnik.ActivationEnergy.timeIsoDF DataFrame.
+            var (str): Variable to perform the integral with. It can be either 'time' or 'Temperature'
+            p (float): Confidence level for the uncertainty associated to the activation energy.
 
-                        row_i  : index value for the row of conversion in the
-                                 pandas DataFrame containing the isoconversional
-                                 times or temperatures.         
+        Returns:
+            float  :  Value of the distribution function that sets the lower and upper confidence limits for E.
 
-                        bounds : Tuple object containing the lower and upper limit values 
-                                 for E, to evaluate the variance.
-
-                        var    : The variable to perform the integral with, it can be either
-                                'time' or 'Temperature'
-
-        Returns:        Psi    : Float. Value of the distribution function that sets the lower
-                                 and upper confidence limits for E.  
         --------------------------------------------------------------------------------------------
-        
-        Reference:     Vyazovkin, S., & Wight, C. A. (2000). Estimating realistic confidence intervals 
-                       for the activation energy determined from thermoanalytical measurements. 
+
+        Reference:     Vyazovkin, S., & Wight, C. A. (2000). Estimating realistic confidence intervals
+                       for the activation energy determined from thermoanalytical measurements.
                        Analytical chemistry, 72(14), 3171-3175.
-        """         
-        #F values for a p% confidence interval for (n-1) and (n-1) degreees of freedom
+        """
+        #F values for a p% confidence interval for (n-1) and (n-1) degrees of freedom
         n1, n2 = len(self.Beta)*(len(self.Beta)-1) - 1, len(self.Beta)*(len(self.Beta)-1) - 1
         F = f.ppf(p,n1,n2)
             
@@ -1509,17 +1476,17 @@ class ActivationEnergy:
 #-----------------------------------------------------------------------------------------------------------            
     def error_aVy(self, E, var = 'time', p =0.95):
         """
-        Method to calculate the distribution to minimize for the Vyazovkin method.
+        Function to calculate the distribution to minimize for the Vyazovkin method.
 
-        Parameters:     bounds   : Tuple object containing the lower and upper limit values 
-                                   for E, to evaluate adv_omega.
+        Args:
+            E (list[float]): Activation energy value used to calculate the value of omega.
+            var (str): Variable to perform the integral with. It can be either 'time' or 'Temperature'
+            p (float): Confidence level for the uncertainty associated to the activation energy.
 
-                        var    : The variable to perform the integral with, it can be either
-                                'time' or 'Temperature'
-
-        Returns:        error_aVy : Array of error values associated to the array of activation 
-                                    energies obtained by the Vyazovkin method.  
-        """ 
+        Returns:
+            list[float]  :  Array of errors associated to the array of activation energies obtained by
+                            the Vyazovkin method.
+        """
 
         error_aVy = np.array([self.psi_aVy(E[i], i, var=var, p=p)[0] for i in range(len(E))])
 
@@ -1528,21 +1495,18 @@ class ActivationEnergy:
 #-----------------------------------------------------------------------------------------------------------
     def aVy(self,bounds, var='time', p= 0.95):
         """
-        Method to compute the Activation Energy based on the Advanced Vyazovkin treatment.
-        \\Omega(E_{α})= min[ sum_{i}^{n}\\sum_{j}^{n-1}[J(E,T_{i})]/[J(E,T_{j})] ]
+        Function to compute the Activation Energy based on the Advanced Vyazovkin treatment.
+        \Omega(E_{\alpha})= min[ sum_{i}^{n}\sum_{j}^{n-1}[J(E,T_{i})]/[J(E,T_{j})] ]
 
-        Parameters:   bounds : Tuple object containing the lower limit and the upper 
-                               limit values of E, for evaluating omega.
+        Args:
+            bounds (tuple[float]): Tuple of two floats, the lower limit and the upper limit values of the activation
+                                   energy domain to evaluating omega.
+            var (str): Variable to perform the integral with. It can be either 'time' or 'Temperature'
+            p (float): Confidence level for the uncertainty associated to the activation energy.
 
-                      T      : List object containing the experimental temperatures. 
-                               Must be those corresponding to the experimental heating 
-                               rate.
+        Returns:
+            list[float]: Numpy array containing the activation energy values obtained by the Vyazovkin method.
 
-                      var    : The variable to perform the integral with, it can be either
-                               'time' or 'Temperature'
-
-        Returns:      E_aVy   : numpy array containing the activation energy values
-                               obtained by the Vyazovkin method. 
         --------------------------------------------------------------------------------------
         References:   S. Vyazovkin, Evaluation of activation energy of thermally stimulated
                       solid-state reactions under arbitrary variation of temperature, Journal
@@ -1571,19 +1535,19 @@ class ActivationEnergy:
         return self.E_aVy
 #-----------------------------------------------------------------------------------------------------------
     def Ea_plot(self, errorbar=True, xlim=(0.05,0.95), ylim=(0,300), saveplot=False, name=None):
-        """ method to plot the activation energy vs conversion
+        """
+        Function to plot the activation energy vs conversion for the methods stored in picnik.ActivationEnergy.used_methods.
+        Args:
+            errorbar (bool, optional): If True, the errorbar will be plotted.
+            xlim (tuple[float]): Lower and upper limit in the x-axis (conversion axis).
+                                 Ranges from 0 to 1. Default (0.05,0.95).
+            ylim (tuple[float]): Lower and upper limit in the y-axis (energy axis).
+                                 Default (0,300).
+            saveplot (bool): If True, the plot is saved as the value for 'name' (see below).
+            name (str): Path to save the plot. Example: 'Documents/Data/Figs/Ea_plot.csv'
 
-        Parameters:     errorbar: Bool. If True, the errorbar is plotted. Only y-values are plotted otherwise.
-
-                        xlim: (float, float). Plotting domain interval. Values should be 0 < float < 1.
-
-                        ylim: (float, float). Plotting Range interval.
-
-                        saveplot: Bool. If True, the plot is saved as the value for 'name' (see below).
-
-                        name: String. Path to save the plot. Example: 'Documents/Data/Figs/Ea_plot.csv'
-
-        Returns:        Plot of conversion (x-values) vs activation energy [kJ/mol] (y-values)
+        Returns:
+            Plot of conversion (x-values) vs activation energy [kJ/mol] (y-values)
         """
         
         E_dict = {'Fr':self.E_Fr, 
@@ -1609,24 +1573,25 @@ class ActivationEnergy:
 
         plt.ylim(ylim)
         plt.xlim(xlim)
-        plt.xlabel(r'α')
-        plt.ylabel(r'\\$E_{α}\\$')
+        plt.xlabel(r'$\alpha$')
+        plt.ylabel(r'$E_{\alpha}$')
         plt.legend()
         plt.grid(True)
         plt.show()
         if saveplot:
             plt.savefig(name)
-#-----------------------------------------------------------------------------------------------------------
-    def T_prom(self,TempIsoDF):
+    #-----------------------------------------------------------------------------------------------------------
+    @staticmethod
+    def T_prom(TempIsoDF):
         """
-        Computes mean values for temperature at isoconversional values
-        in order to evaluate the dependence of the activation energy 
-        with temperature
+        Computes mean values for temperature, time or conversion rate at isoconversional values, over the working
+        heating rates.
 
-        Parameters:     TempIsoDF   :  Isoconversional DataFrame of Temperatures.
+        Args:
+            TempIsoDF (DataFrame): Isoconversional DataFrame.
 
-        Returns:        T_prom      :  Array of mean temperatures at isoconversional 
-                                       values
+        Returns:
+            list[float]: Array of mean values at isoconversion
         """
         return TempIsoDF.mean(axis=1).values
 #-----------------------------------------------------------------------------------------------------------
@@ -1634,7 +1599,7 @@ class ActivationEnergy:
     def export_Ea(self):
         """
         Exports Activation Energy data in .csv format. The exported files contains four 
-        columns: Conversion, Temperature, Activation Energy and error associated to the
+        columns: Conversion, Averaged Temperature, Activation Energy and error associated to the
         Activation Energy.
         """
 
@@ -1658,8 +1623,24 @@ class ActivationEnergy:
 #-----------------------------------------------------------------------------------------------------------
     def j(self,t,Ei,col,row,t_prime,B,isoT=None,T_func=None):
         """
-        Auxliliary function to compute model-free predictions
+         Auxliliary function to compute model-free predictions. Computes residual between temperature integrals.
+
+        Args:
+            t (float): Time required to achieve the conversion value associated to row.
+            Ei (float): Activation energy to compute temperature integrals.
+            col (int): Column index associated to an experimental heating rate.
+            row (int): picnik.ActivationEnergy.timeAdvIsoDF index associated to a conversion value.
+            t_prime (float): Initial time in the evaluation of the temperature integral.
+            B (float): Arbitrary heating rate for a simulated linear temperature program.
+            isoT (bool): If true, the temperature integral is evaluated under isothermal conditions
+            T_func (callable): User made function to evaluate temperature as an arbitrary function of time.
+
+        Returns:
+            float: Residual squared value between the temperature integral computed with the experimental heating rate
+                   associated to col, and the temperature integral computed with an arbitrary temperature program
+                   defined by B, isoT or T_func.
         """
+
         J0  = self.J_time(Ei, row, col)
 
         t_func = None
@@ -1679,7 +1660,20 @@ class ActivationEnergy:
 
     def calculate_J(self,t,Ei,row,t_prime,B,isoT,T_func):
         """
-        Auxliliary function to compute model-free predictions
+
+        Args:
+            t (float): Time required to achieve the conversion value associated to row.
+            Ei (float): Activation energy to compute temperature integrals.
+            row (int): picnik.ActivationEnergy.timeAdvIsoDF index associated to a conversion value.
+            t_prime (float): Initial time in the evaluation of the temperature integral.
+            B (float): Arbitrary heating rate for a simulated linear temperature program.
+            isoT (bool): If true, the temperature integral is evaluated under isothermal conditions
+            T_func (callable): User made function to evaluate temperature as an arbitrary function of time.
+
+        Returns:
+            float: Sum of squared residuals between the temperature integral computed with all the experimental heating
+                   rates and the temperature integral computed with an arbitrary temperature program defined by B, isoT
+                   or T_func.
         """
         J = []
         for b in range(len(self.Beta)):
@@ -1691,45 +1685,47 @@ class ActivationEnergy:
 
     def modelfree_prediction(self,E, B, isoT = None, T_init=None,T_func = None, alpha=0, bounds = (5,5)):
         """
-        Method to compute a model-free prediction based on the integral isoconversional principle: $g(α)=constant$ which implies 
-        an equality between teperature integrals to reach a given conversion: $J[E_alpha,T(t)_i] = J[E_alpha,T(t)_j]$
-        where $T(t)_i and T(t)_j$ are two different temperature programs
+         Method to compute a model-free prediction based on the integral isoconversional principle: $g(\alpha)=constant$
+         which implies an equality between temperature integrals to reach a given conversion:
 
-        Parameters: E       :    numpy array containing the values of activation energy.
-                    B       :    float. Heating rate for a linear temperature program; T(t) = T0 +Bt
-                    isoT    :    float. Temperature for a constant temperature program (isothermal);
-                                 T = isoT = constant
-                    T_init  :    float. Initial temperature for the linear temperature program (T0). 
-                                 If none is given the value will be an average of
-                                 the experimental initial temperatures.
-                    T_func  :    function with one parameter t. 
-                                 A custom program temperature; T = T(t)
-                    alpha   :    float between 0 and 1. 
-                                 This parameter determines the starting point in the time
-                                 domain for the temperature integral. 
-                                 The default value (alpha = 0) sets the initial time to an 
-                                 averge of the experimental initial times.
-                                 Otherwise the initial time equals zero.
-                    bounds  :    a 2 element tuple with the lower and upper bounds.
-                                 As the computation of the time required to reach a given
-                                 conversion involves a minimization procedure this parameters
-                                 sets the bounds in the time domain where the minimum would
-                                 be reasonable to be found.
+         $J[E_alpha,T(t)_i] = J[E_alpha,T(t)_j]$
 
-        Returns:    a_prime :    Conversion array
-                    T_prime :    Temperature array corresponding to the temperature program which the prediction is made for
-                    t_prime :    Predicted time to reach each converssion value in the a_prime array
+         where $T(t)_i and T(t)_j$ are two different temperature programs
+
+        Args:
+            E (list[float]): Numpy array containing the values of activation energy.
+            B (float):  Heating rate for a simulated linear temperature program; T(t) = T0 +Bt
+            isoT (float): Temperature for a simulated constant temperature program (isothermal); T = isoT = constant
+            T_init (float): Initial temperature for the linear temperature program (T0). If none is given the value
+                            will be an average of the experimental initial temperatures.
+            T_func (callable): User made function with one parameter, t. A custom program temperature; T = T(t)
+            alpha (float): Target conversion value to end the simulation.
+                           This parameter determines the starting point in the time domain for
+                           the temperature integral. The default value (alpha = 0) sets the initial time to an average
+                           of the experimental initial times. Otherwise the initial time equals zero.
+            bounds (tuple[float]): Tuple of two float, the lower and upper bounds in the time domain.
+                                   As the computation of the time required to reach a given conversion involves a
+                                   minimization procedure, this parameter sets the bounds in the time domain where
+                                   the minimum would be reasonable to be found.
+
+        Returns:
+            tuple[float]:
+                tuple[0] :  alpha  : Numpy array containing conversion values.
+                tuple[1] : T  : Temperature array of the simulated temperature program, associated to alpha.
+                tuple[2] : t  : Array of times required to reach the conversion values in alpha.
         -----------------------------------------------------------------------------------------------------------------------------------
-        References:         Granado, L., & Sbirrazzuoli, N. (2021). Isoconversional computations for nonisothermal kinetic predictions. Thermochimica Acta, 697, 178859. 
 
+        References:         Granado, L., & Sbirrazzuoli, N. (2021). Isoconversional computations for nonisothermal kinetic predictions. Thermochimica Acta, 697, 178859.
         """
-        
+        # Defines initial temperature for the simulation
         if T_init is None:
             T_init = np.mean(self.T0)
-        
+
+        # DataFrame to get experimental conversion values.
         tDF  = self.timeAdvIsoDF
 
-
+        # Truncation of experimental conversion values to the user defined target "alpha"
+        # Also defines initial time for the simulation
         if alpha != 0:
             tDF = tDF.loc[tDF.index.values <= alpha]
             tj_init = 0
@@ -1738,9 +1734,11 @@ class ActivationEnergy:
                           tDF.iloc[0].values[:len(self.Beta)],
                           fill_value='extrapolate')
             tj_init = t0_int(B)
-    
+
+        # t_prime stores the times required to reach each conversion value
         t_prime = [tj_init]
-        print('Beginning simulation at : ',tj_init,' min')
+        print('Beginning simulation ')
+        # Loop to compute each time required to reach each conversion
         for i in range(len(tDF.index)-1):
             t_min = minimize_scalar(self.calculate_J,args=(E[i],i,t_prime,B,isoT,T_func),
                                    bounds=((t_prime[i]-bounds[0]),(t_prime[i]+bounds[1])),
@@ -1750,6 +1748,8 @@ class ActivationEnergy:
         print("simulation completed")
         t_prime = np.array(t_prime)
         a_prime = tDF.index.values
+
+        # Temperature array computed as a function of the computed time
         if isoT is not None:
             T_prime = np.ones(len(t_prime))*isoT
         elif T_func is None:
@@ -1764,51 +1764,64 @@ class ActivationEnergy:
         """
         Function to compute the pre-exponential factor based on the compensation effect
         which states a linear relation between E and ln(A): ln(A) = a + bE.
-        May raise give unreliable results.
-        Parameters:   E  : numpy array containing the values of activation energy.
-                      B  : float. Value of the heating rate for the dataframe index.
-                      f_alpha  : List of extra functions of models to iterate over.
-                                 By default the function will only iterate over all the functions
-                                 on the "rxn_models.py" file
-        Returns:      ln_A: numpy array containing the values of the logaritmic preexponential factor
-                      a  : the slope of the relationship between E and A
-                      b  : the intercept of the relationship between E and A
-                      Afit: the fitted values of the preexponential factor
-                      Efit: the fitted values of the activation energy
+
+        Args:
+            col (int): Column index associated to an experimental heating rate.
+            E (list[float]): Numpy array containing the values of activation energy.
+            errorE (list[float]): Numpy array containing the errors associated to E.
+            f_alpha (callable): User defined reaction model f(alpha).
+            error_m (str): Filtering method to consider a model fit as acceptable. Options are: 'mse_NL' for a mean
+                           squared error of a Non-Linear fit, 'r_NL' for the Pearson coefficient of a Non-Linear fit or
+                           'r_Lin' for the Pearson coefficient of a Linear fit.
+
+        Returns:
+            tuple[Any]:
+                tuple[0]:  ln_A(list[float]):  Numpy array containing the values of the logarithmic pre-exponential factor.
+                tuple[1]:  error_ln_A(list[float]):  Numpy array containing the errors associated to the logarithmic
+                                                     pre-exponential factor.
+                tuple[2]:  a(float):  The slope of the compensation effect between E and ln_A.
+                tuple[3]:  errora(float)  Error associated to a.
+                tuple[4]:  b(float):  The intercept of the compensation effect between E and ln_A.
+                tuple[5]:  errorb(float):  Error associated to b.
+                tuple[6]:  Afit(list[float]):  Array of pre-exponential values obtained from fitting experimental data
+                                               to reaction models.
+                tuple[7]:  Efit(list[float]):  Array of activation energy values obtained from fitting experimental data
+                                               to reaction models.
+                tuple[8]:  r_sq(list[float]):  Array of filter values of the accepted fits.
+                tuple[9]:  mod(lis[Any]):  Array of ccepted models.
         """
         Tdf = self.TempAdvIsoDF
         Ddf = self.diffAdvIsoDF
         x = Tdf[Tdf.columns[col]].values
         y = Ddf[Ddf.columns[col]].values
         alpha = Tdf.index.values
-
         def fit(x, y, f_alpha, alpha, er_m=error_m):
 
             def filter_fit(funcs=f_alpha, rsq_l=0.95, rsq_u=1.05, mse_lim=0.1):
 
-                def g(xaux, A, E):
-                    return A * np.exp(-E / (self.R * xaux)) * f(alpha)
+                def g(xaux, A, e):
+                    return A * np.exp(-e / (self.R * xaux)) * func(alpha)
 
                 Afit = []
                 Efit = []
                 r_sqr = []
                 model = []
-                for f in funcs:
+                for func in funcs:
                     try:
                         # noinspection PyTupleAssignmentBalance
                         popt, pcov = curve_fit(g, x, y)
                     except RuntimeError:
-                        continue
+                        pass
                     residuals = y - g(x, *popt)
                     ss_res = np.sum(residuals ** 2)
                     ss_tot = np.sum((y - np.mean(y)) ** 2)
                     r_squared = 1 - (ss_res / ss_tot)
                     if er_m == 'r_NL':
-                        if r_squared > rsq_l and r_squared < rsq_u and popt[0] > 0:
+                        if rsq_l < r_squared < rsq_u and popt[0] > 0:
                             r_sqr += [r_squared]
                             Afit += [popt[0]]
                             Efit += [popt[1]]
-                            model += [f]
+                            model += [func]
                         else:
                             pass
                     elif er_m == 'mse_NL':
@@ -1816,11 +1829,11 @@ class ActivationEnergy:
                             r_sqr += [ss_res]
                             Afit += [popt[0]]
                             Efit += [popt[1]]
-                            model += [f]
+                            model += [func]
                         else:
                             pass
                     elif er_m == 'r_Lin':
-                        dep = np.log((1 / f(alpha)) * y)
+                        dep = np.log((1 / func(alpha)) * y)
                         ind = 1 / x
                         df = pd.DataFrame({'x': ind,
                                            'y': dep})
@@ -1828,12 +1841,12 @@ class ActivationEnergy:
                         df = df.dropna()
                         lr = linregress(df['x'].values, df['y'].values)
                         pen = lr.slope
-                        ord = lr.intercept
+                        intercept = lr.intercept
                         # print( lr.rvalue**2 )
                         if (lr.rvalue ** 2) > rsq_l:
-                            Afit += [np.exp(ord)]
+                            Afit += [np.exp(intercept)]
                             Efit += [-self.R * pen]
-                            model += [f]
+                            model += [func]
                             r_sqr += [lr.rvalue ** 2]
                         else:
                             pass
@@ -1857,7 +1870,7 @@ class ActivationEnergy:
                     else:
                         if er_m == 'r_NL' or er_m == 'r_Lin':
                             print(
-                                rf'Accuracy not met with precision of \\$r^{2}\\$ = {fr_l[k - 1]}. Lowering precision to \\$r^{2}\\$ = {fr_l[k]}')
+                                rf'Accuracy not met with precision of $r^{2}$ = {fr_l[k - 1]}. Lowering precision to $r^{2}$ = {fr_l[k]}')
                         else:
                             print(
                                 rf'Accuracy not met with precision of mse = {f_mse[k - 1]}. Lowering precision to mse = {f_mse[k]}')
@@ -1901,20 +1914,18 @@ class ActivationEnergy:
 
     #---------------------------------------------------------------
     def reconstruction(self,E, A, B):
-
-        """ 
-        Method to numericaly reconstruct the reaction model in its integral expression, $g(α)$ 
-        The reconstructions is computed as $g(α)=\\sum_{i}g(alpha_{i})$
-
-        Parameters:     E :   numpy array containing the values of activation energy.
-                        A :   numpy array containing the values of Pre-exponential factor array.
-                        B :   Float. Value of the heating rate for the assossiated to the temperatures 
-                              to be used for the temperature integral
-
-        Returns:        g :   Numerical values (not an analytical function) of the integral reaction model
-                              of the process under study
         """
-        
+        Function to numericaly reconstruct the reaction model in its integral expression, $g(\alpha)$
+        The reconstructions is computed as $g(\alpha)=\sum_{i}g(alpha_{i})$
+
+        Args:
+            E (list[float]): Activation energy array.
+            A (list[float]): Pre-exponential factor array (NOT logarithmic).
+            B (float): One of the experimental heating rates.
+
+        Returns:
+            list[float]:  Numerical reconstruction of the integral reaction model of the process associated to E and A.
+        """
         models = self.accepted_models
         g = []
         AiJsum = 0
@@ -1925,16 +1936,14 @@ class ActivationEnergy:
             AiJsum += A[i]*J
             g += [AiJsum]
 
-        color = sns.color_palette("rocket",len(models))
+        #color = sns.color_palette("rocket",len(models))
         #color = sns.color_palette("crest",len(models))
-        #color = sns.color_palette("Spectral",len(models))
+        color = sns.color_palette("Spectral",len(models))
         #color = sns.color_palette("cubehelix", len(models))
         #color = sns.color_palette("icefire", len(models))
 
         alpha   = self.timeAdvIsoDF.index.values[1::]
-
         line_wid = 4.20
-        font_siz = 14
         for m in range(len(models)):
             sp1 = str(models[m]).split('at')[0]
             sp2 = sp1.split('<')[1]
@@ -1947,8 +1956,8 @@ class ActivationEnergy:
             plt.plot(alpha[1::],g,'*-',color='#6963DB',lw=4.20, ms= 8, label='g_r',alpha=0.5)
         plt.ylim(0,2)
         plt.xlim(0,1)
-        plt.xlabel(r'α')
-        plt.ylabel(r'\\$g(α)\\$')
+        plt.xlabel(r'$\alpha$')
+        plt.ylabel(r'$g(\alpha)$')
         plt.grid(1)
         plt.legend(fontsize=12)
         plt.show()
@@ -1957,30 +1966,26 @@ class ActivationEnergy:
 #---------------------------------------------------------------
     def t_isothermal(self, E, ln_A, T0, col, g_a=None, alpha=None, isoconv=False):
         """
-        Method to compute isothermal, model-based or model-free, predictions. 
-        Note that the ActivationEnergy.modelfree_prediction( method also computes 
-        isothermal prediction which may be more accurate.
+        Method to compute isothermal, model-based or model-free, predictions.
 
-        Parameters:         E       :   Activation energy array.
-                            
-                            A       :   Pre-exponential factor array.
+        Note that the ActivationEnergy.modelfree_prediction( function also computes isothermal prediction which may be more accurate.
 
-                            T0      :   Temperature of the system in Kelvin.
+        Args:
+            E (list[float]): Activation energy array.
+            ln_A (list[float]): Logarithmic pre-exponential factor array.
+            T0 (float): Temperature for the simulated process.
+            col (int): Index for the experimental heating rate, B, associated to the temperatures to be used
+                       for the temperature integral
+            g_a (list[float] | callable): This parameter may be one of two types: The first one is a numpy.array-type object as
+                                          the one obtained with the ActivationEnergy.reconstruction method. The second one is
+                                          one of the functions defined in rxn_model.py which may be summoned as picnik.rxn_models.MOD,
+                                          where MOD is one of the following codes: A2, A3, A4, D1, D2, D3, F1, P2, P2_3, P3, P4, R2 or R3.
+            alpha (list[float]): Conversion array.
+            isoconv (bool): If True overrides the g_a options and the method computes the time required to reach a
+                            given conversion value (from the 'alpha' array) based on the isoconversional principle.
 
-                            col     :   The index for the experimental heating rate, B, assossiated to the temperatures 
-                                        to be used for the temperature integral
-
-                            g_a     :   This parameter may be one of two types: The first one is an numpy.array-type object as
-                                        the one obtained with the ActivationEnergy.reconstruction method. The second one is 
-                                        one of the functions defined in rxn_model.py which may be summoned as picnik.rxn_models.MOD,
-                                        where MOD is one of the following codes: A2, A3, A4, D1, D2, D3, F1, P2, P2_3, P3, P4, R2 or R3.
-
-                            alpha   :   Conversion array. 
-                                
-                            isoconv :   Boolean. If True overrides the g_a options and the method computes the time required to reach a 
-                                        given conversion value (from the 'alpha' array) based on the isoconversional principle.
-
-        Returns:            t_p     :   Predicted time required to reach each the conversion values in the 'alpha' array. 
+        Returns:
+            list[float]: Predicted time required to reach each the conversion values in the 'alpha' array.
         """
         if type(g_a) == np.ndarray:
             G = interp1d(alpha[:-1:],g_a,fill_value='extrapolate')
@@ -2008,44 +2013,44 @@ class ActivationEnergy:
                 t_p.append(tp)
             return np.array(t_p)
 #---------------------------------------------------------------
-    def export_prediction(self, time, Temp, alpha, isothermal=False, name="prediction.csv" ):
+    @staticmethod
+    def export_prediction(time, Temp, alpha, isothermal=False, name="prediction.csv"):
         """
-        Method to export the kinetic prediction.
+        Function to export the kinetic prediction.
 
-        Parameters:     time    : Time array.
+        Args:
+            time (list[float]): Time array.
+            Temp (list[float]): Temperature array or, if the prediction is isothermal just a float with the Temperature value
+            alpha (list[float]): Conversion array.
+            isothermal (bool): If True the value of Temp is multiplied by a numpy.ones array of the necessary length.
+            name (str): File name or path in .csv format.
 
-                        Temp    : Temperature array or, if the prediction is isothermal just a float with the
-                                  Temperature value
-
-                        alpha   : Conversion array.
-                         
-                        isothermal: Bool. If True the value of Temp is multiplied by a numpy.ones array of
-                                    the necessary length.
-
-                        name    : File name in .csv format.
-
-        Returns:    None. A file will be created according to the working path or path specified in `name`.
+        Returns:
+            None. A file will be created according to the working path or path specified in `name`.
         """
-        if isothermal==True:
+        if isothermal:
             Temp = Temp*np.ones(len(time))
         predDF = pd.DataFrame({'time':time,
                                'Temperature':Temp,
                                'conversion':alpha})
         predDF.to_csv(name,index=False)
+
+        return None
 #---------------------------------------------------------------
-    def export_kinetic_triplet(self, alpha, E, ln_A, g_a, name="kinetic_triplet.csv" ):
+    @staticmethod
+    def export_kinetic_triplet(alpha, E, ln_A, g_a, name="kinetic_triplet.csv"):
         """
-        Method to export the kinetic prediction.
+        Function to export the kinetic.
 
-        Parameters:     time    : Activation energy array.
+        Args:
+            alpha (list[float]): Conversion array.
+            E (list[float]): Activation energy array.
+            ln_A (list[float]): Logarithmic pre-exponential factor array.
+            g_a (list[float]): Integral reaction model array.
+            name (str): File name or path in .csv format.
 
-                        Temp    : Natural logarithm of pre-exponential factor array.
-
-                        g_a     : Model reaction array.
-
-                        name    : File name in .csv format.
-
-        Returns:    None. A file will be created according to the working path or path specified in `name`.
+        Returns:
+            None. A file will be created according to the working path or path specified in `name`.
         """
         kinDF = pd.DataFrame({r'α':alpha,
                               'E':E,
@@ -2053,5 +2058,6 @@ class ActivationEnergy:
                               'g(alpha)':g_a})
         kinDF.to_csv(name,index=False)
 
+        return None
 
 

@@ -1,8 +1,5 @@
 """
 Walkthrough Tutorial View
-
-Complete step-by-step guide covering all 10 steps of the pICNIK workflow,
-including the theory behind each step, how to use the tool, and a FAQ section.
 """
 
 import streamlit as st
@@ -10,6 +7,7 @@ import base64
 from pathlib import Path
 
 from src.config import APP_TITLE, RESOURCES_DIR
+from src.i18n import _
 from src.components.data_source import DataSourceSelector
 from src.components.file_validation import (
     FileCountValidator,
@@ -20,50 +18,40 @@ from src.components.file_validation import (
 
 def main():
     """Full pICNIK walkthrough tutorial."""
-    st.title(f"{APP_TITLE} — Tutorial")
+    st.title(f"{APP_TITLE} — {_('Tutorial')}")
 
-    st.markdown(
-        """
-        This tutorial walks you through the complete **10-step pICNIK workflow** for analysing
-        thermogravimetric (TGA) data and extracting kinetic parameters.
-
-        Each step explains **what** it does, **why** it is necessary, and **how** to use it in the tool.
-        Expand the *Theory* section under each step to see the underlying mathematics.
-        """
-    )
+    st.markdown(_(
+        "This tutorial walks you through the complete **10-step pICNIK workflow** for analysing\n"
+        "thermogravimetric (TGA) data and extracting kinetic parameters.\n\n"
+        "Each step explains **what** it does, **why** it is necessary, and **how** to use it in the tool.\n"
+        "Expand the *Theory* section under each step to see the underlying mathematics."
+    ))
 
     # ------------------------------------------------------------------ #
     # BIG PICTURE                                                          #
     # ------------------------------------------------------------------ #
-    st.header("The Big Picture")
-    st.markdown(
-        """
-        A **TGA experiment** places a tiny solid sample in a furnace, heats it at a controlled rate
-        (for example 10 °C/min), and continuously measures its mass. As the material decomposes,
-        gases escape and the mass drops. The instrument records three columns:
+    st.header(_("The Big Picture"))
+    st.markdown(_(
+        "A **TGA experiment** places a tiny solid sample in a furnace, heats it at a controlled rate\n"
+        "(for example 10 °C/min), and continuously measures its mass. As the material decomposes,\n"
+        "gases escape and the mass drops. The instrument records three columns:\n\n"
+        "| Column | Content | Units |\n"
+        "|--------|---------|-------|\n"
+        "| 1 | Time | min |\n"
+        "| 2 | Temperature | °C |\n"
+        "| 3 | Mass | mg (or %) |\n\n"
+        "That is all pICNIK needs. The goal is to extract the **kinetic triplet** from this data:\n\n"
+        "| Symbol | Name | Meaning |\n"
+        "|--------|------|---------|\n"
+        "| **E(α)** | Activation energy | Energy barrier the reaction must overcome, at each conversion level |\n"
+        "| **A(α)** | Pre-exponential factor | How often molecules attempt to overcome that barrier |\n"
+        "| **f(α) / g(α)** | Reaction model | How the rate depends on how much has already reacted |\n\n"
+        "Once you have the kinetic triplet, you can **predict conversion at any temperature and time**\n"
+        "condition — whether in a furnace, a storage tank, or a reactor."
+    ))
 
-        | Column | Content | Units |
-        |--------|---------|-------|
-        | 1 | Time | min |
-        | 2 | Temperature | °C |
-        | 3 | Mass | mg (or %) |
-
-        That is all pICNIK needs. The goal is to extract the **kinetic triplet** from this data:
-
-        | Symbol | Name | Meaning |
-        |--------|------|---------|
-        | **E(α)** | Activation energy | Energy barrier the reaction must overcome, at each conversion level |
-        | **A(α)** | Pre-exponential factor | How often molecules attempt to overcome that barrier |
-        | **f(α) / g(α)** | Reaction model | How the rate depends on how much has already reacted |
-
-        Once you have the kinetic triplet, you can **predict conversion at any temperature and time**
-        condition — whether in a furnace, a storage tank, or a reactor.
-        """
-    )
-
-    with st.expander("Theory — the isoconversional principle"):
-        st.markdown(
-            r"""
+    with st.expander(_("Theory — the isoconversional principle")):
+        st.markdown(r"""
             ### Why you need multiple heating rates
 
             The general rate equation for a solid-state reaction is:
@@ -102,42 +90,34 @@ def main():
             Think of E as a hill. Molecules can only react if they have enough energy to climb it.
             Higher temperature gives more molecules that energy, so the reaction is faster.
             A tells you how many molecules are attempting to climb per minute.
-            """
-        )
+            """)
 
     # ------------------------------------------------------------------ #
     # STEP 1: Prepare files                                                #
     # ------------------------------------------------------------------ #
-    st.header("Step 1 — Prepare Your Data Files")
-    st.markdown(
-        """
-        **What:** Organise your TGA output files — one CSV per heating rate experiment.
+    st.header(_("Step 1 — Prepare Your Data Files"))
+    st.markdown(_(
+        "**What:** Organise your TGA output files — one CSV per heating rate experiment.\n\n"
+        "**Why:** pICNIK needs multiple experiments to apply the isoconversional principle. Each file\n"
+        "is one run at a different heating rate β. You need at least 2 files; 4–5 is recommended\n"
+        "for reliable statistics.\n\n"
+        "**How:** Each CSV must have exactly **3 columns** in this order:\n\n"
+        "| Column | Content | Units |\n"
+        "|--------|---------|-------|\n"
+        "| 1 | Time | min |\n"
+        "| 2 | Temperature | °C |\n"
+        "| 3 | Mass (or any thermally controlled property) | mg (or %) |\n\n"
+        "**Example datasets included in the tool:**\n"
+        "- `Constant_E` — simulated data, E = 75 kJ/mol, F1 reaction model\n"
+        "- `Paracetamol` — real pharmaceutical decomposition\n"
+        "- `Decano` — real data for decane\n"
+        "- `PolyProp` — polypropylene degradation\n"
+        "- `Two_Steps` — simulated two-step reaction\n"
+        "- `Variable_E` — simulated data with conversion-dependent E"
+    ))
 
-        **Why:** pICNIK needs multiple experiments to apply the isoconversional principle. Each file
-        is one run at a different heating rate β. You need at least 2 files; 4–5 is recommended
-        for reliable statistics.
-
-        **How:** Each CSV must have exactly **3 columns** in this order:
-
-        | Column | Content | Units |
-        |--------|---------|-------|
-        | 1 | Time | min |
-        | 2 | Temperature | °C |
-        | 3 | Mass (or any thermally controlled property) | mg (or %) |
-
-        **Example datasets included in the tool:**
-        - `Constant_E` — simulated data, E = 75 kJ/mol, F1 reaction model
-        - `Paracetamol` — real pharmaceutical decomposition
-        - `Decano` — real data for decane
-        - `PolyProp` — polypropylene degradation
-        - `Two_Steps` — simulated two-step reaction
-        - `Variable_E` — simulated data with conversion-dependent E
-        """
-    )
-
-    with st.expander("Theory — why heating rate matters"):
-        st.markdown(
-            r"""
+    with st.expander(_("Theory — why heating rate matters")):
+        st.markdown(r"""
             The **nominal heating rate β** (e.g., "10 K/min") is printed on the instrument panel,
             but real instruments deviate slightly from the programmed value. pICNIK computes the
             actual β by fitting a straight line to the Temperature-vs-time data via linear regression.
@@ -147,8 +127,7 @@ def main():
             time" to react at lower temperatures when heated quickly. This shift is exactly what
             the isoconversional analysis exploits. The experiments should span a meaningful range —
             e.g., 5, 10, 15, 20 K/min — with at least a factor of 2 between the slowest and fastest.
-            """
-        )
+            """)
 
     gif_path = RESOURCES_DIR / "download_example_files.gif"
     if gif_path.exists():
@@ -160,35 +139,28 @@ def main():
                 unsafe_allow_html=True,
             )
     else:
-        st.info("Example GIF not found. Use the default datasets or upload your own CSV files.")
+        st.info(_("Example GIF not found. Use the default datasets or upload your own CSV files."))
 
     # ------------------------------------------------------------------ #
     # STEP 2: Load files                                                   #
     # ------------------------------------------------------------------ #
-    st.header("Step 2 — Load Files")
-    st.markdown(
-        """
-        **What:** Upload your CSV files (or select a default dataset). pICNIK reads each file,
-        validates its structure, and computes derived quantities.
+    st.header(_("Step 2 — Load Files"))
+    st.markdown(_(
+        "**What:** Upload your CSV files (or select a default dataset). pICNIK reads each file,\n"
+        "validates its structure, and computes derived quantities.\n\n"
+        "**Why:** Raw TGA files contain temperature in °C and absolute mass in mg. Before any\n"
+        "kinetic analysis, these must be converted to consistent units and derivatives must be computed.\n\n"
+        "**How:** Select files below. The library calls `DataExtraction.read_files()` internally, which:\n\n"
+        "1. Reads each CSV into a table\n"
+        "2. Converts temperature from °C to Kelvin\n"
+        "3. Computes mass-loss percentage: `%m = 100 × (m / m₀)`\n"
+        "4. Calculates the actual heating rate β via linear regression of T vs t\n"
+        "5. Computes `dT/dt` and `dw/dt` (mass loss rate) using a Savitzky-Golay smoothing filter\n\n"
+        "**Outputs:** an array of heating rates **B** [K/min] and initial temperatures **T₀** [K]."
+    ))
 
-        **Why:** Raw TGA files contain temperature in °C and absolute mass in mg. Before any
-        kinetic analysis, these must be converted to consistent units and derivatives must be computed.
-
-        **How:** Select files below. The library calls `DataExtraction.read_files()` internally, which:
-
-        1. Reads each CSV into a table
-        2. Converts temperature from °C to Kelvin
-        3. Computes mass-loss percentage: `%m = 100 × (m / m₀)`
-        4. Calculates the actual heating rate β via linear regression of T vs t
-        5. Computes `dT/dt` and `dw/dt` (mass loss rate) using a Savitzky-Golay smoothing filter
-
-        **Outputs:** an array of heating rates **B** [K/min] and initial temperatures **T₀** [K].
-        """
-    )
-
-    with st.expander("Theory — Savitzky-Golay derivatives"):
-        st.markdown(
-            r"""
+    with st.expander(_("Theory — Savitzky-Golay derivatives")):
+        st.markdown(r"""
             TGA data is inherently noisy. Computing derivatives (dT/dt, dw/dt) naively with finite
             differences would amplify that noise catastrophically — every small measurement fluctuation
             becomes a large spike in the derivative.
@@ -200,13 +172,12 @@ def main():
 
             This filter is used twice: once here for the DTG curve, and again in Step 4 when computing
             the conversion rate dα/dt needed by the Friedman method.
-            """
-        )
+            """)
 
     data_source_selector = DataSourceSelector()
     file_paths = data_source_selector.render()
     if not file_paths:
-        st.info("Select files to continue the tutorial.")
+        st.info(_("Select files to continue the tutorial."))
         return
 
     file_count_validator = FileCountValidator()
@@ -224,29 +195,22 @@ def main():
     # ------------------------------------------------------------------ #
     # STEP 3: Visualise experimental data                                  #
     # ------------------------------------------------------------------ #
-    st.header("Step 3 — Visualise Experimental Data")
-    st.markdown(
-        """
-        **What:** Inspect the raw TGA curves before any kinetic analysis.
+    st.header(_("Step 3 — Visualise Experimental Data"))
+    st.markdown(_(
+        "**What:** Inspect the raw TGA curves before any kinetic analysis.\n\n"
+        "**Why:** Visual inspection lets you identify the reaction region, check for multiple\n"
+        "decomposition steps, and detect any problematic experiments (bad baseline, noise, outliers).\n\n"
+        "**How:** Use the **Extract Data** button on the Tool page to load the data. Three plots appear:\n\n"
+        "- **TG (Thermogravimetry):** mass % vs temperature — shows where the reaction occurs\n"
+        "- **DTG (Derivative TG):** dm/dt vs temperature — peaks mark the most active decomposition zones\n"
+        "- **dT/dt:** temperature rate vs time — should be near-constant for a well-controlled experiment\n\n"
+        "> For the `Constant_E` example you will see four parallel sigmoidal curves (one per heating\n"
+        "> rate) in the TG plot. Higher β shifts the curve to higher temperatures — this is the\n"
+        "> isoconversional effect in action."
+    ))
 
-        **Why:** Visual inspection lets you identify the reaction region, check for multiple
-        decomposition steps, and detect any problematic experiments (bad baseline, noise, outliers).
-
-        **How:** Use the **Extract Data** button on the Tool page to load the data. Three plots appear:
-
-        - **TG (Thermogravimetry):** mass % vs temperature — shows where the reaction occurs
-        - **DTG (Derivative TG):** dm/dt vs temperature — peaks mark the most active decomposition zones
-        - **dT/dt:** temperature rate vs time — should be near-constant for a well-controlled experiment
-
-        > For the `Constant_E` example you will see four parallel sigmoidal curves (one per heating
-        > rate) in the TG plot. Higher β shifts the curve to higher temperatures — this is the
-        > isoconversional effect in action.
-        """
-    )
-
-    with st.expander("Theory — what the curves tell you"):
-        st.markdown(
-            r"""
+    with st.expander(_("Theory — what the curves tell you")):
+        st.markdown(r"""
             The **TG curve** shows the normalised mass as a function of temperature. A flat region
             means no reaction is occurring. A steep descent indicates active decomposition.
 
@@ -258,39 +222,29 @@ def main():
             The **dT/dt plot** confirms the linearity of the heating programme. If the heating rate
             is not constant (e.g., initial lag phase), this will appear here. Only the linear portion
             is used in kinetic analysis.
-            """
-        )
+            """)
 
     # ------------------------------------------------------------------ #
     # STEP 4: Conversion calculation                                       #
     # ------------------------------------------------------------------ #
-    st.header("Step 4 — Conversion Calculation")
-    st.markdown(
-        r"""
-        **What:** Convert raw mass data into the dimensionless quantity α (conversion), ranging from
-        0 (reaction not started) to 1 (reaction complete), over a user-selected temperature window.
+    st.header(_("Step 4 — Conversion Calculation"))
+    st.markdown(_(
+        "**What:** Convert raw mass data into the dimensionless quantity α (conversion), ranging from\n"
+        "0 (reaction not started) to 1 (reaction complete), over a user-selected temperature window.\n\n"
+        "**Why:** Raw mass in mg depends on how much sample was loaded and what fraction remains as\n"
+        "residue — these vary between runs. Conversion α normalises everything to a universal 0–1 scale\n"
+        "that is comparable across experiments and required by the kinetic equations.\n\n"
+        "**How:** On the Tool page, use the temperature range slider to select [Tᵢ, Tf] — the window\n"
+        "that contains the reaction of interest. Then click **Compute Conversion**.\n\n"
+        "The formula used is:\n\n"
+        "$$\\alpha = \\frac{m_0 - m_t}{m_0 - m_\\infty}$$\n\n"
+        "where m₀ is the mass at Tᵢ, m_t is the current mass, and m_∞ is the mass at Tf.\n\n"
+        "> **Tip:** use the DTG plot to find the reaction boundaries. Set Tᵢ just before the DTG\n"
+        "> peak rises from baseline, and Tf just after it returns to baseline."
+    ))
 
-        **Why:** Raw mass in mg depends on how much sample was loaded and what fraction remains as
-        residue — these vary between runs. Conversion α normalises everything to a universal 0–1 scale
-        that is comparable across experiments and required by the kinetic equations.
-
-        **How:** On the Tool page, use the temperature range slider to select [Tᵢ, Tf] — the window
-        that contains the reaction of interest. Then click **Compute Conversion**.
-
-        The formula used is:
-
-        $$\alpha = \frac{m_0 - m_t}{m_0 - m_\infty}$$
-
-        where m₀ is the mass at Tᵢ, m_t is the current mass, and m_∞ is the mass at Tf.
-
-        > **Tip:** use the DTG plot to find the reaction boundaries. Set Tᵢ just before the DTG
-        > peak rises from baseline, and Tf just after it returns to baseline.
-        """
-    )
-
-    with st.expander("Theory — from TG(%) to conversion α"):
-        st.markdown(
-            r"""
+    with st.expander(_("Theory — from TG(%) to conversion α")):
+        st.markdown(r"""
             ### TG(%) — the instrument output
 
             The TGA instrument records mass in milligrams. Before pICNIK, the instrument normalises
@@ -325,47 +279,37 @@ def main():
 
             This rate is needed by the Friedman method (Step 6). The same smoothing filter described
             in Step 2 is used to avoid noise amplification.
-            """
-        )
+            """)
 
     # ------------------------------------------------------------------ #
     # STEP 5: Isoconversional tables                                       #
     # ------------------------------------------------------------------ #
-    st.header("Step 5 — Isoconversional Tables")
-    st.markdown(
-        r"""
-        **What:** Build three tables that record, for each conversion level α and each heating rate,
-        the temperature T, time t, and conversion rate dα/dt at which that conversion was reached.
+    st.header(_("Step 5 — Isoconversional Tables"))
+    st.markdown(_(
+        "**What:** Build three tables that record, for each conversion level α and each heating rate,\n"
+        "the temperature T, time t, and conversion rate dα/dt at which that conversion was reached.\n\n"
+        "**Why:** The raw data from each experiment is recorded at regular time intervals — not at\n"
+        "regular α values. To apply the isoconversional principle, you need exactly the same α values\n"
+        "across all experiments. These tables extract and align that information.\n\n"
+        "**How:** Click **Compute Isoconversion** on the Tool page. The parameter `d_a` controls the\n"
+        "spacing between conversion values:\n\n"
+        "| d_a | Number of rows | Speed |\n"
+        "|-----|---------------|-------|\n"
+        "| 0.005 | ~200 | Slow, precise |\n"
+        "| 0.02 | ~50 | Default (recommended) |\n"
+        "| 0.05 | ~20 | Fast, coarse |\n\n"
+        "**The three tables produced:**\n\n"
+        "| Table | Contents |\n"
+        "|-------|----------|\n"
+        "| `TempAdvIsoDF` | Temperature (K) at each α for every heating rate |\n"
+        "| `timeAdvIsoDF` | Time (min) at each α for every heating rate |\n"
+        "| `diffAdvIsoDF` | Conversion rate dα/dt at each α for every heating rate |\n\n"
+        "Each row is a conversion level; each column is a heating rate. These tables are the input\n"
+        "to all five activation energy methods."
+    ))
 
-        **Why:** The raw data from each experiment is recorded at regular time intervals — not at
-        regular α values. To apply the isoconversional principle, you need exactly the same α values
-        across all experiments. These tables extract and align that information.
-
-        **How:** Click **Compute Isoconversion** on the Tool page. The parameter `d_a` controls the
-        spacing between conversion values:
-
-        | d_a | Number of rows | Speed |
-        |-----|---------------|-------|
-        | 0.005 | ~200 | Slow, precise |
-        | 0.02 | ~50 | Default (recommended) |
-        | 0.05 | ~20 | Fast, coarse |
-
-        **The three tables produced:**
-
-        | Table | Contents |
-        |-------|---------|
-        | `TempAdvIsoDF` | Temperature (K) at each α for every heating rate |
-        | `timeAdvIsoDF` | Time (min) at each α for every heating rate |
-        | `diffAdvIsoDF` | Conversion rate dα/dt at each α for every heating rate |
-
-        Each row is a conversion level; each column is a heating rate. These tables are the input
-        to all five activation energy methods.
-        """
-    )
-
-    with st.expander("Theory — interpolation and the Advanced tables"):
-        st.markdown(
-            r"""
+    with st.expander(_("Theory — interpolation and the Advanced tables")):
+        st.markdown(r"""
             ### Why interpolation is needed
 
             Experiments record data at regular time steps (e.g., every 0.5 s). At those time steps,
@@ -385,34 +329,27 @@ def main():
             - **Advanced** (`TempAdvIsoDF`, `timeAdvIsoDF`, `diffAdvIsoDF`): more finely spaced and
               optimised for small Δα intervals. Required by the Advanced Vyazovkin (aVy) method, which
               integrates over incremental α windows.
-            """
-        )
+            """)
 
     # ------------------------------------------------------------------ #
     # STEP 6: Activation Energy                                            #
     # ------------------------------------------------------------------ #
-    st.header("Step 6 — Activation Energy Calculation")
-    st.markdown(
-        r"""
-        **What:** Compute the activation energy E as a function of conversion α using up to five
-        isoconversional methods.
+    st.header(_("Step 6 — Activation Energy Calculation"))
+    st.markdown(_(
+        "**What:** Compute the activation energy E as a function of conversion α using up to five\n"
+        "isoconversional methods.\n\n"
+        "**Why:** E(α) is the central result of the analysis. If E is constant across α, the reaction\n"
+        "follows a simple single-step mechanism. If E varies, the process has overlapping steps with\n"
+        "different barriers. Comparing all five methods reveals whether your data is internally\n"
+        "consistent and how reliable the result is.\n\n"
+        "**How:** On the Tool page, select the method(s) and click **Compute Activation Energy**.\n"
+        "Results are plotted as E(α) curves with error bars.\n\n"
+        "> **Which method?** Use KAS or OFW for a quick estimate. Use aVy for publication-quality\n"
+        "> results. If all five agree (within error bars), your data is excellent."
+    ))
 
-        **Why:** E(α) is the central result of the analysis. If E is constant across α, the reaction
-        follows a simple single-step mechanism. If E varies, the process has overlapping steps with
-        different barriers. Comparing all five methods reveals whether your data is internally
-        consistent and how reliable the result is.
-
-        **How:** On the Tool page, select the method(s) and click **Compute Activation Energy**.
-        Results are plotted as E(α) curves with error bars.
-
-        > **Which method?** Use KAS or OFW for a quick estimate. Use aVy for publication-quality
-        > results. If all five agree (within error bars), your data is excellent.
-        """
-    )
-
-    with st.expander("Theory — the five methods in detail"):
-        st.markdown(
-            r"""
+    with st.expander(_("Theory — the five methods in detail")):
+        st.markdown(r"""
             All five methods are derived from the same general rate equation:
 
             $$\frac{d\alpha}{dt} = A \cdot \exp\!\left(-\frac{E}{RT}\right) \cdot f(\alpha)$$
@@ -511,34 +448,27 @@ def main():
             | KAS | Integral | Coats-Redfern (good) | Low | Low |
             | Vy | Integral + optimise | None | Low | Medium |
             | aVy | Incremental + optimise | None | Low | High |
-            """
-        )
+            """)
 
     # ------------------------------------------------------------------ #
     # STEP 7: Pre-exponential factor (Compensation Effect)                 #
     # ------------------------------------------------------------------ #
-    st.header("Step 7 — Pre-exponential Factor via the Compensation Effect")
-    st.markdown(
-        r"""
-        **What:** Obtain the pre-exponential factor A(α) — the second element of the kinetic triplet.
+    st.header(_("Step 7 — Pre-exponential Factor via the Compensation Effect"))
+    st.markdown(_(
+        "**What:** Obtain the pre-exponential factor A(α) — the second element of the kinetic triplet.\n\n"
+        "**Why:** The five isoconversional methods give E(α), but they do not give A(α). The\n"
+        "compensation effect provides a way to extract A from E without assuming a reaction model.\n\n"
+        "**How:** On the Tool page, select the heating rate column to use as the reference experiment\n"
+        "and click **Compute Compensation Effect**. The tool fits all candidate reaction models to\n"
+        "that experiment, collects (E, ln A) pairs, and performs a linear regression to obtain the\n"
+        "compensation line. It then evaluates that line at each E(α) value to produce ln A(α).\n\n"
+        "> **Check:** Look at the scatter plot. The (E, ln A) pairs from different models should\n"
+        "> fall on a clear straight line. If the scatter is large, the compensation effect is\n"
+        "> unreliable for this dataset."
+    ))
 
-        **Why:** The five isoconversional methods give E(α), but they do not give A(α). The
-        compensation effect provides a way to extract A from E without assuming a reaction model.
-
-        **How:** On the Tool page, select the heating rate column to use as the reference experiment
-        and click **Compute Compensation Effect**. The tool fits all candidate reaction models to
-        that experiment, collects (E, ln A) pairs, and performs a linear regression to obtain the
-        compensation line. It then evaluates that line at each E(α) value to produce ln A(α).
-
-        > **Check:** Look at the scatter plot. The (E, ln A) pairs from different models should
-        > fall on a clear straight line. If the scatter is large, the compensation effect is
-        > unreliable for this dataset.
-        """
-    )
-
-    with st.expander("Theory — the compensation effect"):
-        st.markdown(
-            r"""
+    with st.expander(_("Theory — the compensation effect")):
+        st.markdown(r"""
             ### The empirical observation
 
             When a family of solid-state reactions (or candidate models) is fitted to TGA data,
@@ -567,37 +497,30 @@ def main():
             An array `ln_A(α)` of the same length as E(α). The actual pre-exponential factor is
             A(α) = exp(ln_A(α)). Natural log units are used throughout to keep the numbers manageable
             (A can range from 10³ to 10¹⁵ min⁻¹ in typical reactions).
-            """
-        )
+            """)
 
     # ------------------------------------------------------------------ #
     # STEP 8: Reaction model reconstruction                                #
     # ------------------------------------------------------------------ #
-    st.header("Step 8 — Reaction Model Reconstruction — g(α)")
-    st.markdown(
-        r"""
-        **What:** Numerically reconstruct the integral reaction model g(α) from the E(α) and A(α)
-        arrays obtained in the previous steps.
+    st.header(_("Step 8 — Reaction Model Reconstruction — g(α)"))
+    st.markdown(_(
+        "**What:** Numerically reconstruct the integral reaction model g(α) from the E(α) and A(α)\n"
+        "arrays obtained in the previous steps.\n\n"
+        "**Why:** g(α) is the third element of the kinetic triplet. It describes the reaction mechanism\n"
+        "and is needed for model-based isothermal predictions (Step 9). Its shape can also be compared\n"
+        "to known analytical models to identify the reaction mechanism.\n\n"
+        "**How:** Click **Reconstruct g(α)** on the Tool page. The reconstructed curve is plotted\n"
+        "alongside a library of analytical models. Compare the shape:\n\n"
+        "| Shape of g(α) | Likely mechanism |\n"
+        "|--------------|------------------|\n"
+        "| Linear (slope ≈ 1) | F1 — first-order |\n"
+        "| Concave (slow then fast) | Diffusion-controlled (D2, D3) |\n"
+        "| Convex at start | Nucleation-growth (A2, A3) |\n"
+        "| S-shaped | Power-law (P2, P3) |"
+    ))
 
-        **Why:** g(α) is the third element of the kinetic triplet. It describes the reaction mechanism
-        and is needed for model-based isothermal predictions (Step 9). Its shape can also be compared
-        to known analytical models to identify the reaction mechanism.
-
-        **How:** Click **Reconstruct g(α)** on the Tool page. The reconstructed curve is plotted
-        alongside a library of analytical models. Compare the shape:
-
-        | Shape of g(α) | Likely mechanism |
-        |--------------|-----------------|
-        | Linear (slope ≈ 1) | F1 — first-order |
-        | Concave (slow then fast) | Diffusion-controlled (D2, D3) |
-        | Convex at start | Nucleation-growth (A2, A3) |
-        | S-shaped | Power-law (P2, P3) |
-        """
-    )
-
-    with st.expander("Theory — g(α) and model-free reconstruction"):
-        st.markdown(
-            r"""
+    with st.expander(_("Theory — g(α) and model-free reconstruction")):
+        st.markdown(r"""
             ### What g(α) is
 
             The differential reaction model f(α) describes how the rate depends on conversion.
@@ -622,49 +545,35 @@ def main():
 
             This reconstructed g(α), together with E(α) and A(α), forms the complete **kinetic
             triplet** and enables predictions under any temperature programme.
-            """
-        )
+            """)
 
     # ------------------------------------------------------------------ #
     # STEP 9: Predictions                                                  #
     # ------------------------------------------------------------------ #
-    st.header("Step 9 — Kinetic Predictions")
-    st.markdown(
-        r"""
-        **What:** Use the kinetic triplet to predict reaction behaviour under any temperature programme.
+    st.header(_("Step 9 — Kinetic Predictions"))
+    st.markdown(_(
+        "**What:** Use the kinetic triplet to predict reaction behaviour under any temperature programme.\n\n"
+        "**Why:** This is the ultimate goal — knowing E, A, and g(α) lets you simulate the process\n"
+        "at conditions you never tested experimentally.\n\n"
+        "**How:** The Tool page offers two prediction modes:\n\n"
+        "### Model-free prediction\n\n"
+        "Based on E(α) only. Uses the isoconversional equality principle. Three sub-modes:\n\n"
+        "| Mode | Description | Input |\n"
+        "|------|-------------|-------|\n"
+        "| **Isothermal** | Predict time to reach each α at a constant temperature | Temperature in K |\n"
+        "| **Linear heating** | Predict α(T) under a new heating rate β | Heating rate in K/min |\n"
+        "| **Custom** | Predict under any T(t) function | Python function |\n\n"
+        "### Model-based prediction (isothermal only)\n\n"
+        "Uses the full kinetic triplet (E, A, g(α)) via:\n\n"
+        "$$t(\\alpha) = \\frac{g(\\alpha)}{A \\cdot \\exp(-E / R T_0)}$$\n\n"
+        "More accurate near the experimental conditions. Requires a valid g(α) from Step 8.\n\n"
+        "> **Bounds:** The model-free prediction involves a minimisation at each conversion step.\n"
+        "> The bounds parameter sets the search window in minutes — set it to the expected order\n"
+        "> of magnitude of the total process duration."
+    ))
 
-        **Why:** This is the ultimate goal — knowing E, A, and g(α) lets you simulate the process
-        at conditions you never tested experimentally.
-
-        **How:** The Tool page offers two prediction modes:
-
-        ### Model-free prediction
-
-        Based on E(α) only. Uses the isoconversional equality principle. Three sub-modes:
-
-        | Mode | Description | Input |
-        |------|-------------|-------|
-        | **Isothermal** | Predict time to reach each α at a constant temperature | Temperature in K |
-        | **Linear heating** | Predict α(T) under a new heating rate β | Heating rate in K/min |
-        | **Custom** | Predict under any T(t) function | Python function |
-
-        ### Model-based prediction (isothermal only)
-
-        Uses the full kinetic triplet (E, A, g(α)) via:
-
-        $$t(\alpha) = \frac{g(\alpha)}{A \cdot \exp(-E / R T_0)}$$
-
-        More accurate near the experimental conditions. Requires a valid g(α) from Step 8.
-
-        > **Bounds:** The model-free prediction involves a minimisation at each conversion step.
-        > The bounds parameter sets the search window in minutes — set it to the expected order
-        > of magnitude of the total process duration.
-        """
-    )
-
-    with st.expander("Theory — how predictions work"):
-        st.markdown(
-            r"""
+    with st.expander(_("Theory — how predictions work")):
+        st.markdown(r"""
             ### The model-free prediction principle
 
             The isoconversional principle states that for the correct E_α, the time integral of the
@@ -696,170 +605,139 @@ def main():
 
             This gives the time to reach each α directly, without the step-by-step minimisation.
             It uses mean E and A (averaged over α) and the reconstructed g(α) array.
-            """
-        )
+            """)
 
     # ------------------------------------------------------------------ #
     # STEP 10: Export results                                              #
     # ------------------------------------------------------------------ #
-    st.header("Step 10 — Export Results")
-    st.markdown(
-        """
-        **What:** Download all computed results as CSV files.
-
-        **Why:** Results are stored in session state during your browser session but are not
-        saved permanently. Export everything you need before closing the tab.
-
-        **How:** Every step in the Tool page has download buttons. Available exports:
-
-        | Export | File | Contents |
-        |--------|------|---------|
-        | Activation energy | `activation_energy_<method>.csv` | α, E, error |
-        | Isoconversion tables | `isoconversion_temperature.csv` etc. | T, t, dα/dt tables |
-        | Compensation effect | `compensation_effect_lnA.csv` | α, ln(A), error |
-        | Model reconstruction | `reaction_model_g_alpha.csv` | α, g(α) |
-        | Model-free prediction | `modelfree_prediction_<mode>.csv` | time, T, α |
-        | Model-based prediction | `isothermal_prediction_<T>K.csv` | time, α |
-        """
-    )
+    st.header(_("Step 10 — Export Results"))
+    st.markdown(_(
+        "**What:** Download all computed results as CSV files.\n\n"
+        "**Why:** Results are stored in session state during your browser session but are not\n"
+        "saved permanently. Export everything you need before closing the tab.\n\n"
+        "**How:** Every step in the Tool page has download buttons. Available exports:\n\n"
+        "| Export | File | Contents |\n"
+        "|--------|------|----------|\n"
+        "| Activation energy | `activation_energy_<method>.csv` | α, E, error |\n"
+        "| Isoconversion tables | `isoconversion_temperature.csv` etc. | T, t, dα/dt tables |\n"
+        "| Compensation effect | `compensation_effect_lnA.csv` | α, ln(A), error |\n"
+        "| Model reconstruction | `reaction_model_g_alpha.csv` | α, g(α) |\n"
+        "| Model-free prediction | `modelfree_prediction_<mode>.csv` | time, T, α |\n"
+        "| Model-based prediction | `isothermal_prediction_<T>K.csv` | time, α |"
+    ))
 
     # ------------------------------------------------------------------ #
     # WHY ALL STEPS ARE NECESSARY                                          #
     # ------------------------------------------------------------------ #
     st.divider()
-    st.header("Why All Steps Are Necessary")
-    st.markdown(
-        """
-        Each step is required — skipping any one of them makes the result unreliable or impossible:
-
-        | Step | Why it cannot be skipped |
-        |------|--------------------------|
-        | Multiple heating rates | Without them the isoconversional principle cannot be applied — E and f(α) cannot be separated from a single curve |
-        | Temperature range selection | The TGA curve contains multiple processes; you must isolate the one of interest |
-        | Conversion α | Normalises mass loss; allows universal mathematical treatment and comparison between runs |
-        | Isoconversion tables | Raw data is not at fixed α values — interpolation extracts the isoconversional points the equations require |
-        | 5 activation energy methods | Each has different assumptions; comparing them reveals whether E is constant or variable and gives confidence in the result |
-        | Compensation effect | The isoconversional methods give E but not A; the compensation trick extracts A using kinetic consistency |
-        | g(α) reconstruction | Needed for model-based isothermal predictions and identifies the reaction mechanism |
-        | Predictions | The whole point — knowing E, A, g(α) lets you simulate the process at any temperature |
-        """
-    )
+    st.header(_("Why All Steps Are Necessary"))
+    st.markdown(_(
+        "Each step is required — skipping any one of them makes the result unreliable or impossible:\n\n"
+        "| Step | Why it cannot be skipped |\n"
+        "|------|---------------------------|\n"
+        "| Multiple heating rates | Without them the isoconversional principle cannot be applied — E and f(α) cannot be separated from a single curve |\n"
+        "| Temperature range selection | The TGA curve contains multiple processes; you must isolate the one of interest |\n"
+        "| Conversion α | Normalises mass loss; allows universal mathematical treatment and comparison between runs |\n"
+        "| Isoconversion tables | Raw data is not at fixed α values — interpolation extracts the isoconversional points the equations require |\n"
+        "| 5 activation energy methods | Each has different assumptions; comparing them reveals whether E is constant or variable and gives confidence in the result |\n"
+        "| Compensation effect | The isoconversional methods give E but not A; the compensation trick extracts A using kinetic consistency |\n"
+        "| g(α) reconstruction | Needed for model-based isothermal predictions and identifies the reaction mechanism |\n"
+        "| Predictions | The whole point — knowing E, A, g(α) lets you simulate the process at any temperature |"
+    ))
 
     # ------------------------------------------------------------------ #
     # FAQ                                                                  #
     # ------------------------------------------------------------------ #
     st.divider()
-    st.header("Frequently Asked Questions")
+    st.header(_("Frequently Asked Questions"))
 
-    with st.expander("Why does E depend on α?"):
-        st.markdown(
-            """
-            If E is constant across all α, the reaction is a simple single-step process with one
-            energy barrier. If E varies, the reaction has multiple overlapping steps each with its
-            own barrier — the observed E is a weighted average that shifts as each step dominates
-            at different conversion levels.
+    with st.expander(_("Why does E depend on α?")):
+        st.markdown(_(
+            "If E is constant across all α, the reaction is a simple single-step process with one\n"
+            "energy barrier. If E varies, the reaction has multiple overlapping steps each with its\n"
+            "own barrier — the observed E is a weighted average that shifts as each step dominates\n"
+            "at different conversion levels.\n\n"
+            "A rising E(α) often indicates competing parallel reactions; a falling E(α) often\n"
+            "indicates a two-step sequential process."
+        ))
 
-            A rising E(α) often indicates competing parallel reactions; a falling E(α) often
-            indicates a two-step sequential process.
-            """
-        )
+    with st.expander(_("Why do OFW, KAS, and Fr sometimes give different results?")):
+        st.markdown(_(
+            "OFW and KAS use different approximations for the temperature integral (Doyle and\n"
+            "Coats-Redfern respectively). Friedman uses instantaneous rates, which are more sensitive\n"
+            "to noise in dα/dt.\n\n"
+            "If the differences between methods are small (< 5 kJ/mol), all results are consistent.\n"
+            "Large differences suggest significant E(α) variation — use aVy in that case, as it\n"
+            "makes the fewest assumptions and handles variable E most accurately."
+        ))
 
-    with st.expander("Why do OFW, KAS, and Fr sometimes give different results?"):
-        st.markdown(
-            """
-            OFW and KAS use different approximations for the temperature integral (Doyle and
-            Coats-Redfern respectively). Friedman uses instantaneous rates, which are more sensitive
-            to noise in dα/dt.
+    with st.expander(_("What does it mean if E is not constant?")):
+        st.markdown(_(
+            "It means the process has multiple kinetic steps occurring at different conversion levels,\n"
+            "each with its own energy barrier. This is common in real materials: moisture evaporation,\n"
+            "primary decomposition, and secondary oxidation can all overlap in the same temperature\n"
+            "window.\n\n"
+            "A variable E does not invalidate the analysis — it makes it richer. The isoconversional\n"
+            "methods still give a valid E(α) curve that captures the changing barriers. aVy is\n"
+            "specifically designed to handle this case."
+        ))
 
-            If the differences between methods are small (< 5 kJ/mol), all results are consistent.
-            Large differences suggest significant E(α) variation — use aVy in that case, as it
-            makes the fewest assumptions and handles variable E most accurately.
-            """
-        )
+    with st.expander(_("What is the compensation effect, physically?")):
+        st.markdown(_(
+            "Reactions with a high activation energy tend to also have a high pre-exponential factor —\n"
+            "they attempt to react more often, but each attempt requires more energy. This correlation\n"
+            "is observed empirically across families of related reactions and across different candidate\n"
+            "kinetic models fitted to the same dataset.\n\n"
+            "pICNIK uses the compensation effect as a mathematical tool to extract A(α) from the\n"
+            "E(α) values already computed. It does not require any physical explanation for why the\n"
+            "correlation holds — only that it holds consistently for the candidate models."
+        ))
 
-    with st.expander("What does it mean if E is not constant?"):
-        st.markdown(
-            """
-            It means the process has multiple kinetic steps occurring at different conversion levels,
-            each with its own energy barrier. This is common in real materials: moisture evaporation,
-            primary decomposition, and secondary oxidation can all overlap in the same temperature
-            window.
+    with st.expander(_("How many heating rate files do I need?")):
+        st.markdown(_(
+            "**Minimum:** 2 (the tool accepts this, but statistical quality is poor).\n\n"
+            "**Recommended:** 4–5 files spanning a reasonable range, e.g., 5, 10, 15, 20 K/min.\n"
+            "The range should span at least a factor of 2 between the slowest and fastest rate.\n\n"
+            "More heating rates give smaller confidence intervals on E. They should be evenly\n"
+            "distributed on a log scale if possible (e.g., 5, 10, 20 K/min rather than 18, 19, 20)."
+        ))
 
-            A variable E does not invalidate the analysis — it makes it richer. The isoconversional
-            methods still give a valid E(α) curve that captures the changing barriers. aVy is
-            specifically designed to handle this case.
-            """
-        )
-
-    with st.expander("What is the compensation effect, physically?"):
-        st.markdown(
-            """
-            Reactions with a high activation energy tend to also have a high pre-exponential factor —
-            they attempt to react more often, but each attempt requires more energy. This correlation
-            is observed empirically across families of related reactions and across different candidate
-            kinetic models fitted to the same dataset.
-
-            pICNIK uses the compensation effect as a mathematical tool to extract A(α) from the
-            E(α) values already computed. It does not require any physical explanation for why the
-            correlation holds — only that it holds consistently for the candidate models.
-            """
-        )
-
-    with st.expander("How many heating rate files do I need?"):
-        st.markdown(
-            """
-            **Minimum:** 2 (the tool accepts this, but statistical quality is poor).
-
-            **Recommended:** 4–5 files spanning a reasonable range, e.g., 5, 10, 15, 20 K/min.
-            The range should span at least a factor of 2 between the slowest and fastest rate.
-
-            More heating rates give smaller confidence intervals on E. They should be evenly
-            distributed on a log scale if possible (e.g., 5, 10, 20 K/min rather than 18, 19, 20).
-            """
-        )
-
-    with st.expander("Which activation energy method should I use for a publication?"):
-        st.markdown(
-            """
-            For publication-quality results, use **aVy (Advanced Vyazovkin)**. It makes the fewest
-            assumptions, handles variable E(α) correctly, and does not require linear heating.
-
-            Report all five methods in a comparison plot — if they agree, it strengthens the
-            credibility of the result. If they disagree significantly, discuss the likely source
-            (noise in Fr, integral approximation bias in OFW/KAS, assumption of linear heating in Vy).
-
-            Always report confidence intervals and the number of heating rates used.
-            """
-        )
+    with st.expander(_("Which activation energy method should I use for a publication?")):
+        st.markdown(_(
+            "For publication-quality results, use **aVy (Advanced Vyazovkin)**. It makes the fewest\n"
+            "assumptions, handles variable E(α) correctly, and does not require linear heating.\n\n"
+            "Report all five methods in a comparison plot — if they agree, it strengthens the\n"
+            "credibility of the result. If they disagree significantly, discuss the likely source\n"
+            "(noise in Fr, integral approximation bias in OFW/KAS, assumption of linear heating in Vy).\n\n"
+            "Always report confidence intervals and the number of heating rates used."
+        ))
 
     # ------------------------------------------------------------------ #
     # REFERENCE TABLE                                                      #
     # ------------------------------------------------------------------ #
     st.divider()
-    st.header("Notation Reference")
-    st.markdown(
-        """
-        | Symbol | Meaning | Typical range |
-        |--------|---------|---------------|
-        | α | Conversion (dimensionless) | 0 to 1 |
-        | β | Heating rate | 2–20 K/min typical |
-        | T₀ | Initial temperature | ~300 K |
-        | E | Activation energy | 50–300 kJ/mol typical |
-        | A | Pre-exponential factor | 10³–10¹⁵ min⁻¹ typical |
-        | R | Gas constant | 0.008314 kJ/(mol·K) |
-        | f(α) | Differential reaction model | dimensionless |
-        | g(α) | Integral reaction model | dimensionless, monotonically increasing |
-        | dα/dt | Conversion rate | min⁻¹ |
-        | J(E, T(t)) | Time integral of Arrhenius term | units of time |
-        | I(E, T) | Temperature integral of Arrhenius term | units of temperature |
-        """
-    )
+    st.header(_("Notation Reference"))
+    st.markdown(_(
+        "| Symbol | Meaning | Typical range |\n"
+        "|--------|---------|---------------|\n"
+        "| α | Conversion (dimensionless) | 0 to 1 |\n"
+        "| β | Heating rate | 2–20 K/min typical |\n"
+        "| T₀ | Initial temperature | ~300 K |\n"
+        "| E | Activation energy | 50–300 kJ/mol typical |\n"
+        "| A | Pre-exponential factor | 10³–10¹⁵ min⁻¹ typical |\n"
+        "| R | Gas constant | 0.008314 kJ/(mol·K) |\n"
+        "| f(α) | Differential reaction model | dimensionless |\n"
+        "| g(α) | Integral reaction model | dimensionless, monotonically increasing |\n"
+        "| dα/dt | Conversion rate | min⁻¹ |\n"
+        "| J(E, T(t)) | Time integral of Arrhenius term | units of time |\n"
+        "| I(E, T) | Temperature integral of Arrhenius term | units of temperature |"
+    ))
 
-    st.success(
+    st.success(_(
         "You are ready to use the **Tool** page for your own analysis. "
         "Follow the steps in order: Extract → Conversion → Isoconversion → "
         "Activation Energy → Compensation Effect → Reconstruction → Predictions."
-    )
+    ))
 
 
 if __name__ == "__main__":

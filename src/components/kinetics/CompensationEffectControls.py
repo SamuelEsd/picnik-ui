@@ -7,7 +7,7 @@ Renders the UI controls for the compensation effect calculation.
 import streamlit as st
 
 from src.utils.SessionManager import SessionManager
-from src.config import SESS_BNUM, SESS_ACTIVATION_ENERGY_RESULTS, SESS_RUN_COMP, SESS_COMP_COL
+from src.config import SESS_BNUM, SESS_ACTIVATION_ENERGY_RESULTS, SESS_RUN_COMP, SESS_COMP_COL, SESS_COMP_ERROR_M
 from src.components.kinetics.ActivationEnergyHandler import get_active_ae_result
 
 
@@ -29,7 +29,7 @@ class CompensationEffectControls:
             st.info("Heating rate data not available.")
             return
 
-        col1, col2 = st.columns([3, 1])
+        col1, col2, col3 = st.columns([3, 2, 1])
 
         with col1:
             beta_options = {
@@ -49,6 +49,26 @@ class CompensationEffectControls:
             SessionManager.set(SESS_COMP_COL, selected_col)
 
         with col2:
+            error_m_options = {
+                'mse_NL': 'MSE — Non-Linear fit',
+                'r_NL': 'R² — Non-Linear fit',
+                'r_Lin': 'R² — Linear fit',
+            }
+            selected_error_m = st.selectbox(
+                "Model filter method",
+                options=list(error_m_options.keys()),
+                format_func=lambda x: error_m_options[x],
+                help=(
+                    "Criterion used to accept or reject each reaction model fit:\n\n"
+                    "• **MSE Non-Linear** — keeps fits whose residual sum of squares is below a threshold (default, robust).\n"
+                    "• **R² Non-Linear** — keeps fits with a Pearson R² close to 1 from the non-linear curve fit.\n"
+                    "• **R² Linear** — linearises the rate equation and keeps fits with high R² from a linear regression."
+                ),
+                key="comp_error_m_selector",
+            )
+            SessionManager.set(SESS_COMP_ERROR_M, selected_error_m)
+
+        with col3:
             st.write("")
             st.write("")
             if st.button(

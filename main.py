@@ -9,6 +9,7 @@ sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 import streamlit as st
 from src.config import APP_TITLE, APP_ICON
+from src.i18n import _, language_selector
 
 # Configure page settings
 st.set_page_config(
@@ -18,23 +19,27 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# --- LANGUAGE SELECTOR (sidebar) ---
+with st.sidebar:
+    language_selector()
+
 # --- PAGES SETUP ---
 home_page = st.Page(
     "src/views/home.py",
-    title="Inicio",
+    title=_("Home"),
     icon=":material/account_circle:",
     default=True,
 )
 
 walkthrough_page = st.Page(
     "src/views/walkthrough.py",
-    title="Tutorial",
+    title=_("Tutorial"),
     icon=":material/bar_chart:",
 )
 
 tool_page = st.Page(
     "src/views/tool.py",
-    title="Herramienta",
+    title=_("Tool"),
     icon=":material/smart_toy:",
 )
 

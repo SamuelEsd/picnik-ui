@@ -85,6 +85,7 @@ SESS_VY_BOUNDS: str = 'vy_bounds'
 # Compensation Effect (Step 8)
 SESS_RUN_COMP: str = 'run_comp_clicked'
 SESS_COMP_COL: str = 'comp_col'
+SESS_COMP_ERROR_M: str = 'comp_error_m'
 
 # Reconstruction (Step 9)
 SESS_RUN_RECON: str = 'run_recon_clicked'

@@ -13,7 +13,7 @@ import pandas as pd
 import plotly.graph_objects as go
 
 from src.utils.SessionManager import SessionManager
-from src.config import SESS_ACTIVATION_ENERGY_OBJECT, SESS_ACTIVATION_ENERGY_RESULTS, SESS_COMP_RESULTS, SESS_RUN_COMP, SESS_COMP_COL
+from src.config import SESS_ACTIVATION_ENERGY_OBJECT, SESS_ACTIVATION_ENERGY_RESULTS, SESS_COMP_RESULTS, SESS_RUN_COMP, SESS_COMP_COL, SESS_COMP_ERROR_M
 from src.models.results import CompensationEffectResults
 from src.components.kinetics.ActivationEnergyHandler import get_active_ae_result
 
@@ -34,12 +34,13 @@ class CompensationEffectHandler:
                     E = ae_results.E
                     errorE = ae_results.error
                     col = SessionManager.get(SESS_COMP_COL, 0)
+                    error_m = SessionManager.get(SESS_COMP_ERROR_M, 'mse_NL')
 
                     with st.spinner(
                         "Computing compensation effect — fitting reaction models to data..."
                     ):
                         comp_result = activation_energy_object.compensation_effect(
-                            col=col, E=E, errorE=errorE
+                            col=col, E=E, errorE=errorE, error_m=error_m
                         )
 
                     if comp_result is None:
