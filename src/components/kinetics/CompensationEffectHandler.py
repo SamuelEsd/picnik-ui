@@ -63,6 +63,7 @@ class CompensationEffectHandler:
                                 error_b=errorb,
                                 A_fit=Afit,
                                 E_fit=Efit,
+                                accepted_models=list(mod) if mod is not None else [],
                             ),
                         )
 
@@ -112,6 +113,12 @@ class CompensationEffectHandler:
         )
         st.plotly_chart(fig1, width="stretch")
 
+        with st.expander("ln(A) statistics"):
+            lnA = results.ln_A
+            st.write(f"**Mean:** {float(np.mean(lnA)):.4f}")
+            st.write(f"**Min:** {float(np.min(lnA)):.4f}  (α = {float(results.alpha[int(np.argmin(lnA))]):.3f})")
+            st.write(f"**Max:** {float(np.max(lnA)):.4f}  (α = {float(results.alpha[int(np.argmax(lnA))]):.3f})")
+
         # Plot 2: compensation effect scatter — ln(A) vs E
         if len(results.E_fit) > 1:
             E_line = np.linspace(min(results.E_fit) * 0.8, max(results.E_fit) * 1.2, 100)
@@ -143,6 +150,10 @@ class CompensationEffectHandler:
                 height=380,
             )
             st.plotly_chart(fig2, width="stretch")
+
+            if results.accepted_models:
+                st.markdown(f"**Accepted models ({len(results.accepted_models)}):** "
+                            + ", ".join(str(m) for m in results.accepted_models))
 
         df_out = pd.DataFrame({
             "alpha": results.alpha,

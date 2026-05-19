@@ -6,19 +6,28 @@ def show():
     st.title(_("pICNIK Web UI"), anchor=False)
     st.markdown(
         _(
-            "A web interface for **isoconversional kinetic analysis** of thermogravimetric (TGA) data.\n\n"
-            "If you have a solid material — a polymer, mineral, pharmaceutical, or biomass — and you want\n"
-            "to know how it decomposes when heated, and how fast that process would happen at *any* temperature,\n"
-            "this is your tool."
+            "A web interface for [**pICNIK**](https://pypi.org/project/picnik/) "
+            "(*Python package for Isoconversional Computations for Non-Isothermal Kinetics*), "
+            "an open-source Python library for isoconversional kinetic analysis.\n\n"
+            "Its purpose is to study the dependence on time and temperature of thermally stimulated "
+            "processes, including:\n\n"
+            "- Shelf life of pharmaceutical compounds\n"
+            "- Thermal stability of materials\n"
+            "- Phase transitions\n"
+            "- Spin crossover\n"
+            "- Desorption of nanoconfined fluids\n\n"
+            "These processes can be monitored under controlled temperature programs with techniques such as "
+            "thermogravimetric analysis (TGA), differential scanning calorimetry (DSC), and SQUID "
+            "magnetometry. pICNIK is designed to work with thermogravimetric data, but it can also process "
+            "SQUID magnetometry data and DSC data in its cumulative form or when the conversion degree has "
+            "already been calculated beforehand."
         )
     )
 
     st.markdown(
         _(
-            "**What a TGA experiment produces — and what α means**\n\n"
-            "A TGA experiment records mass (%) versus temperature as the sample is heated.\n"
-            "As the material decomposes, gases escape and the mass drops. pICNIK normalises\n"
-            "this curve into **α (conversion)**, a dimensionless number from 0 to 1:"
+            "pICNIK normalises the measured signal into **α (conversion)**, "
+            "a dimensionless number from 0 to 1:"
         )
     )
 
@@ -42,14 +51,12 @@ def show_description():
     st.subheader(_("What pICNIK does"), anchor=False)
     st.markdown(
         _(
-            "A **TGA experiment** heats a small sample at a controlled rate and continuously records its mass.\n"
-            "As the material decomposes, gases escape and the mass drops. pICNIK analyses a set of these\n"
-            "experiments — each run at a **different heating rate** — to answer one practical question:\n\n"
-            "> *How much of this material will have decomposed at any given temperature and time —\n"
+            "pICNIK analyses a set of measurements — each run at a **different heating rate** — "
+            "to answer one practical question:\n\n"
+            "> *How much of this material will have reacted at any given temperature and time —\n"
             "> whether in an industrial furnace, a storage facility, or a laboratory reactor?*\n\n"
-            "To make that prediction you need three parameters that together fully describe the reaction\n"
-            "kinetics. They are called the **kinetic triplet**, and extracting them from your TGA data\n"
-            "is exactly what pICNIK does:"
+            "To make that prediction you need three parameters that together fully describe the reaction "
+            "kinetics. They are called the **kinetic triplet**:"
         )
     )
 
@@ -91,16 +98,12 @@ def show_description():
             _(
                 '<div style="border-left: 4px solid #2ca02c; padding-left: 12px; margin-bottom: 8px">\n\n'
                 "**g(α) — Reaction model**\n\n"
-                "A function of the conversion α that describes *why the rate is what it is*\n"
-                "at each stage of the reaction — not just how much material is left, but the\n"
-                "physics and geometry of how it reacts.\n\n"
-                "Think of it this way: two reactions can both be 50% done (α = 0.5) yet have\n"
-                "very different rates at that point — one speeding up, the other slowing down.\n"
-                "**g(α)** captures that difference. It tells you whether the reaction slows\n"
-                "because less material remains, because the reacting surface is shrinking, or\n"
-                "because products are blocking the reaction front.\n\n"
-                "pICNIK reconstructs **g(α)** numerically from the data, so you never have\n"
-                "to guess which mechanism applies.\n\n"
+                "The integral expression of the reaction model f(α). It arises from proposing "
+                "a physicochemical model for the process: nucleation and growth, diffusion, "
+                "geometrical contraction, and others. Different models are suited to different "
+                "processes and can be found in the literature (Vyazovkin, 2015). "
+                "pICNIK includes 34 reaction models in its rxn_models complement and "
+                "reconstructs g(α) numerically from the experimental data.\n\n"
                 "            </div>"
             ),
             unsafe_allow_html=True,
@@ -108,9 +111,11 @@ def show_description():
 
     st.markdown(
         _(
-            "Once known, you can predict how much of\n"
-            "the material will have reacted at any temperature and time — whether in an industrial furnace,\n"
-            "a storage facility, or a laboratory reactor."
+            "The general kinetic equation that relates all three:\n\n"
+            "> **dα/dt = A(α) · exp(−E(α) / RT) · f(α)**\n\n"
+            "Once the triplet is known, you can predict how much of the material will have reacted "
+            "at any temperature and time — whether in an industrial furnace, a storage facility, "
+            "or a laboratory reactor."
         )
     )
 
@@ -186,8 +191,7 @@ def show_description():
     st.subheader(_("Five activation energy methods"), anchor=False)
     st.markdown(
         _(
-            "pICNIK computes E(α) using five established isoconversional methods, so you can compare\n"
-            "results and assess their reliability:"
+            "pICNIK computes E(α) using five established isoconversional methods:"
         )
     )
 
@@ -212,6 +216,21 @@ def show_description():
         _(
             "If all five methods agree, your data is consistent and the result is reliable. "
             "If they diverge, use aVy as the reference — it makes the fewest assumptions."
+        )
+    )
+
+
+    st.divider()
+    st.subheader(_("Further reading"), anchor=False)
+    st.markdown(
+        _(
+            "For more information on the theoretical basis of isoconversional kinetic analysis, "
+            "we recommend consulting the following sources:\n\n"
+            "- Vyazovkin, S. (2015). *Isoconversional kinetics of thermally stimulated processes*. "
+            "Springer International Publishing. https://doi.org/10.1007/978-3-319-14175-6\n"
+            "- Ramírez, E., Balmaseda, J., & Torres-García, E. (2022). pICNIK: Python package with "
+            "isoconversional computations for non-isothermal kinetics. "
+            "*Computer Physics Communications*, 278, 108416."
         )
     )
 

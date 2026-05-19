@@ -100,12 +100,12 @@ class ActivationEnergyControls:
             # aVy-only p-value slider
             if "aVy" in selected_methods:
                 p_value = st.slider(
-                    "P value (Advanced Vyazovkin)",
+                    "Confidence level (Advanced Vyazovkin)",
                     min_value=0.50,
                     max_value=0.99,
                     step=0.01,
-                    value=SessionManager.get(SESS_AVY_P_VALUE, 0.50),
-                    help="Set the P parameter for Advanced Vyazovkin method (0.50 to 0.99).",
+                    value=SessionManager.get(SESS_AVY_P_VALUE, 0.90),
+                    help="Confidence level for the error estimation of the Vyazovkin advanced method.",
                     key="avy_p_slider",
                 )
                 SessionManager.set(SESS_AVY_P_VALUE, p_value)

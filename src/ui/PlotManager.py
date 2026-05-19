@@ -244,13 +244,25 @@ class PlotManager:
         key_min_input = f"{key}_min_input"
         key_max_input = f"{key}_max_input"
 
-        # Seed session state on first render only
+        def _clamp(v, lo, hi):
+            return max(float(lo), min(float(hi), float(v)))
+
         if key_slider not in st.session_state:
             st.session_state[key_slider] = (float(curr_min), float(curr_max))
+        else:
+            old = st.session_state[key_slider]
+            st.session_state[key_slider] = (
+                _clamp(old[0], bound_min, bound_max),
+                _clamp(old[1], bound_min, bound_max),
+            )
         if key_min_input not in st.session_state:
             st.session_state[key_min_input] = float(curr_min)
+        else:
+            st.session_state[key_min_input] = _clamp(st.session_state[key_min_input], bound_min, bound_max)
         if key_max_input not in st.session_state:
             st.session_state[key_max_input] = float(curr_max)
+        else:
+            st.session_state[key_max_input] = _clamp(st.session_state[key_max_input], bound_min, bound_max)
 
         # Slider moved → push new values into the number inputs
         def on_slider_change(sk=key_slider, mk=key_min_input, xk=key_max_input):

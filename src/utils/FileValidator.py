@@ -28,10 +28,15 @@ class FileValidator:
         """
         for encoding in SUPPORTED_ENCODINGS:
             try:
-                return pd.read_csv(filepath, encoding=encoding)
+                df = pd.read_csv(filepath, encoding=encoding)
+                if len(df.columns) == 1:
+                    df_tab = pd.read_csv(filepath, encoding=encoding, sep='\t')
+                    if len(df_tab.columns) > 1:
+                        return df_tab
+                return df
             except UnicodeDecodeError:
                 continue
-        
+
         raise Exception(
             f"Failed to read {filepath} with any supported encoding: {SUPPORTED_ENCODINGS}"
         )

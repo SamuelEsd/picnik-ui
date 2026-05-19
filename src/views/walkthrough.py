@@ -66,10 +66,18 @@ def main():
             > *At a fixed conversion α, the reaction rate depends only on temperature — regardless of
             > what heating programme was used to get there.*
 
-            Mathematically, if you hold α constant and compare across different experiments
-            (different heating rates β), the term f(α) is the same constant for all of them.
-            Dividing two experiments at the same α cancels f(α) completely, leaving only E and T.
-            This means E can be determined **without ever assuming a reaction model**.
+            Mathematically, taking the natural logarithm of the rate equation:
+
+            $$\ln\!\left(\frac{d\alpha}{dt}\right) = \ln[A \cdot f(\alpha)] - \frac{E}{RT}$$
+
+            Differentiating with respect to $1/T$ **at constant α**, the term $\ln[A \cdot f(\alpha)]$
+            is a constant (since $f(\alpha)$ depends only on α, which is fixed) and vanishes:
+
+            $$\left[\frac{\partial \ln(d\alpha/dt)}{\partial(1/T)}\right]_{\!\alpha} = -\frac{E_\alpha}{R}$$
+
+            This is the isoconversional principle: $f(\alpha)$ is eliminated because it is constant
+            when α is fixed. $E_\alpha$ can therefore be determined **without ever assuming a
+            reaction model**.
 
             This is why you need at least 3 experiments at different heating rates: to observe
             the same conversion α at different temperatures. More heating rates (4–5 recommended)
@@ -219,9 +227,7 @@ def main():
             two peaks, there are at least two overlapping decomposition steps — you will need to
             select a temperature window (Step 4) that isolates one of them.
 
-            The **dT/dt plot** confirms the linearity of the heating programme. If the heating rate
-            is not constant (e.g., initial lag phase), this will appear here. Only the linear portion
-            is used in kinetic analysis.
+            The **dT/dt plot** confirms the linearity of the heating programme.
             """)
 
     # ------------------------------------------------------------------ #
@@ -320,16 +326,7 @@ def main():
             α grid point. Cubic splines are smooth, pass through every data point, and have continuous
             first and second derivatives — making them well-suited for this application.
 
-            ### Standard vs Advanced tables
-
-            pICNIK generates two sets of tables:
-
-            - **Standard** (`TempIsoDF`, `timeIsoDF`, `diffIsoDF`): evenly spaced at the user-specified
-              d_a. Used by Fr, OFW, KAS, and Vy.
-            - **Advanced** (`TempAdvIsoDF`, `timeAdvIsoDF`, `diffAdvIsoDF`): more finely spaced and
-              optimised for small Δα intervals. Required by the Advanced Vyazovkin (aVy) method, which
-              integrates over incremental α windows.
-            """)
+""")
 
     # ------------------------------------------------------------------ #
     # STEP 6: Activation Energy                                            #
@@ -339,9 +336,9 @@ def main():
         "**What:** Compute the activation energy E as a function of conversion α using up to five\n"
         "isoconversional methods.\n\n"
         "**Why:** E(α) is the central result of the analysis. If E is constant across α, the reaction\n"
-        "follows a simple single-step mechanism. If E varies, the process has overlapping steps with\n"
-        "different barriers. Comparing all five methods reveals whether your data is internally\n"
-        "consistent and how reliable the result is.\n\n"
+        "follows a simple single-step process. If E varies, the process has overlapping steps with\n"
+        "different barriers. Five methods are available so each user can choose the one whose\n"
+        "mathematical hypotheses they understand well enough to justify in their analysis.\n\n"
         "**How:** On the Tool page, select the method(s) and click **Compute Activation Energy**.\n"
         "Results are plotted as E(α) curves with error bars.\n\n"
         "> **Which method?** Use KAS or OFW for a quick estimate. Use aVy for publication-quality\n"
@@ -506,9 +503,9 @@ def main():
     st.markdown(_(
         "**What:** Numerically reconstruct the integral reaction model g(α) from the E(α) and A(α)\n"
         "arrays obtained in the previous steps.\n\n"
-        "**Why:** g(α) is the third element of the kinetic triplet. It describes the reaction mechanism\n"
+        "**Why:** g(α) is the third element of the kinetic triplet. It describes the reaction model\n"
         "and is needed for model-based isothermal predictions (Step 9). Its shape can also be compared\n"
-        "to known analytical models to identify the reaction mechanism.\n\n"
+        "to known analytical models to identify the reaction model.\n\n"
         "**How:** Click **Reconstruct g(α)** on the Tool page. The reconstructed curve is plotted\n"
         "alongside a library of analytical models. Compare the shape:\n\n"
         "| Shape of g(α) | Likely mechanism |\n"
@@ -639,7 +636,7 @@ def main():
         "| Temperature range selection | The TGA curve contains multiple processes; you must isolate the one of interest |\n"
         "| Conversion α | Normalises mass loss; allows universal mathematical treatment and comparison between runs |\n"
         "| Isoconversion tables | Raw data is not at fixed α values — interpolation extracts the isoconversional points the equations require |\n"
-        "| 5 activation energy methods | Each has different assumptions; comparing them reveals whether E is constant or variable and gives confidence in the result |\n"
+        "| 5 activation energy methods | Each is based on different mathematical hypotheses; having all five gives the user flexibility to choose the method they understand well enough to justify |\n"
         "| Compensation effect | The isoconversional methods give E but not A; the compensation trick extracts A using kinetic consistency |\n"
         "| g(α) reconstruction | Needed for model-based isothermal predictions and identifies the reaction mechanism |\n"
         "| Predictions | The whole point — knowing E, A, g(α) lets you simulate the process at any temperature |"
@@ -684,13 +681,15 @@ def main():
 
     with st.expander(_("What is the compensation effect, physically?")):
         st.markdown(_(
-            "Reactions with a high activation energy tend to also have a high pre-exponential factor —\n"
-            "they attempt to react more often, but each attempt requires more energy. This correlation\n"
-            "is observed empirically across families of related reactions and across different candidate\n"
-            "kinetic models fitted to the same dataset.\n\n"
-            "pICNIK uses the compensation effect as a mathematical tool to extract A(α) from the\n"
-            "E(α) values already computed. It does not require any physical explanation for why the\n"
-            "correlation holds — only that it holds consistently for the candidate models."
+            "The rate constant k(T) = A·exp(−E/RT) must remain physically consistent for a given\n"
+            "reaction at a given temperature. When different candidate reaction models are fitted to\n"
+            "the same experimental data, each model yields a different E (because the models have\n"
+            "different f(α)). Since k(T) cannot change, a model that produces a higher E must also\n"
+            "produce a higher A to compensate — the product A·exp(−E/RT) is constrained. This\n"
+            "constraint is what forces the linear correlation between E and ln A that is observed\n"
+            "across the candidate models, and is the origin of the compensation effect.\n\n"
+            "pICNIK uses this linear relationship as a tool to extract A(α) from the E(α) values\n"
+            "already computed by the isoconversional methods."
         ))
 
     with st.expander(_("How many heating rate files do I need?")):
@@ -698,8 +697,7 @@ def main():
             "**Minimum:** 2 (the tool accepts this, but statistical quality is poor).\n\n"
             "**Recommended:** 4–5 files spanning a reasonable range, e.g., 5, 10, 15, 20 K/min.\n"
             "The range should span at least a factor of 2 between the slowest and fastest rate.\n\n"
-            "More heating rates give smaller confidence intervals on E. They should be evenly\n"
-            "distributed on a log scale if possible (e.g., 5, 10, 20 K/min rather than 18, 19, 20)."
+            "More heating rates give smaller confidence intervals on E."
         ))
 
     with st.expander(_("Which activation energy method should I use for a publication?")):

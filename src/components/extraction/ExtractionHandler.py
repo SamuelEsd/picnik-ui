@@ -43,6 +43,8 @@ class ExtractionHandler:
             # Import here to avoid circular imports
             from picnick_dev import DataExtraction as DE
 
+            file_paths = self._sort_files_by_beta(file_paths)
+
             data_extractor = DE()
             Bnum, T0num = data_extractor.read_files(file_paths)
 
@@ -64,6 +66,29 @@ class ExtractionHandler:
         except Exception as e:
             st.error(f"Error during extraction: {str(e)}")
             return False
+
+    def _estimate_beta(self, filepath: str) -> float:
+        """Estimate β (K/min) from a file by computing the slope of T vs t."""
+        try:
+            df = FileValidator.safe_read_csv(filepath)
+            if len(df.columns) < 2:
+                return 0.0
+            t = list(df.iloc[:, 0].astype(float))
+            T = list(df.iloc[:, 1].astype(float))
+            n = len(t)
+            if n < 2:
+                return 0.0
+            mean_t = sum(t) / n
+            mean_T = sum(T) / n
+            num = sum((ti - mean_t) * (Ti - mean_T) for ti, Ti in zip(t, T))
+            den = sum((ti - mean_t) ** 2 for ti in t)
+            return num / den if den != 0 else 0.0
+        except Exception:
+            return 0.0
+
+    def _sort_files_by_beta(self, file_paths: List[str]) -> List[str]:
+        """Return file_paths sorted by ascending estimated heating rate β."""
+        return sorted(file_paths, key=self._estimate_beta)
 
     def _handle_encoding_retry(self, file_paths: List[str]) -> bool:
         """

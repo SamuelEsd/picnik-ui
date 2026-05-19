@@ -50,6 +50,7 @@ class CompensationEffectResults:
     error_b: float
     A_fit: np.ndarray
     E_fit: np.ndarray
+    accepted_models: list
 
 
 @dataclass
