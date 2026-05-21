@@ -1,4 +1,5 @@
 import streamlit as st
+from src.config import RESOURCES_DIR
 from src.i18n import _
 
 
@@ -34,7 +35,7 @@ def show():
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         st.image(
-            "/home/else/Repos/picnik-ui/resources/Figures/Figure_01.png",
+            str(RESOURCES_DIR / "Figures" / "Figure_01.png"),
             caption=_("TGA mass loss and conversion α"),
             width=700,
         )
