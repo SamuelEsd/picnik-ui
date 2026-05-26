@@ -49,7 +49,7 @@ def show_description():
                 "The energy barrier the reaction must overcome at each conversion level. "
                 "Units: kJ/mol. A constant E means a simple single-step process; "
                 "a varying E indicates overlapping steps.\n\n"
-                "            </div>"
+                "</div>"
             ),
             unsafe_allow_html=True,
         )
@@ -60,7 +60,7 @@ def show_description():
                 "**A(α) — Pre-exponential factor**\n\n"
                 "How frequently molecules attempt to overcome the barrier, per minute. "
                 "Obtained from E(α) via the compensation effect — no reaction model assumed.\n\n"
-                "            </div>"
+                "</div>"
             ),
             unsafe_allow_html=True,
         )
@@ -71,7 +71,7 @@ def show_description():
                 "**g(α) — Reaction model**\n\n"
                 "Describes how the conversion rate depends on how much has already reacted. "
                 "Reconstructed numerically from your data — no model assumed beforehand.\n\n"
-                "            </div>"
+                "</div>"
             ),
             unsafe_allow_html=True,
         )
