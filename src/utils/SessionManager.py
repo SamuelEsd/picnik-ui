@@ -3,7 +3,7 @@ Session state management utilities.
 """
 
 import streamlit as st
-from typing import Any, List, Optional
+from typing import List, Optional
 
 from src.config import (
     SESS_FILE_PATHS,
@@ -59,22 +59,10 @@ class SessionManager:
     """Centralized management of Streamlit session state."""
 
     @staticmethod
-    def get(key: str, default: Any = None) -> Any:
-        return st.session_state.get(key, default)
-
-    @staticmethod
-    def set(key: str, value: Any) -> None:
-        st.session_state[key] = value
-
-    @staticmethod
-    def delete(key: str) -> None:
-        if key in st.session_state:
-            del st.session_state[key]
-
-    @staticmethod
     def delete_multiple(keys: list) -> None:
         for key in keys:
-            SessionManager.delete(key)
+            if key in st.session_state:
+                del st.session_state[key]
 
     @staticmethod
     def clear_downstream_from(step: str) -> None:
@@ -104,18 +92,18 @@ class SessionManager:
 
     @staticmethod
     def is_conversion_ready() -> bool:
-        return SessionManager.get(SESS_CONVERSION_READY, False)
+        return st.session_state.get(SESS_CONVERSION_READY, False)
 
     @staticmethod
     def get_file_paths() -> list:
-        return SessionManager.get(SESS_FILE_PATHS, [])
+        return st.session_state.get(SESS_FILE_PATHS, [])
 
     @staticmethod
     def set_file_paths(paths: list, source: str = 'default', folder: str = '') -> None:
-        SessionManager.set(SESS_FILE_PATHS, paths)
-        SessionManager.set(SESS_FILE_SOURCE, source)
+        st.session_state[SESS_FILE_PATHS] = paths
+        st.session_state[SESS_FILE_SOURCE] = source
         if folder:
-            SessionManager.set(SESS_FILE_FOLDER, folder)
+            st.session_state[SESS_FILE_FOLDER] = folder
 
     @staticmethod
     def get_active_ae_result() -> Optional[ActivationEnergyResults]:
@@ -124,11 +112,11 @@ class SessionManager:
         Reads SESS_AE_ACTIVE_METHOD to pick the user-selected method.
         Falls back to the most rigorous available method: aVy > Vy > KAS > OFW > Fr.
         """
-        results = SessionManager.get(SESS_ACTIVATION_ENERGY_RESULTS)
+        results = st.session_state.get(SESS_ACTIVATION_ENERGY_RESULTS)
         if results is None:
             return None
         if isinstance(results, dict):
-            active = SessionManager.get(SESS_AE_ACTIVE_METHOD)
+            active = st.session_state.get(SESS_AE_ACTIVE_METHOD)
             if active and active in results:
                 return results[active]
             for method in ("aVy", "Vy", "KAS", "OFW", "Fr"):

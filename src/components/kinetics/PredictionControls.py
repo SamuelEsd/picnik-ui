@@ -46,7 +46,7 @@ class PredictionControls:
                 "Linear heating: ramp at a fixed K/min rate."
             ),
         )
-        SessionManager.set(SESS_PRED_MODE, mode)
+        st.session_state[SESS_PRED_MODE] = mode
 
         col1, col2 = st.columns(2)
 
@@ -103,22 +103,22 @@ class PredictionControls:
                 step=1.0,
                 key="pred_bounds_upper",
             )
-            SessionManager.set(SESS_PRED_BOUNDS, (bounds_lower, bounds_upper))
+            st.session_state[SESS_PRED_BOUNDS] = (bounds_lower, bounds_upper)
 
         st.write("")
         if st.button("Run Model-free Prediction", type="primary", key="pred_mf_run_btn"):
-            SessionManager.set(SESS_RUN_PRED_MF, True)
+            st.session_state[SESS_RUN_PRED_MF] = True
 
     def _render_modelbased_controls(self) -> None:
         """Controls for model-based isothermal prediction."""
-        if SessionManager.get(SESS_COMP_RESULTS) is None or SessionManager.get(SESS_RECON_RESULTS) is None:
+        if st.session_state.get(SESS_COMP_RESULTS) is None or st.session_state.get(SESS_RECON_RESULTS) is None:
             st.info(
                 "Complete Steps 8 (Compensation Effect) and 9 (Reconstruction) "
                 "to enable model-based predictions."
             )
             return
 
-        b_num = SessionManager.get(SESS_BNUM)
+        b_num = st.session_state.get(SESS_BNUM)
 
         col1, col2 = st.columns(2)
         with col1:
@@ -146,4 +146,4 @@ class PredictionControls:
             st.write("")
 
         if st.button("Run Model-based Prediction", type="primary", key="pred_mb_run_btn"):
-            SessionManager.set(SESS_RUN_PRED_MB, True)
+            st.session_state[SESS_RUN_PRED_MB] = True

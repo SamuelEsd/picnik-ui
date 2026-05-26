@@ -17,7 +17,7 @@ class PlotViewer:
 
     def render(self) -> None:
         """Display all available plot combinations with interactive controls."""
-        data_extractor = SessionManager.get(SESS_DATA_EXTRACTOR)
+        data_extractor = st.session_state.get(SESS_DATA_EXTRACTOR)
         if data_extractor is None:
             st.info("Extract data first to display plots.")
             return
@@ -57,7 +57,7 @@ class PlotViewer:
             # Time-axis plots use a completely different x unit (min), so applying
             # Kelvin ranges would filter out all data points.
             if x_data == 'temperature':
-                saved_ranges = SessionManager.get(SESS_CONVERSION_RANGES, {})
+                saved_ranges = st.session_state.get(SESS_CONVERSION_RANGES, {})
                 if saved_ranges:
                     for trace_idx, (x_min, x_max) in saved_ranges.items():
                         if x_min is not None or x_max is not None:
@@ -84,15 +84,15 @@ class PlotViewer:
             plotter.show(container=placeholder)
 
             # Store plotter in session for later manipulation
-            plotters_dict = SessionManager.get(SESS_PLOTLY_PLOTTERS, {})
+            plotters_dict = st.session_state.get(SESS_PLOTLY_PLOTTERS, {})
             plotters_dict[idx] = {"plotter": plotter, "placeholder": placeholder}
-            SessionManager.set(SESS_PLOTLY_PLOTTERS, plotters_dict)
+            st.session_state[SESS_PLOTLY_PLOTTERS] = plotters_dict
 
             # Display range controls for interactive adjustment
             if idx == 0:
                 plot_manager.display_plot_range_controls(idx, plotter, placeholder)
                 plotter_current_ranges = plotter.get_current_ranges()
-                SessionManager.set(SESS_CONVERSION_RANGES, plotter_current_ranges)
+                st.session_state[SESS_CONVERSION_RANGES] = plotter_current_ranges
 
         except KeyError as e:
             st.error(f"Invalid plot combination: {str(e)}")

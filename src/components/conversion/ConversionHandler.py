@@ -21,11 +21,11 @@ class ConversionHandler:
 
     def handle_conversion(self) -> None:
         """Execute conversion and isoconversion analysis."""
-        if not SessionManager.get(SESS_RUN_CONVERSION):
+        if not st.session_state.get(SESS_RUN_CONVERSION):
             return
 
-        data_extractor = SessionManager.get(SESS_DATA_EXTRACTOR)
-        Bnum = SessionManager.get(SESS_BNUM)
+        data_extractor = st.session_state.get(SESS_DATA_EXTRACTOR)
+        Bnum = st.session_state.get(SESS_BNUM)
 
         if data_extractor is None or Bnum is None:
             st.error("No extracted data available for conversion.")
@@ -36,7 +36,7 @@ class ConversionHandler:
             st.info("Running conversion analysis...")
 
             # Get temperature ranges
-            ranges = SessionManager.get(SESS_CONVERSION_RANGES)
+            ranges = st.session_state.get(SESS_CONVERSION_RANGES)
             Ti_list, Tf_list = self._prepare_temperature_ranges(
                 ranges, Bnum, data_extractor
             )
@@ -53,7 +53,7 @@ class ConversionHandler:
         except Exception as e:
             st.error(f"Error during conversion analysis: {str(e)}")
 
-        SessionManager.set(SESS_RUN_CONVERSION, False)
+        st.session_state[SESS_RUN_CONVERSION] = False
 
     def _prepare_temperature_ranges(
         self, ranges: Optional[dict], Bnum: list, data_extractor
@@ -118,7 +118,7 @@ class ConversionHandler:
             )
 
             # Apply saved ranges from session if available
-            saved_ranges = SessionManager.get(SESS_CONVERSION_RANGES, {})
+            saved_ranges = st.session_state.get(SESS_CONVERSION_RANGES, {})
             if saved_ranges:
                 for trace_idx, (x_min, x_max) in saved_ranges.items():
                     if x_min is not None or x_max is not None:
@@ -131,7 +131,7 @@ class ConversionHandler:
             plotly_plotter.show(container=placeholder)
 
             # Save plotter to session
-            SessionManager.set(SESS_CONVERSION_PLOTTER, plotly_plotter)
+            st.session_state[SESS_CONVERSION_PLOTTER] = plotly_plotter
 
         with col2:
             st.subheader("Analysis Summary")
@@ -141,8 +141,8 @@ class ConversionHandler:
                 st.write(f"  Dataset {i + 1}: {ti:.1f} K to {tf:.1f} K")
         
         # Save conversion metadata to session
-        SessionManager.set(SESS_CONVERSION_METADATA, {
+        st.session_state[SESS_CONVERSION_METADATA] = {
             "Ti_list": Ti_list,
             "Tf_list": Tf_list,
             "Bnum": Bnum,
-        })
+        }

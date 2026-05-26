@@ -18,7 +18,7 @@ class ConversionControls:
         st.divider()
         st.subheader("Step 5: Conversion Analysis")
 
-        if SessionManager.get(SESS_DATA_EXTRACTOR) is None:
+        if st.session_state.get(SESS_DATA_EXTRACTOR) is None:
             st.info("Complete Step 3 (Data Extraction) first to enable conversion analysis.")
             return
 
@@ -26,12 +26,12 @@ class ConversionControls:
 
         with col1:
             if st.button("Reset Conversion", type="secondary", key="conversion_reset_btn"):
-                SessionManager.set(SESS_RUN_CONVERSION, False)
-                SessionManager.set(SESS_CONVERSION_RANGES, {})
-                SessionManager.set(SESS_CONVERSION_PLOTTER, None)
-                SessionManager.set(SESS_CONVERSION_METADATA, None)
+                st.session_state[SESS_RUN_CONVERSION] = False
+                st.session_state[SESS_CONVERSION_RANGES] = {}
+                st.session_state[SESS_CONVERSION_PLOTTER] = None
+                st.session_state[SESS_CONVERSION_METADATA] = None
                 st.success("Conversion state reset.")
 
         with col2:
             if st.button("Run Conversion", type="primary", key="conversion_run_btn"):
-                SessionManager.set(SESS_RUN_CONVERSION, True)
+                st.session_state[SESS_RUN_CONVERSION] = True

@@ -37,7 +37,7 @@ class FileCountValidator:
             True if count is valid, False otherwise.
         """
         if file_paths is None:
-            file_paths = SessionManager.get(SESS_FILE_PATHS, [])
+            file_paths = st.session_state.get(SESS_FILE_PATHS, [])
 
         num_files = len(file_paths)
 

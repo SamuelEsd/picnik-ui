@@ -52,18 +52,18 @@ class PredictionHandler:
         predictions can be triggered and displayed in the same render cycle.
         Always renders any results already stored in session at the end of the call.
         """
-        if SessionManager.get(SESS_RUN_PRED_MF):
+        if st.session_state.get(SESS_RUN_PRED_MF):
             self._handle_modelfree_prediction()
 
-        if SessionManager.get(SESS_RUN_PRED_MB):
+        if st.session_state.get(SESS_RUN_PRED_MB):
             self._handle_modelbased_prediction()
 
         # Always display stored results
-        mf = SessionManager.get(SESS_PRED_MF_RESULTS)
+        mf = st.session_state.get(SESS_PRED_MF_RESULTS)
         if mf is not None:
             self._display_modelfree_results(mf)
 
-        mb = SessionManager.get(SESS_PRED_MB_RESULTS)
+        mb = st.session_state.get(SESS_PRED_MB_RESULTS)
         if mb is not None:
             self._display_modelbased_results(mb)
 
@@ -74,7 +74,7 @@ class PredictionHandler:
         Stores a ModelfreePredictionResults on success. Does not require a reaction
         model — only E(α) from the active activation energy method is needed.
         """
-        activation_energy_object = SessionManager.get(SESS_ACTIVATION_ENERGY_OBJECT)
+        activation_energy_object = st.session_state.get(SESS_ACTIVATION_ENERGY_OBJECT)
         ae_results = SessionManager.get_active_ae_result()
 
         if activation_energy_object is None or ae_results is None:
@@ -83,13 +83,13 @@ class PredictionHandler:
 
         try:
             E = ae_results.E
-            mode = SessionManager.get(SESS_PRED_MODE, "Isothermal")
-            alpha_target = float(SessionManager.get(SESS_PRED_ALPHA_TARGET, 0.999))
-            bounds = SessionManager.get(SESS_PRED_BOUNDS, (10.0, 10.0))
+            mode = st.session_state.get(SESS_PRED_MODE, "Isothermal")
+            alpha_target = float(st.session_state.get(SESS_PRED_ALPHA_TARGET, 0.999))
+            bounds = st.session_state.get(SESS_PRED_BOUNDS, (10.0, 10.0))
 
             with st.spinner(f"Running {mode} model-free prediction..."):
                 if mode == "Isothermal":
-                    iso_T = float(SessionManager.get(SESS_PRED_ISO_T, 575.0))
+                    iso_T = float(st.session_state.get(SESS_PRED_ISO_T, 575.0))
                     a_prime, T_prime, t_prime = (
                         activation_energy_object.modelfree_prediction(
                             E=E,
@@ -100,7 +100,7 @@ class PredictionHandler:
                         )
                     )
                 else:
-                    B_val = float(SessionManager.get(SESS_PRED_LINEAR_B, 10.0))
+                    B_val = float(st.session_state.get(SESS_PRED_LINEAR_B, 10.0))
                     a_prime, T_prime, t_prime = (
                         activation_energy_object.modelfree_prediction(
                             E=E,
@@ -111,20 +111,17 @@ class PredictionHandler:
                     )
 
             st.success("Model-free prediction completed")
-            SessionManager.set(
-                SESS_PRED_MF_RESULTS,
-                ModelfreePredictionResults(
+            st.session_state[SESS_PRED_MF_RESULTS] = ModelfreePredictionResults(
                     a_prime=a_prime,
                     T_prime=T_prime,
                     t_prime=t_prime,
                     mode=mode,
-                ),
-            )
+                )
 
         except Exception as e:
             st.error(f"Error during model-free prediction: {str(e)}")
 
-        SessionManager.set(SESS_RUN_PRED_MF, False)
+        st.session_state[SESS_RUN_PRED_MF] = False
 
     def _handle_modelbased_prediction(self) -> None:
         """Run t_isothermal() to predict time-to-conversion at a constant temperature.
@@ -133,10 +130,10 @@ class PredictionHandler:
         the compensation effect step, and g(α) from the reconstruction step.
         Stores a ModelbasedPredictionResults on success.
         """
-        activation_energy_object = SessionManager.get(SESS_ACTIVATION_ENERGY_OBJECT)
+        activation_energy_object = st.session_state.get(SESS_ACTIVATION_ENERGY_OBJECT)
         ae_results = SessionManager.get_active_ae_result()
-        comp_results = SessionManager.get(SESS_COMP_RESULTS)
-        recon_results = SessionManager.get(SESS_RECON_RESULTS)
+        comp_results = st.session_state.get(SESS_COMP_RESULTS)
+        recon_results = st.session_state.get(SESS_RECON_RESULTS)
 
         if (
             activation_energy_object is None
@@ -151,8 +148,8 @@ class PredictionHandler:
             return
 
         try:
-            iso_T = float(SessionManager.get(SESS_PRED_MB_ISO_T, 575.0))
-            col = int(SessionManager.get(SESS_PRED_MB_COL, 0))
+            iso_T = float(st.session_state.get(SESS_PRED_MB_ISO_T, 575.0))
+            col = int(st.session_state.get(SESS_PRED_MB_COL, 0))
 
             with st.spinner(
                 f"Running model-based isothermal prediction at T = {iso_T:.0f} K..."
@@ -167,19 +164,16 @@ class PredictionHandler:
                 )
 
             st.success("Model-based prediction completed")
-            SessionManager.set(
-                SESS_PRED_MB_RESULTS,
-                ModelbasedPredictionResults(
+            st.session_state[SESS_PRED_MB_RESULTS] = ModelbasedPredictionResults(
                     t_pred=t_pred,
                     alpha_values=ae_results.alpha,
                     iso_T=iso_T,
-                ),
-            )
+                )
 
         except Exception as e:
             st.error(f"Error during model-based prediction: {str(e)}")
 
-        SessionManager.set(SESS_RUN_PRED_MB, False)
+        st.session_state[SESS_RUN_PRED_MB] = False
 
     # ------------------------------------------------------------------ #
     # Display helpers                                                       #

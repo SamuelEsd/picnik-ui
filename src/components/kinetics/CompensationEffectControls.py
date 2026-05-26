@@ -23,7 +23,7 @@ class CompensationEffectControls:
             st.info("Complete Step 7 (Activation Energy) first to enable this step.")
             return
 
-        b_num = SessionManager.get(SESS_BNUM)
+        b_num = st.session_state.get(SESS_BNUM)
         if b_num is None:
             st.info("Heating rate data not available.")
             return
@@ -45,7 +45,7 @@ class CompensationEffectControls:
                 ),
                 key="comp_col_selector",
             )
-            SessionManager.set(SESS_COMP_COL, selected_col)
+            st.session_state[SESS_COMP_COL] = selected_col
 
         with col2:
             error_m_options = {
@@ -65,7 +65,7 @@ class CompensationEffectControls:
                 ),
                 key="comp_error_m_selector",
             )
-            SessionManager.set(SESS_COMP_ERROR_M, selected_error_m)
+            st.session_state[SESS_COMP_ERROR_M] = selected_error_m
 
         with col3:
             st.write("")
@@ -75,4 +75,4 @@ class CompensationEffectControls:
                 type="primary",
                 key="comp_calc_btn",
             ):
-                SessionManager.set(SESS_RUN_COMP, True)
+                st.session_state[SESS_RUN_COMP] = True

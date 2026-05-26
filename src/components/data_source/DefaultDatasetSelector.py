@@ -104,8 +104,8 @@ class DefaultDatasetSelector:
             List of full file paths.
         """
         chosen_paths = [os.path.join(folder_path, c) for c in chosen]
-        SessionManager.set(SESS_FILE_PATHS, chosen_paths)
-        SessionManager.set(SESS_FILE_SOURCE, "default")
-        SessionManager.set(SESS_FILE_FOLDER, folder_path)
+        st.session_state[SESS_FILE_PATHS] = chosen_paths
+        st.session_state[SESS_FILE_SOURCE] = "default"
+        st.session_state[SESS_FILE_FOLDER] = folder_path
         st.success(f"Selected {len(chosen_paths)} file(s) from '{folder_name}'")
         return chosen_paths

@@ -18,7 +18,7 @@ class IsoconversionControls:
         st.divider()
         st.subheader("Step 6: Isoconversion Analysis")
 
-        if SessionManager.get(SESS_CONVERSION_METADATA) is None:
+        if st.session_state.get(SESS_CONVERSION_METADATA) is None:
             st.info("Complete Step 5 (Conversion) first to enable isoconversion analysis.")
             return
 
@@ -29,15 +29,15 @@ class IsoconversionControls:
                 "Conversion step size (∆α)",
                 min_value=0.001,
                 max_value=0.1,
-                value=SessionManager.get(SESS_ISO_DA, DEFAULT_ISO_DA),
+                value=st.session_state.get(SESS_ISO_DA, DEFAULT_ISO_DA),
                 step=0.001,
                 help="Step size between conversion values for isoconversion calculations",
                 key="isoconv_d_a_slider",
             )
-            SessionManager.set(SESS_ISO_DA, d_a)
+            st.session_state[SESS_ISO_DA] = d_a
 
         with col2:
             st.write("")
             st.write("")
             if st.button("Run Isoconversion", type="primary", key="isoconv_run_btn"):
-                SessionManager.set(SESS_RUN_ISOCONVERSION, True)
+                st.session_state[SESS_RUN_ISOCONVERSION] = True

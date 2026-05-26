@@ -38,10 +38,10 @@ class ReconstructionHandler:
         in session state and invalidates prediction results. Always renders the
         stored g(α) chart at the end of the call.
         """
-        if SessionManager.get(SESS_RUN_RECON):
-            activation_energy_object = SessionManager.get(SESS_ACTIVATION_ENERGY_OBJECT)
+        if st.session_state.get(SESS_RUN_RECON):
+            activation_energy_object = st.session_state.get(SESS_ACTIVATION_ENERGY_OBJECT)
             ae_results = SessionManager.get_active_ae_result()
-            comp_results = SessionManager.get(SESS_COMP_RESULTS)
+            comp_results = st.session_state.get(SESS_COMP_RESULTS)
 
             if activation_energy_object is None or ae_results is None or comp_results is None:
                 st.error(
@@ -53,8 +53,8 @@ class ReconstructionHandler:
                     E = ae_results.E
                     A = np.exp(comp_results.ln_A)
 
-                    b_num = SessionManager.get(SESS_BNUM)
-                    beta_idx = SessionManager.get(SESS_RECON_BETA_IDX, 0)
+                    b_num = st.session_state.get(SESS_BNUM)
+                    beta_idx = st.session_state.get(SESS_RECON_BETA_IDX, 0)
                     B = float(b_num[beta_idx])
 
                     with st.spinner("Reconstructing g(α)..."):
@@ -67,10 +67,7 @@ class ReconstructionHandler:
                     if len(alpha_plot) > len(g_r):
                         alpha_plot = alpha_plot[: len(g_r)]
 
-                    SessionManager.set(
-                        SESS_RECON_RESULTS,
-                        ReconstructionResults(g_r=g_r, alpha_plot=alpha_plot),
-                    )
+                    st.session_state[SESS_RECON_RESULTS] = ReconstructionResults(g_r=g_r, alpha_plot=alpha_plot)
 
                 except AttributeError:
                     st.error(
@@ -80,10 +77,10 @@ class ReconstructionHandler:
                 except Exception as e:
                     st.error(f"Error during reconstruction: {str(e)}")
 
-            SessionManager.set(SESS_RUN_RECON, False)
+            st.session_state[SESS_RUN_RECON] = False
 
         # Always display from session if results exist
-        recon_results = SessionManager.get(SESS_RECON_RESULTS)
+        recon_results = st.session_state.get(SESS_RECON_RESULTS)
         if recon_results is not None:
             self._display_results(recon_results)
 

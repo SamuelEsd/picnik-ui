@@ -18,11 +18,11 @@ class ReconstructionControls:
         st.divider()
         st.subheader("Step 9: Reaction Model Reconstruction — g(α)")
 
-        if SessionManager.get(SESS_COMP_RESULTS) is None:
+        if st.session_state.get(SESS_COMP_RESULTS) is None:
             st.info("Complete Step 8 (Compensation Effect) first to enable reconstruction.")
             return
 
-        b_num = SessionManager.get(SESS_BNUM)
+        b_num = st.session_state.get(SESS_BNUM)
         if b_num is None:
             return
 
@@ -41,10 +41,10 @@ class ReconstructionControls:
                 ),
                 key="recon_beta_selector",
             )
-            SessionManager.set(SESS_RECON_BETA_IDX, selected_beta_idx)
+            st.session_state[SESS_RECON_BETA_IDX] = selected_beta_idx
 
         with col2:
             st.write("")
             st.write("")
             if st.button("Reconstruct g(α)", type="primary", key="recon_calc_btn"):
-                SessionManager.set(SESS_RUN_RECON, True)
+                st.session_state[SESS_RUN_RECON] = True

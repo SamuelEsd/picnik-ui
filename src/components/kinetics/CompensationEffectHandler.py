@@ -29,8 +29,8 @@ class CompensationEffectHandler:
         invalidates reconstruction and prediction results. Always renders stored
         results at the end of the call.
         """
-        if SessionManager.get(SESS_RUN_COMP):
-            activation_energy_object = SessionManager.get(SESS_ACTIVATION_ENERGY_OBJECT)
+        if st.session_state.get(SESS_RUN_COMP):
+            activation_energy_object = st.session_state.get(SESS_ACTIVATION_ENERGY_OBJECT)
             ae_results = SessionManager.get_active_ae_result()
 
             if activation_energy_object is None or ae_results is None:
@@ -40,8 +40,8 @@ class CompensationEffectHandler:
                 try:
                     E = ae_results.E
                     errorE = ae_results.error
-                    col = SessionManager.get(SESS_COMP_COL, 0)
-                    error_m = SessionManager.get(SESS_COMP_ERROR_M, 'mse_NL')
+                    col = st.session_state.get(SESS_COMP_COL, 0)
+                    error_m = st.session_state.get(SESS_COMP_ERROR_M, 'mse_NL')
 
                     with st.spinner(
                         "Computing compensation effect — fitting reaction models to data..."
@@ -58,9 +58,7 @@ class CompensationEffectHandler:
                     else:
                         ln_A, errorlnA, a, errora, b, errorb, Afit, Efit, r_sq, mod = comp_result
                         st.success("Compensation effect computed successfully")
-                        SessionManager.set(
-                            SESS_COMP_RESULTS,
-                            CompensationEffectResults(
+                        st.session_state[SESS_COMP_RESULTS] = CompensationEffectResults(
                                 alpha=ae_results.alpha,
                                 ln_A=ln_A,
                                 error_ln_A=errorlnA,
@@ -71,16 +69,15 @@ class CompensationEffectHandler:
                                 A_fit=Afit,
                                 E_fit=Efit,
                                 accepted_models=list(mod) if mod is not None else [],
-                            ),
-                        )
+                            )
 
                 except Exception as e:
                     st.error(f"Error during compensation effect calculation: {str(e)}")
 
-            SessionManager.set(SESS_RUN_COMP, False)
+            st.session_state[SESS_RUN_COMP] = False
 
         # Always display from session if results exist
-        comp_results = SessionManager.get(SESS_COMP_RESULTS)
+        comp_results = st.session_state.get(SESS_COMP_RESULTS)
         if comp_results is not None:
             self._display_results(comp_results)
 

@@ -46,17 +46,17 @@ class ActivationEnergyHandler:
             True if the ActivationEnergy object is available (created or cached),
             False if prerequisites are missing or instantiation fails.
         """
-        data_extractor = SessionManager.get(SESS_DATA_EXTRACTOR)
-        iso_results = SessionManager.get(SESS_ISOCONVERSION_RESULT)
+        data_extractor = st.session_state.get(SESS_DATA_EXTRACTOR)
+        iso_results = st.session_state.get(SESS_ISOCONVERSION_RESULT)
 
         if data_extractor is None or iso_results is None:
             return False
 
-        if SessionManager.get(SESS_ACTIVATION_ENERGY_OBJECT) is not None:
+        if st.session_state.get(SESS_ACTIVATION_ENERGY_OBJECT) is not None:
             return True
 
-        b_num = SessionManager.get(SESS_BNUM)
-        t0_num = SessionManager.get(SESS_T0_NUM)
+        b_num = st.session_state.get(SESS_BNUM)
+        t0_num = st.session_state.get(SESS_T0_NUM)
 
         try:
             ae_object = ActivationEnergy(
@@ -64,7 +64,7 @@ class ActivationEnergyHandler:
                 T0=t0_num,
                 IsoTables=iso_results.raw,
             )
-            SessionManager.set(SESS_ACTIVATION_ENERGY_OBJECT, ae_object)
+            st.session_state[SESS_ACTIVATION_ENERGY_OBJECT] = ae_object
             return True
         except Exception as e:
             st.error(f"Error creating Activation Energy object: {str(e)}")
@@ -80,9 +80,9 @@ class ActivationEnergyHandler:
         predictions) are invalidated before the new results are stored.
         Always renders the combined E(α) chart from session at the end of the call.
         """
-        if SessionManager.get(SESS_RUN_AE):
-            activation_energy_object = SessionManager.get(SESS_ACTIVATION_ENERGY_OBJECT)
-            selected_methods = SessionManager.get(SESS_AE_METHODS, [])
+        if st.session_state.get(SESS_RUN_AE):
+            activation_energy_object = st.session_state.get(SESS_ACTIVATION_ENERGY_OBJECT)
+            selected_methods = st.session_state.get(SESS_AE_METHODS, [])
 
             if activation_energy_object is None:
                 st.error("No Activation Energy object available for calculation.")
@@ -91,7 +91,7 @@ class ActivationEnergyHandler:
             else:
                 SessionManager.clear_downstream_from("activation_energy")
                 # Preserve any previously computed results and add/overwrite with new ones.
-                existing = SessionManager.get(SESS_ACTIVATION_ENERGY_RESULTS)
+                existing = st.session_state.get(SESS_ACTIVATION_ENERGY_RESULTS)
                 results_dict: dict[str, ActivationEnergyResults] = (
                     existing if isinstance(existing, dict) else {}
                 )
@@ -115,19 +115,19 @@ class ActivationEnergyHandler:
                         st.success(f"{AE_METHODS[method]} completed")
 
                 if results_dict:
-                    SessionManager.set(SESS_ACTIVATION_ENERGY_RESULTS, results_dict)
+                    st.session_state[SESS_ACTIVATION_ENERGY_RESULTS] = results_dict
                     # Default active method to the best one computed
-                    current_active = SessionManager.get(SESS_AE_ACTIVE_METHOD)
+                    current_active = st.session_state.get(SESS_AE_ACTIVE_METHOD)
                     if current_active not in results_dict:
                         for m in ("aVy", "Vy", "KAS", "OFW", "Fr"):
                             if m in results_dict:
-                                SessionManager.set(SESS_AE_ACTIVE_METHOD, m)
+                                st.session_state[SESS_AE_ACTIVE_METHOD] = m
                                 break
 
-            SessionManager.set(SESS_RUN_AE, False)
+            st.session_state[SESS_RUN_AE] = False
 
         # Always display from session if results exist
-        results = SessionManager.get(SESS_ACTIVATION_ENERGY_RESULTS)
+        results = st.session_state.get(SESS_ACTIVATION_ENERGY_RESULTS)
         if results is not None:
             results_dict = results if isinstance(results, dict) else {}
             if results_dict:
@@ -153,11 +153,11 @@ class ActivationEnergyHandler:
             elif method == "OFW":
                 return ae_object.OFW()
             elif method == "Vy":
-                bounds = SessionManager.get(SESS_VY_BOUNDS, (1.0, 300.0))
+                bounds = st.session_state.get(SESS_VY_BOUNDS, (1.0, 300.0))
                 return ae_object.Vy(bounds=bounds)
             elif method == "aVy":
-                bounds = SessionManager.get(SESS_VY_BOUNDS, (1.0, 300.0))
-                p_value = SessionManager.get(SESS_AVY_P_VALUE, 0.50)
+                bounds = st.session_state.get(SESS_VY_BOUNDS, (1.0, 300.0))
+                p_value = st.session_state.get(SESS_AVY_P_VALUE, 0.50)
                 return ae_object.aVy(bounds=bounds, p=p_value)
             else:
                 st.error(f"Unknown method: {method}")
@@ -197,7 +197,7 @@ class ActivationEnergyHandler:
         """
         st.subheader("Activation Energy Results — E(α)")
 
-        show_error = SessionManager.get(SESS_AE_SHOW_ERROR, True)
+        show_error = st.session_state.get(SESS_AE_SHOW_ERROR, True)
 
         fig = go.Figure()
         for method, res in results_dict.items():
@@ -230,7 +230,7 @@ class ActivationEnergyHandler:
         st.plotly_chart(fig, use_container_width=True)
 
         # Active method selector — drives downstream steps
-        active_method = SessionManager.get(SESS_AE_ACTIVE_METHOD)
+        active_method = st.session_state.get(SESS_AE_ACTIVE_METHOD)
         if active_method not in results_dict:
             active_method = next(iter(results_dict))
 
@@ -245,7 +245,7 @@ class ActivationEnergyHandler:
                 "aVy is the most rigorous choice when methods disagree."
             ),
         )
-        SessionManager.set(SESS_AE_ACTIVE_METHOD, new_active)
+        st.session_state[SESS_AE_ACTIVE_METHOD] = new_active
 
         # Per-method metrics and download buttons
         with st.expander("Method details & downloads", expanded=False):

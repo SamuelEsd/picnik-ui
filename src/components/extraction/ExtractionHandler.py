@@ -29,11 +29,11 @@ class ExtractionHandler:
         Returns:
             True if extraction was successful, False otherwise.
         """
-        if not SessionManager.get(SESS_EXTRACT_CLICKED):
+        if not st.session_state.get(SESS_EXTRACT_CLICKED):
             return False
 
-        SessionManager.set(SESS_EXTRACT_CLICKED, False)
-        file_paths = SessionManager.get(SESS_FILE_PATHS, [])
+        st.session_state[SESS_EXTRACT_CLICKED] = False
+        file_paths = st.session_state.get(SESS_FILE_PATHS, [])
         if not file_paths:
             st.error("No files available for extraction.")
             return False
@@ -54,10 +54,10 @@ class ExtractionHandler:
             Bnum, T0num = data_extractor.read_files(file_paths, summary=False)
 
             # Store extraction results in session
-            SessionManager.set(SESS_DATA_EXTRACTOR, data_extractor)
-            SessionManager.set(SESS_BNUM, Bnum)
-            SessionManager.set(SESS_T0_NUM, T0num)
-            SessionManager.set(SESS_CONVERSION_READY, True)
+            st.session_state[SESS_DATA_EXTRACTOR] = data_extractor
+            st.session_state[SESS_BNUM] = Bnum
+            st.session_state[SESS_T0_NUM] = T0num
+            st.session_state[SESS_CONVERSION_READY] = True
 
             st.success("Data extraction completed successfully")
             st.write(f"Processed files: {', '.join(Path(f).name for f in file_paths)}")
@@ -124,10 +124,10 @@ class ExtractionHandler:
                     data_extractor = DE()
                     Bnum, T0num = data_extractor.read_files(temp_paths, summary=False)
 
-                    SessionManager.set(SESS_DATA_EXTRACTOR, data_extractor)
-                    SessionManager.set(SESS_BNUM, Bnum)
-                    SessionManager.set(SESS_T0_NUM, T0num)
-                    SessionManager.set(SESS_CONVERSION_READY, True)
+                    st.session_state[SESS_DATA_EXTRACTOR] = data_extractor
+                    st.session_state[SESS_BNUM] = Bnum
+                    st.session_state[SESS_T0_NUM] = T0num
+                    st.session_state[SESS_CONVERSION_READY] = True
 
                     st.success("Files recovered with safe encoding")
                     return True

@@ -58,8 +58,8 @@ class DataSourceSelector:
         """
         file_paths = self._upload_files_widget()
         if file_paths:
-            SessionManager.set(SESS_FILE_PATHS, file_paths)
-            SessionManager.set(SESS_FILE_SOURCE, "upload")
+            st.session_state[SESS_FILE_PATHS] = file_paths
+            st.session_state[SESS_FILE_SOURCE] = "upload"
             return file_paths
         return None
 
