@@ -32,6 +32,7 @@ class ExtractionHandler:
         if not SessionManager.get(SESS_EXTRACT_CLICKED):
             return False
 
+        SessionManager.set(SESS_EXTRACT_CLICKED, False)
         file_paths = SessionManager.get(SESS_FILE_PATHS, [])
         if not file_paths:
             st.error("No files available for extraction.")
@@ -40,13 +41,17 @@ class ExtractionHandler:
         st.info("Extracting data from files...")
 
         try:
+            SessionManager.clear_downstream_from("extraction")
             # Import here to avoid circular imports
             from picnick_dev import DataExtraction as DE
 
             file_paths = self._sort_files_by_beta(file_paths)
 
             data_extractor = DE()
-            Bnum, T0num = data_extractor.read_files(file_paths)
+            # summary=False: the UI provides its own interactive plots via PlotViewer.
+            # The default summary=True generates a matplotlib figure with plt.show()
+            # that is not rendered in Streamlit and pollutes the matplotlib figure state.
+            Bnum, T0num = data_extractor.read_files(file_paths, summary=False)
 
             # Store extraction results in session
             SessionManager.set(SESS_DATA_EXTRACTOR, data_extractor)
@@ -117,7 +122,7 @@ class ExtractionHandler:
 
                 if temp_paths:
                     data_extractor = DE()
-                    Bnum, T0num = data_extractor.read_files(temp_paths)
+                    Bnum, T0num = data_extractor.read_files(temp_paths, summary=False)
 
                     SessionManager.set(SESS_DATA_EXTRACTOR, data_extractor)
                     SessionManager.set(SESS_BNUM, Bnum)

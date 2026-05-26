@@ -43,9 +43,9 @@ class FileStructureValidator:
         if invalid_files:
             st.warning(f"{len(invalid_files)} file(s) could not be processed:")
             for filename, error_msg in invalid_files:
-                st.write(f"  • {Path(filename).name}: {error_msg}")
+                st.write(f"{Path(filename).name}: {error_msg}")
 
         if valid_files:
-            st.success(f"✓ {len(valid_files)} valid file(s) loaded")
+            st.success(f"{len(valid_files)} valid file(s) loaded")
 
         return valid_files, invalid_files

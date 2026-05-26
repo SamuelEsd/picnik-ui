@@ -54,5 +54,5 @@ class FileCountValidator:
             )
             return False
         else:
-            st.success(f"✓ {num_files} file(s) ready")
+            st.success(f"{num_files} file(s) ready")
             return True

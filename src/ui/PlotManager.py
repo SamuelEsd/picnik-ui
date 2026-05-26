@@ -325,15 +325,15 @@ class PlotManager:
                     mx = st.session_state.get(key_max)
                     log_lines.append(f"Trace {ti}: min={mn}, max={mx}")
                     if mn is None or mx is None:
-                        log_lines.append(f"  ⚠ Skipped — key not found in session state")
+                        log_lines.append(f"  [SKIP] key not found in session state")
                         continue
                     try:
                         mn, mx = float(mn), float(mx)
                         plotter.update_curve_xrange(ti, x_min=mn, x_max=mx)
-                        log_lines.append(f"  ✓ Range set to [{mn:.4g}, {mx:.4g}]")
+                        log_lines.append(f"  [OK] Range set to [{mn:.4g}, {mx:.4g}]")
                         applied += 1
                     except Exception as e:
-                        log_lines.append(f"  ✗ Error: {e}")
+                        log_lines.append(f"  [ERROR] {e}")
                         continue
                 with st.expander(f"Apply log ({applied}/{len(slider_keys)} traces updated)", expanded=applied == 0):
                     for line in log_lines:

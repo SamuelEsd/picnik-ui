@@ -10,8 +10,7 @@ import pandas as pd
 from src.utils.SessionManager import SessionManager
 from src.config import (
     DEFAULT_ISO_DA, SESS_DATA_EXTRACTOR, SESS_ISOCONVERSION_RESULT,
-    SESS_RUN_ISOCONVERSION, SESS_ISO_DA, SESS_ACTIVATION_ENERGY_OBJECT,
-    SESS_ACTIVATION_ENERGY_RESULTS, SESS_COMP_RESULTS, SESS_RECON_RESULTS,
+    SESS_RUN_ISOCONVERSION, SESS_ISO_DA,
 )
 from src.models.results import IsoconversionResults
 
@@ -20,7 +19,13 @@ class IsoconversionHandler:
     """Component for handling isoconversion analysis."""
 
     def handle_isoconversion(self) -> None:
-        """Execute isoconversion analysis and display results."""
+        """Execute isoconversion analysis when triggered and display stored results.
+
+        Reads SESS_RUN_ISOCONVERSION. When True, calls DataExtraction.Isoconversion()
+        with the configured Δα step, stores an IsoconversionResults in session state,
+        and invalidates all downstream steps (activation energy through predictions).
+        Always renders the stored results table at the end of the call.
+        """
         if SessionManager.get(SESS_RUN_ISOCONVERSION):
             data_extractor = SessionManager.get(SESS_DATA_EXTRACTOR)
 
@@ -42,12 +47,7 @@ class IsoconversionHandler:
                             conversion_rate=diff_df,
                         ),
                     )
-                    # Isoconversion inputs changed — invalidate all downstream objects
-                    # so they are rebuilt with the new tables on the next run.
-                    SessionManager.delete(SESS_ACTIVATION_ENERGY_OBJECT)
-                    SessionManager.delete(SESS_ACTIVATION_ENERGY_RESULTS)
-                    SessionManager.delete(SESS_COMP_RESULTS)
-                    SessionManager.delete(SESS_RECON_RESULTS)
+                    SessionManager.clear_downstream_from("isoconversion")
 
                 except Exception as e:
                     st.error(f"Error during isoconversion analysis: {str(e)}")
@@ -60,7 +60,12 @@ class IsoconversionHandler:
             self._display_isoconversion_results(iso_results)
 
     def _display_isoconversion_results(self, results: IsoconversionResults) -> None:
-        """Display isoconversion results with download options."""
+        """Render isoconversion tables with per-column download buttons.
+
+        Args:
+            results: Stored isoconversion output containing temperature, time,
+                and conversion rate DataFrames indexed by α.
+        """
         st.subheader("Isoconversion Results")
 
         tab1, tab2, tab3 = st.tabs(

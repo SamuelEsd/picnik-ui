@@ -51,8 +51,13 @@ APP_ICON: str = ":material/analytics:"
 # SESSION STATE KEY CONSTANTS
 # ============================================================================
 
+# UI / locale
+SESS_LOCALE: str = 'locale'
+
 # Core data objects
 SESS_FILE_PATHS: str = 'file_paths'
+SESS_FILE_SOURCE: str = 'file_paths_source'
+SESS_FILE_FOLDER: str = 'file_paths_folder'
 SESS_BNUM: str = 'Bnum'
 SESS_T0_NUM: str = 'T0num'
 SESS_DATA_EXTRACTOR: str = 'data_extractor'

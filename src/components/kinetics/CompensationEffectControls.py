@@ -8,7 +8,6 @@ import streamlit as st
 
 from src.utils.SessionManager import SessionManager
 from src.config import SESS_BNUM, SESS_ACTIVATION_ENERGY_RESULTS, SESS_RUN_COMP, SESS_COMP_COL, SESS_COMP_ERROR_M
-from src.components.kinetics.ActivationEnergyHandler import get_active_ae_result
 
 
 class CompensationEffectControls:
@@ -19,7 +18,7 @@ class CompensationEffectControls:
         st.divider()
         st.subheader("Step 8: Pre-exponential Factor — Compensation Effect")
 
-        ae_results = get_active_ae_result()
+        ae_results = SessionManager.get_active_ae_result()
         if ae_results is None:
             st.info("Complete Step 7 (Activation Energy) first to enable this step.")
             return
@@ -60,9 +59,9 @@ class CompensationEffectControls:
                 format_func=lambda x: error_m_options[x],
                 help=(
                     "Criterion used to accept or reject each reaction model fit:\n\n"
-                    "• **MSE Non-Linear** — keeps fits whose residual sum of squares is below a threshold (default, robust).\n"
-                    "• **R² Non-Linear** — keeps fits with a Pearson R² close to 1 from the non-linear curve fit.\n"
-                    "• **R² Linear** — linearises the rate equation and keeps fits with high R² from a linear regression."
+                    "- **MSE Non-Linear**: keeps fits whose residual sum of squares is below a threshold (default, robust).\n"
+                    "- **R² Non-Linear**: keeps fits with a Pearson R² close to 1 from the non-linear curve fit.\n"
+                    "- **R² Linear**: linearises the rate equation and keeps fits with high R² from a linear regression."
                 ),
                 key="comp_error_m_selector",
             )

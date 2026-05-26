@@ -24,17 +24,23 @@ from src.config import (
     SESS_RECON_BETA_IDX,
 )
 from src.models.results import ReconstructionResults
-from src.components.kinetics.ActivationEnergyHandler import get_active_ae_result
 
 
 class ReconstructionHandler:
     """Handles the numerical reconstruction of the integral reaction model g(alpha)."""
 
     def handle_reconstruction(self) -> None:
-        """Execute model reconstruction and display results."""
+        """Numerically reconstruct the integral reaction model g(α).
+
+        Reads SESS_RUN_RECON. When True, calls ActivationEnergy.reconstruction()
+        using E(α) from the active method, A(α) from the compensation effect step,
+        and the user-selected reference heating rate β. Stores a ReconstructionResults
+        in session state and invalidates prediction results. Always renders the
+        stored g(α) chart at the end of the call.
+        """
         if SessionManager.get(SESS_RUN_RECON):
             activation_energy_object = SessionManager.get(SESS_ACTIVATION_ENERGY_OBJECT)
-            ae_results = get_active_ae_result()
+            ae_results = SessionManager.get_active_ae_result()
             comp_results = SessionManager.get(SESS_COMP_RESULTS)
 
             if activation_energy_object is None or ae_results is None or comp_results is None:
@@ -42,6 +48,7 @@ class ReconstructionHandler:
                     "Missing data. Ensure activation energy and compensation effect have been computed."
                 )
             else:
+                SessionManager.clear_downstream_from("reconstruction")
                 try:
                     E = ae_results.E
                     A = np.exp(comp_results.ln_A)
@@ -81,7 +88,12 @@ class ReconstructionHandler:
             self._display_results(recon_results)
 
     def _display_results(self, results: ReconstructionResults) -> None:
-        """Display the reconstructed g(alpha) model."""
+        """Render the reconstructed g(α) curve and CSV download button.
+
+        Args:
+            results: Stored reconstruction output containing the g_r array
+                and the corresponding alpha_plot values.
+        """
         st.subheader("Reconstructed Integral Model g(α)")
 
         fig = go.Figure()

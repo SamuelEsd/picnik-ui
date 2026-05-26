@@ -32,6 +32,7 @@ class ConversionHandler:
             return
 
         try:
+            SessionManager.clear_downstream_from("conversion")
             st.info("Running conversion analysis...")
 
             # Get temperature ranges
@@ -51,6 +52,8 @@ class ConversionHandler:
 
         except Exception as e:
             st.error(f"Error during conversion analysis: {str(e)}")
+
+        SessionManager.set(SESS_RUN_CONVERSION, False)
 
     def _prepare_temperature_ranges(
         self, ranges: Optional[dict], Bnum: list, data_extractor
@@ -135,7 +138,7 @@ class ConversionHandler:
             st.write(f"Datasets analyzed: **{len(Bnum)}**")
             st.write("Temperature ranges:")
             for i, (ti, tf) in enumerate(zip(Ti_list, Tf_list)):
-                st.write(f"  • Dataset {i + 1}: {ti:.1f} K → {tf:.1f} K")
+                st.write(f"  Dataset {i + 1}: {ti:.1f} K to {tf:.1f} K")
         
         # Save conversion metadata to session
         SessionManager.set(SESS_CONVERSION_METADATA, {

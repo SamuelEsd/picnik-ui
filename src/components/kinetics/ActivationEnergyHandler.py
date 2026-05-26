@@ -31,39 +31,20 @@ from src.models.results import ActivationEnergyResults
 from picnick_dev import ActivationEnergy
 
 
-def get_active_ae_result() -> Optional[ActivationEnergyResults]:
-    """
-    Return the single ActivationEnergyResults that downstream steps should use.
-
-    If results is a dict (new multi-method format), picks by SESS_AE_ACTIVE_METHOD,
-    falling back to the best available method (aVy > Vy > KAS > OFW > Fr).
-    Also handles the legacy single-result format for backward compatibility.
-    """
-    results = SessionManager.get(SESS_ACTIVATION_ENERGY_RESULTS)
-    if results is None:
-        return None
-    if isinstance(results, dict):
-        active = SessionManager.get(SESS_AE_ACTIVE_METHOD)
-        if active and active in results:
-            return results[active]
-        for method in ("aVy", "Vy", "KAS", "OFW", "Fr"):
-            if method in results:
-                return results[method]
-        return None
-    # Legacy: stored as a single ActivationEnergyResults
-    return results
-
-
 class ActivationEnergyHandler:
     """Executes activation energy calculations and displays combined results."""
 
     def setup(self) -> bool:
-        """
-        Build and store the ActivationEnergy object from session prerequisites.
+        """Build and cache the ActivationEnergy pICNIK object in session state.
 
-        Returns True if the object is ready, False otherwise.
-        The object is only created once per session to preserve stateful
-        attributes (e.g. accepted_models) set by later steps.
+        Instantiates ActivationEnergy from the stored DataExtraction object and
+        isoconversion tables. The object is created only once per session to
+        preserve stateful attributes (e.g. accepted_models) written by the
+        compensation effect step. Must be called before handle_activation_energy().
+
+        Returns:
+            True if the ActivationEnergy object is available (created or cached),
+            False if prerequisites are missing or instantiation fails.
         """
         data_extractor = SessionManager.get(SESS_DATA_EXTRACTOR)
         iso_results = SessionManager.get(SESS_ISOCONVERSION_RESULT)
@@ -90,7 +71,15 @@ class ActivationEnergyHandler:
             return False
 
     def handle_activation_energy(self) -> None:
-        """Run all selected methods and display results."""
+        """Run all user-selected isoconversional methods and display the combined chart.
+
+        Reads SESS_RUN_AE and SESS_AE_METHODS. For each selected method, calls
+        _execute_method(), wraps the result in an ActivationEnergyResults dataclass,
+        and accumulates them in a dict keyed by method name stored under
+        SESS_ACTIVATION_ENERGY_RESULTS. Downstream steps (compensation through
+        predictions) are invalidated before the new results are stored.
+        Always renders the combined E(α) chart from session at the end of the call.
+        """
         if SessionManager.get(SESS_RUN_AE):
             activation_energy_object = SessionManager.get(SESS_ACTIVATION_ENERGY_OBJECT)
             selected_methods = SessionManager.get(SESS_AE_METHODS, [])
@@ -100,6 +89,7 @@ class ActivationEnergyHandler:
             elif not selected_methods:
                 st.warning("No methods selected.")
             else:
+                SessionManager.clear_downstream_from("activation_energy")
                 # Preserve any previously computed results and add/overwrite with new ones.
                 existing = SessionManager.get(SESS_ACTIVATION_ENERGY_RESULTS)
                 results_dict: dict[str, ActivationEnergyResults] = (
@@ -146,7 +136,15 @@ class ActivationEnergyHandler:
     def _execute_method(
         self, ae_object: ActivationEnergy, method: str
     ) -> Optional[object]:
-        """Execute a single activation energy method and return its raw result."""
+        """Call the corresponding pICNIK method on the ActivationEnergy object.
+
+        Args:
+            ae_object: Instantiated pICNIK ActivationEnergy object.
+            method: Method key — one of 'Fr', 'OFW', 'KAS', 'Vy', 'aVy'.
+
+        Returns:
+            Raw tuple returned by the pICNIK method, or None if execution fails.
+        """
         try:
             if method == "Fr":
                 return ae_object.Fr()
@@ -171,14 +169,18 @@ class ActivationEnergyHandler:
     def _parse_result(
         self, result: object, method: str
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-        """
-        Extract (alpha, E, error) arrays from a raw pICNIK method result.
+        """Extract (alpha, E, error) arrays from a raw pICNIK method result.
 
-        All methods in picnick_dev return: (alpha, T_mean, E, error[, extras])
-          index [0] = alpha (conversion values)
-          index [1] = T_mean (mean temperatures — not used here)
-          index [2] = E (activation energies in kJ/mol)
-          index [3] = error (uncertainty)
+        All pICNIK methods return a sequence whose first four elements are:
+        [0] alpha — conversion values, [1] T_mean — not used here,
+        [2] E — activation energies in kJ/mol, [3] error — uncertainty at 95%.
+
+        Args:
+            result: Raw return value from any pICNIK isoconversional method.
+            method: Method key (used only for potential future dispatch).
+
+        Returns:
+            Tuple of (alpha, E, error) as NumPy arrays.
         """
         result = tuple(result)
         alpha = np.array(result[0])
@@ -187,7 +189,12 @@ class ActivationEnergyHandler:
         return alpha, E, error
 
     def _display_results(self, results_dict: dict[str, ActivationEnergyResults]) -> None:
-        """Display all computed methods in one combined chart."""
+        """Render the combined E(α) chart, active-method selector, and per-method downloads.
+
+        Args:
+            results_dict: Mapping of method key → ActivationEnergyResults for every
+                method that has been computed in the current session.
+        """
         st.subheader("Activation Energy Results — E(α)")
 
         show_error = SessionManager.get(SESS_AE_SHOW_ERROR, True)

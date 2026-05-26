@@ -1,16 +1,16 @@
-# Translations template for picnik-ui.
-# Copyright (C) 2026 Universidad Nacional Autónoma de México
-# This file is distributed under the same license as the picnik-ui project.
-# Edgar Samuel Perea Dominguez <mr.samuel.perea@gmail.com>, 2026.
+# Translations template for PROJECT.
+# Copyright (C) 2026 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: picnik-ui 1.0\n"
-"Report-Msgid-Bugs-To: mr.samuel.perea@gmail.com\n"
-"POT-Creation-Date: 2026-05-18 19:44-0600\n"
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-05-25 18:56-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: Edgar Samuel Perea Dominguez <mr.samuel.perea@gmail.com>\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
@@ -21,7 +21,7 @@ msgstr ""
 msgid "Home"
 msgstr ""
 
-#: main.py:36 src/views/walkthrough.py:21
+#: main.py:36 src/views/walkthrough.py:23
 msgid "Tutorial"
 msgstr ""
 
@@ -29,284 +29,115 @@ msgstr ""
 msgid "Tool"
 msgstr ""
 
-#: src/views/home.py:6
+#: src/views/home.py:7
 msgid "pICNIK Web UI"
 msgstr ""
 
-#: src/views/home.py:9
+#: src/views/home.py:10
 msgid ""
-"A web interface for [**pICNIK**](https://pypi.org/project/picnik/) "
-"(*Python package for Isoconversional Computations for Non-Isothermal "
-"Kinetics*), an open-source Python library for isoconversional kinetic "
-"analysis.\n"
+"A web interface for [**pICNIK**](https://pypi.org/project/picnik/), an "
+"open-source Python library for isoconversional kinetic analysis of "
+"thermogravimetric (TGA) data.\n"
 "\n"
-"Its purpose is to study the dependence on time and temperature of "
-"thermally stimulated processes, including:\n"
-"\n"
-"- Shelf life of pharmaceutical compounds\n"
-"- Thermal stability of materials\n"
-"- Phase transitions\n"
-"- Spin crossover\n"
-"- Desorption of nanoconfined fluids\n"
-"\n"
-"These processes can be monitored under controlled temperature programs "
-"with techniques such as thermogravimetric analysis (TGA), differential "
-"scanning calorimetry (DSC), and SQUID magnetometry. pICNIK is designed to"
-" work with thermogravimetric data, but it can also process SQUID "
-"magnetometry data and DSC data in its cumulative form or when the "
-"conversion degree has already been calculated beforehand."
+"Upload your TGA files, run the analysis step by step, and download the "
+"results — no Python required."
 msgstr ""
 
-#: src/views/home.py:29
+#: src/views/home.py:20
+msgid "What you can do"
+msgstr ""
+
+#: src/views/home.py:23
 msgid ""
-"pICNIK normalises the measured signal into **α (conversion)**, a "
-"dimensionless number from 0 to 1:"
-msgstr ""
-
-#: src/views/home.py:38
-msgid "TGA mass loss and conversion α"
-msgstr ""
-
-#: src/views/home.py:44
-msgid ""
-"Every computation in pICNIK is expressed as a function of α — not time or"
-" temperature\n"
-"directly. This makes results comparable across different heating rates."
-msgstr ""
-
-#: src/views/home.py:51
-msgid "What pICNIK does"
-msgstr ""
-
-#: src/views/home.py:54
-msgid ""
-"pICNIK analyses a set of measurements — each run at a **different heating"
-" rate** — to answer one practical question:\n"
+"- Compute the **activation energy E(α)** using five established methods "
+"(Friedman, OFW, KAS, Vyazovkin, Advanced Vyazovkin)\n"
+"- Obtain the **pre-exponential factor A(α)** via the compensation effect\n"
+"- Reconstruct the **reaction model g(α)** from your data\n"
+"- Generate **isothermal and non-isothermal predictions** for any "
+"temperature programme\n"
+"- Export all results as **CSV files** and publication-ready **PNG plots**"
 "\n"
-"> *How much of this material will have reacted at any given temperature "
-"and time —\n"
-"> whether in an industrial furnace, a storage facility, or a laboratory "
-"reactor?*\n"
-"\n"
-"To make that prediction you need three parameters that together fully "
-"describe the reaction kinetics. They are called the **kinetic triplet**:"
+"- Switch the interface between **Spanish and English**"
 msgstr ""
 
-#: src/views/home.py:67
+#: src/views/home.py:34
+msgid "The kinetic triplet"
+msgstr ""
+
+#: src/views/home.py:37
+msgid ""
+"Every pICNIK analysis produces three parameters that together fully "
+"describe the reaction kinetics. Once you have them, you can predict how "
+"much of the material will have reacted at any temperature and time."
+msgstr ""
+
+#: src/views/home.py:47
 msgid ""
 "<div style=\"border-left: 4px solid #1f77b4; padding-left: 12px; margin-"
 "bottom: 8px\">\n"
 "\n"
 "**E(α) — Activation energy**\n"
 "\n"
-"The energy barrier molecules must overcome to react, at each conversion "
-"level.\n"
-"Units: kJ/mol.\n"
-"\n"
-"A high-E reaction is nearly dormant at low temperatures and then\n"
-"accelerates steeply once enough thermal energy is available. The "
-"transition from\n"
-"\"barely reacting\" to \"reacting fast\" happens over a much narrower "
-"temperature window\n"
-"than for a low-E reaction.\n"
+"The energy barrier the reaction must overcome at each conversion level. "
+"Units: kJ/mol. A constant E means a simple single-step process; a varying"
+" E indicates overlapping steps.\n"
 "\n"
 "            </div>"
 msgstr ""
 
-#: src/views/home.py:82
+#: src/views/home.py:59
 msgid ""
 "<div style=\"border-left: 4px solid #ff7f0e; padding-left: 12px; margin-"
 "bottom: 8px\">\n"
 "\n"
 "**A(α) — Pre-exponential factor**\n"
 "\n"
-"The rate at which molecules in the bulk sample attempt to react, per "
-"minute.\n"
-"Units: 1/min.\n"
-"\n"
-"Each molecule crosses the energy barrier only once — after that it has "
-"reacted\n"
-"and is gone. But a solid sample contains ~10²³ molecules all attempting\n"
-"independently and simultaneously. **A** captures how frequently those "
-"attempts\n"
-"occur across the whole population. A higher **A** means more attempts per"
-" minute,\n"
-"so more reactions succeed per unit time even if the barrier stays the "
-"same.\n"
-"\n"
-"Obtained from E(α) via the compensation effect.\n"
+"How frequently molecules attempt to overcome the barrier, per minute. "
+"Obtained from E(α) via the compensation effect — no reaction model "
+"assumed.\n"
 "\n"
 "            </div>"
 msgstr ""
 
-#: src/views/home.py:99
+#: src/views/home.py:70
 msgid ""
 "<div style=\"border-left: 4px solid #2ca02c; padding-left: 12px; margin-"
 "bottom: 8px\">\n"
 "\n"
 "**g(α) — Reaction model**\n"
 "\n"
-"The integral expression of the reaction model f(α). It arises from "
-"proposing a physicochemical model for the process: nucleation and growth,"
-" diffusion, geometrical contraction, and others. Different models are "
-"suited to different processes and can be found in the literature "
-"(Vyazovkin, 2015). pICNIK includes 34 reaction models in its rxn_models "
-"complement and reconstructs g(α) numerically from the experimental data."
-"\n"
+"Describes how the conversion rate depends on how much has already "
+"reacted. Reconstructed numerically from your data — no model assumed "
+"beforehand.\n"
 "\n"
 "            </div>"
 msgstr ""
 
-#: src/views/home.py:114
+#: src/views/home.py:80
+msgid "What the tool needs"
+msgstr ""
+
+#: src/views/home.py:83
 msgid ""
-"The general kinetic equation that relates all three:\n"
+"pICNIK requires **multiple TGA experiments run at different heating "
+"rates** (at least 2, ideally 4–5). Each experiment is one CSV file with "
+"three columns: time, temperature, and mass.\n"
 "\n"
-"> **dα/dt = A(α) · exp(−E(α) / RT) · f(α)**\n"
-"\n"
-"Once the triplet is known, you can predict how much of the material will "
-"have reacted at any temperature and time — whether in an industrial "
-"furnace, a storage facility, or a laboratory reactor."
+"Comparing the same conversion level across experiments at different "
+"heating rates is what allows the tool to extract E(α) without ever "
+"assuming which reaction model applies."
 msgstr ""
 
-#: src/views/home.py:123
-msgid "Why multiple heating rates?"
+#: src/views/home.py:95
+msgid "TGA mass loss and conversion α"
 msgstr ""
 
-#: src/views/home.py:126
-#, python-format
-msgid ""
-"The **isoconversional principle** is the mathematical foundation of "
-"pICNIK. It states that\n"
-"at a fixed conversion α, the reaction rate depends *only* on temperature "
-"— not on how the\n"
-"sample was heated to get there. This means that by comparing the same "
-"conversion level\n"
-"across experiments run at different heating rates, it is possible to "
-"extract the activation\n"
-"energy **without ever assuming which reaction model applies**.\n"
-"\n"
-"With just one heating rate you cannot separate E from the reaction model."
-" You need at least\n"
-"3 experiments, ideally 4–5, spanning a reasonable range (e.g., 5, 10, 15,"
-" 20 K/min).\n"
-"\n"
-"**Analogy:** imagine runners completing a race at different speeds "
-"(heating rates).\n"
-"They each reach the 50% checkpoint at different times — but if you "
-"compare *what the\n"
-"terrain looks like at that exact checkpoint* across all runners, you can "
-"figure out\n"
-"how steep the hill is (activation energy) without ever needing to know "
-"each runner's\n"
-"personal style (reaction model). The checkpoint is α; the hill steepness "
-"is E."
-msgstr ""
-
-#: src/views/home.py:142
-msgid "The mathematical foundation"
-msgstr ""
-
-#: src/views/home.py:145
-msgid ""
-"Everything in pICNIK is built on one equation. The speed of any "
-"thermally-activated\n"
-"reaction follows the **Arrhenius equation**:\n"
-"\n"
-"> **k(T) = A · exp(−E / RT)**\n"
-"\n"
-"where k is the reaction rate constant, T is temperature in Kelvin, and\n"
-"R = 0.008314 kJ/(mol·K). For a solid decomposing under a temperature "
-"program, this\n"
-"becomes the **general rate equation**:\n"
-"\n"
-"> **dα/dt = A · exp(−E / RT) · f(α)**\n"
-"\n"
-"This single equation contains all three elements of the kinetic triplet. "
-"The three\n"
-"unknowns — E, A, and f(α) — cannot be determined from a single "
-"experiment. pICNIK's\n"
-"entire workflow is a systematic strategy to extract all three from a set "
-"of TGA runs\n"
-"at different heating rates, without ever assuming which reaction model "
-"f(α) applies."
-msgstr ""
-
-#: src/views/home.py:160
-msgid "The analysis workflow"
-msgstr ""
-
-#: src/views/home.py:163
-msgid ""
-"```\n"
-"Raw TGA files  (one CSV per heating rate)\n"
-"        │\n"
-"        ▼\n"
-"1. Read & clean data        →  heating rates β, initial temperatures T₀\n"
-"        │\n"
-"        ▼\n"
-"2. Compute conversion α     →  α(T) curves, 0 = unreacted · 1 = complete\n"
-"        │\n"
-"        ▼\n"
-"3. Build isoconversion tables  →  T, t, dα/dt  at fixed α values across "
-"all runs\n"
-"        │\n"
-"        ▼\n"
-"4. Compute activation energy E(α)  →  five methods: Fr, OFW, KAS, Vy, aVy"
-"\n"
-"        │\n"
-"        ▼\n"
-"5. Compensation effect      →  obtain ln A(α) from E(α)\n"
-"        │\n"
-"        ▼\n"
-"6. Reconstruct reaction model g(α)  →  numerical, no model assumed\n"
-"        │\n"
-"        ▼\n"
-"7. Predict behavior         →  at any constant or programmed temperature\n"
-"```"
-msgstr ""
-
-#: src/views/home.py:191
-msgid "Five activation energy methods"
-msgstr ""
-
-#: src/views/home.py:194
-msgid "pICNIK computes E(α) using five established isoconversional methods:"
-msgstr ""
-
-#: src/views/home.py:202
-msgid ""
-"- **Fr — Friedman**: differential, most sensitive, highest accuracy when "
-"data is clean\n"
-"- **OFW — Ozawa-Flynn-Wall**: integral, simple, slight approximation bias"
-"\n"
-"- **KAS — Kissinger-Akahira-Sunose**: integral, better approximation than"
-" OFW"
-msgstr ""
-
-#: src/views/home.py:210
-msgid ""
-"- **Vy — Vyazovkin**: numerical optimisation, no approximation, handles "
-"variable E well\n"
-"- **aVy — Advanced Vyazovkin**: most rigorous, incremental integration, "
-"best for complex reactions"
-msgstr ""
-
-#: src/views/home.py:217
-msgid ""
-"If all five methods agree, your data is consistent and the result is "
-"reliable. If they diverge, use aVy as the reference — it makes the fewest"
-" assumptions."
-msgstr ""
-
-#: src/views/home.py:224
+#: src/views/home.py:100
 msgid "Further reading"
 msgstr ""
 
-#: src/views/home.py:227
+#: src/views/home.py:103
 msgid ""
-"For more information on the theoretical basis of isoconversional kinetic "
-"analysis, we recommend consulting the following sources:\n"
-"\n"
 "- Vyazovkin, S. (2015). *Isoconversional kinetics of thermally stimulated"
 " processes*. Springer International Publishing. "
 "https://doi.org/10.1007/978-3-319-14175-6\n"
@@ -315,44 +146,44 @@ msgid ""
 "*Computer Physics Communications*, 278, 108416."
 msgstr ""
 
-#: src/views/home.py:240
+#: src/views/home.py:114
 msgid "Get started"
 msgstr ""
 
-#: src/views/home.py:243
+#: src/views/home.py:117
 msgid "### 1. Tutorial"
 msgstr ""
 
-#: src/views/home.py:246
+#: src/views/home.py:120
 msgid ""
-"Step-by-step guide with theory, formulas, and worked examples. Start here"
-" if you are new to isoconversional analysis."
+"New to isoconversional analysis? Start here. The Tutorial walks you "
+"through all 10 steps with instructions on what to do and what to expect."
 msgstr ""
 
-#: src/views/home.py:250
+#: src/views/home.py:124
 msgid "Go to Tutorial"
 msgstr ""
 
-#: src/views/home.py:253
+#: src/views/home.py:127
 msgid "### 2. Tool"
 msgstr ""
 
-#: src/views/home.py:256
+#: src/views/home.py:130
 msgid ""
 "Upload your TGA CSV files and run the full analysis: extraction, "
 "conversion, isoconversion, activation energy, compensation effect, "
 "reconstruction, and predictions."
 msgstr ""
 
-#: src/views/home.py:260
+#: src/views/home.py:135 src/views/walkthrough.py:183
 msgid "Go to Tool"
 msgstr ""
 
-#: src/views/home.py:263
+#: src/views/home.py:138
 msgid "### 3. Export"
 msgstr ""
 
-#: src/views/home.py:266
+#: src/views/home.py:141
 msgid ""
 "Download results as CSV files directly from the Tool page after each "
 "step. Every computed table and curve can be exported."
@@ -374,615 +205,238 @@ msgid ""
 "Picnik](https://github.com/ErickErock/pICNIK)"
 msgstr ""
 
-#: src/views/walkthrough.py:24
+#: src/views/walkthrough.py:25
 msgid ""
-"This tutorial walks you through the complete **10-step pICNIK workflow** "
-"for analysing\n"
-"thermogravimetric (TGA) data and extracting kinetic parameters.\n"
-"\n"
-"Each step explains **what** it does, **why** it is necessary, and **how**"
-" to use it in the tool.\n"
-"Expand the *Theory* section under each step to see the underlying "
-"mathematics."
+"This tutorial walks you through the **Tool** page step by step. Follow "
+"the instructions in each section, then open the **Tool** page from the "
+"sidebar to run your own analysis."
 msgstr ""
 
-#: src/views/walkthrough.py:33
-msgid "The Big Picture"
+#: src/views/walkthrough.py:32
+msgid "Step 1 — Data Source Selection"
 msgstr ""
 
-#: src/views/walkthrough.py:35
+#: src/views/walkthrough.py:34
 msgid ""
-"A **TGA experiment** places a tiny solid sample in a furnace, heats it at"
-" a controlled rate\n"
-"(for example 10 °C/min), and continuously measures its mass. As the "
-"material decomposes,\n"
-"gases escape and the mass drops. The instrument records three columns:\n"
+"At the top of the Tool page, choose how to load your data:\n"
 "\n"
-"| Column | Content | Units |\n"
-"|--------|---------|-------|\n"
-"| 1 | Time | min |\n"
-"| 2 | Temperature | °C |\n"
-"| 3 | Mass | mg (or %) |\n"
+"- **Select default dataset** — pick one of the built-in datasets from the"
+" dropdown (e.g. `constant_E`). The tool loads all CSV files in that "
+"folder automatically.\n"
+"- **Upload files** — drag and drop your own CSV files.\n"
 "\n"
-"That is all pICNIK needs. The goal is to extract the **kinetic triplet** "
-"from this data:\n"
-"\n"
-"| Symbol | Name | Meaning |\n"
-"|--------|------|---------|\n"
-"| **E(α)** | Activation energy | Energy barrier the reaction must "
-"overcome, at each conversion level |\n"
-"| **A(α)** | Pre-exponential factor | How often molecules attempt to "
-"overcome that barrier |\n"
-"| **f(α) / g(α)** | Reaction model | How the rate depends on how much has"
-" already reacted |\n"
-"\n"
-"Once you have the kinetic triplet, you can **predict conversion at any "
-"temperature and time**\n"
-"condition — whether in a furnace, a storage tank, or a reactor."
+"Once files are selected you will see three green confirmations: files "
+"selected, files ready, and files loaded."
 msgstr ""
 
-#: src/views/walkthrough.py:53
-msgid "Theory — the isoconversional principle"
+#: src/views/walkthrough.py:40
+msgid "Step 1 — Dataset selected; 5 files loaded and validated"
 msgstr ""
 
-#: src/views/walkthrough.py:106
-msgid "Step 1 — Prepare Your Data Files"
+#: src/views/walkthrough.py:45
+msgid "Step 2 — File Validation & Preview"
+msgstr ""
+
+#: src/views/walkthrough.py:47
+msgid ""
+"The tool checks that every file has exactly **3 columns in order**: time "
+"(min) · temperature (°C) · mass (mg or %).\n"
+"\n"
+"A tabbed table shows the first rows of each file so you can confirm the "
+"data looks correct before proceeding. Each tab is named after the file."
+msgstr ""
+
+#: src/views/walkthrough.py:52
+msgid "Step 2 — File preview showing the 3-column structure"
+msgstr ""
+
+#: src/views/walkthrough.py:57
+msgid "Step 3 — Data Extraction"
+msgstr ""
+
+#: src/views/walkthrough.py:59
+msgid ""
+"Click **Extract Data**. The tool reads all files, converts temperatures "
+"to Kelvin, and prepares the data for analysis.\n"
+"\n"
+"A blue status message appears while processing, followed by a green "
+"confirmation listing every processed file."
+msgstr ""
+
+#: src/views/walkthrough.py:64
+msgid "Step 3 — Data extraction completed successfully"
+msgstr ""
+
+#: src/views/walkthrough.py:69
+msgid "Step 4 — Interactive Plots"
+msgstr ""
+
+#: src/views/walkthrough.py:71
+msgid ""
+"Six interactive plots appear organised in tabs: TG, DTG, and dT/dt — each"
+" available against temperature (K) and against time (min).\n"
+"\n"
+"**TG (mass %)** shows sigmoidal mass-loss curves; higher heating rates "
+"(β) shift the curves to higher temperatures.\n"
+"\n"
+"**DTG** is the mass-loss rate; its peak marks the most active temperature"
+" zone. Use this peak to choose your conversion temperature range in Step "
+"5.\n"
+"\n"
+"If needed, expand **Adjust curve x-ranges** to trim each curve "
+"individually — useful when files have different start and end "
+"temperatures."
+msgstr ""
+
+#: src/views/walkthrough.py:80
+msgid "Step 4 — TG curves for all heating rates (temperature axis)"
+msgstr ""
+
+#: src/views/walkthrough.py:81
+msgid "Step 4 — x-range sliders to trim each curve independently"
+msgstr ""
+
+#: src/views/walkthrough.py:86
+msgid "Step 5 — Conversion Analysis"
+msgstr ""
+
+#: src/views/walkthrough.py:88
+msgid ""
+"Click **Run Conversion**. The tool converts raw mass data into **α "
+"(conversion)**: 0 = reaction not started, 1 = reaction complete.\n"
+"\n"
+"One α(T) curve per file appears on a shared 0–1 scale. The Analysis "
+"Summary on the right confirms how many datasets were processed and the "
+"temperature range used for each one."
+msgstr ""
+
+#: src/views/walkthrough.py:94
+msgid "Step 5 — Conversion α(T) curves for all heating rates"
+msgstr ""
+
+#: src/views/walkthrough.py:99
+msgid "Step 6 — Isoconversion Analysis"
+msgstr ""
+
+#: src/views/walkthrough.py:101
+msgid ""
+"Leave the **Conversion step size (Δα)** at the default `0.02` and click "
+"**Run Isoconversion**.\n"
+"\n"
+"The tool builds three tables — Temperature (K), Time (min), and "
+"Conversion Rate (Δα/Δt) — one row per α level, one column per heating "
+"rate. These tables are the numerical input to all five activation energy "
+"methods.\n"
+"\n"
+"Download any table as CSV with the button below it."
 msgstr ""
 
 #: src/views/walkthrough.py:108
+msgid "Step 6 — Isoconversion temperature table (rows = α levels, columns = β)"
+msgstr ""
+
+#: src/views/walkthrough.py:113
+msgid "Step 7 — Activation Energy Analysis"
+msgstr ""
+
+#: src/views/walkthrough.py:115
 msgid ""
-"**What:** Organise your TGA output files — one CSV per heating rate "
-"experiment.\n"
+"Check one or more methods and click **Calculate Activation Energy**.\n"
 "\n"
-"**Why:** pICNIK needs multiple experiments to apply the isoconversional "
-"principle. Each file\n"
-"is one run at a different heating rate β. You need at least 2 files; 4–5 "
-"is recommended\n"
-"for reliable statistics.\n"
+"- **Friedman, KAS, OFW** — fast differential/integral methods; good "
+"starting point.\n"
+"- **Vyazovkin (Vy) and Advanced Vyazovkin (aVy)** — iterative, slower, "
+"more accurate; set the **search bounds** for E (kJ/mol) to cover the "
+"expected range before running.\n"
 "\n"
-"**How:** Each CSV must have exactly **3 columns** in this order:\n"
+"The chart shows E(α) for every selected method with optional error bars. "
+"A flat curve means a simple single-step reaction; a varying curve "
+"indicates overlapping steps.\n"
 "\n"
-"| Column | Content | Units |\n"
-"|--------|---------|-------|\n"
-"| 1 | Time | min |\n"
-"| 2 | Temperature | °C |\n"
-"| 3 | Mass (or any thermally controlled property) | mg (or %) |\n"
-"\n"
-"**Example datasets included in the tool:**\n"
-"- `Constant_E` — simulated data, E = 75 kJ/mol, F1 reaction model\n"
-"- `Paracetamol` — real pharmaceutical decomposition\n"
-"- `Decano` — real data for decane\n"
-"- `PolyProp` — polypropylene degradation\n"
-"- `Two_Steps` — simulated two-step reaction\n"
-"- `Variable_E` — simulated data with conversion-dependent E"
+"Use the **active method selector** below the chart to choose which E(α) "
+"result feeds into Steps 8–10."
 msgstr ""
 
-#: src/views/walkthrough.py:127
-msgid "Theory — why heating rate matters"
+#: src/views/walkthrough.py:125
+msgid "Step 7 — Method selection and Vy/aVy search bounds"
 msgstr ""
 
-#: src/views/walkthrough.py:150
+#: src/views/walkthrough.py:126
+msgid "Step 7 — E(α) results for all five methods"
+msgstr ""
+
+#: src/views/walkthrough.py:131
+msgid "Step 8 — Pre-exponential Factor"
+msgstr ""
+
+#: src/views/walkthrough.py:133
 msgid ""
-"Example GIF not found. Use the default datasets or upload your own CSV "
-"files."
+"Select a **reference heating rate** (any file works) and click "
+"**Calculate Compensation Effect**.\n"
+"\n"
+"The tool fits candidate reaction models to that file and uses the linear "
+"relationship between E and ln(A) to compute A(α) at every conversion "
+"level.\n"
+"\n"
+"The results panel shows the compensation line equation ln(A) = a·E + b, "
+"the number of accepted models, and the ln(A) vs α curve."
 msgstr ""
 
-#: src/views/walkthrough.py:155
-msgid "Step 2 — Load Files"
+#: src/views/walkthrough.py:140
+msgid "Step 8 — Compensation effect results and ln(A) vs α"
 msgstr ""
 
-#: src/views/walkthrough.py:157
+#: src/views/walkthrough.py:145
+msgid "Step 9 — Reaction Model Reconstruction"
+msgstr ""
+
+#: src/views/walkthrough.py:147
 msgid ""
-"**What:** Upload your CSV files (or select a default dataset). pICNIK "
-"reads each file,\n"
-"validates its structure, and computes derived quantities.\n"
+"Select a **heating rate for temperature integration** and click "
+"**Reconstruct g(α)**.\n"
 "\n"
-"**Why:** Raw TGA files contain temperature in °C and absolute mass in mg."
-" Before any\n"
-"kinetic analysis, these must be converted to consistent units and "
-"derivatives must be computed.\n"
+"The tool numerically reconstructs the integral reaction model g(α) from "
+"your data — no model is assumed beforehand. Compare the shape of the "
+"curve to known theoretical models to identify the likely reaction "
+"mechanism. Download the reconstructed g(α) data as CSV."
+msgstr ""
+
+#: src/views/walkthrough.py:153
+msgid "Step 9 — Numerically reconstructed integral model g(α)"
+msgstr ""
+
+#: src/views/walkthrough.py:158
+msgid "Step 10 — Kinetic Predictions"
+msgstr ""
+
+#: src/views/walkthrough.py:160
+msgid ""
+"The kinetic triplet E(α), A(α), g(α) is now complete. Choose a prediction"
+" mode from the two tabs:\n"
 "\n"
-"**How:** Select files below. The library calls "
-"`DataExtraction.read_files()` internally, which:\n"
+"- **Model-free Prediction** — uses E(α) and A(α) directly (no assumed "
+"model). Select **Isothermal** (constant temperature → α vs time) or "
+"**Linear heating** (constant rate → α vs temperature).\n"
+"- **Model-based Isothermal** — uses the full triplet including g(α).\n"
 "\n"
-"1. Reads each CSV into a table\n"
-"2. Converts temperature from °C to Kelvin\n"
-"3. Computes mass-loss percentage: `%m = 100 × (m / m₀)`\n"
-"4. Calculates the actual heating rate β via linear regression of T vs t\n"
-"5. Computes `dT/dt` and `dw/dt` (mass loss rate) using a Savitzky-Golay "
-"smoothing filter\n"
-"\n"
-"**Outputs:** an array of heating rates **B** [K/min] and initial "
-"temperatures **T₀** [K]."
+"Enter the target temperature (K), the target final conversion α, and the "
+"time search bounds, then click **Run**. The result shows the predicted "
+"α(t) curve and the time to reach final conversion, with a downloadable "
+"CSV."
 msgstr ""
 
 #: src/views/walkthrough.py:170
-msgid "Theory — Savitzky-Golay derivatives"
+msgid "Step 10 — Prediction inputs (isothermal model-free mode)"
 msgstr ""
 
-#: src/views/walkthrough.py:188
-msgid "Select files to continue the tutorial."
+#: src/views/walkthrough.py:171
+msgid "Step 10 — Predicted α(t) curve; final conversion reached at 131.98 min"
 msgstr ""
 
-#: src/views/walkthrough.py:206
-msgid "Step 3 — Visualise Experimental Data"
-msgstr ""
-
-#: src/views/walkthrough.py:208
+#: src/views/walkthrough.py:178
 msgid ""
-"**What:** Inspect the raw TGA curves before any kinetic analysis.\n"
-"\n"
-"**Why:** Visual inspection lets you identify the reaction region, check "
-"for multiple\n"
-"decomposition steps, and detect any problematic experiments (bad "
-"baseline, noise, outliers).\n"
-"\n"
-"**How:** Use the **Extract Data** button on the Tool page to load the "
-"data. Three plots appear:\n"
-"\n"
-"- **TG (Thermogravimetry):** mass % vs temperature — shows where the "
-"reaction occurs\n"
-"- **DTG (Derivative TG):** dm/dt vs temperature — peaks mark the most "
-"active decomposition zones\n"
-"- **dT/dt:** temperature rate vs time — should be near-constant for a "
-"well-controlled experiment\n"
-"\n"
-"> For the `Constant_E` example you will see four parallel sigmoidal "
-"curves (one per heating\n"
-"> rate) in the TG plot. Higher β shifts the curve to higher temperatures "
-"— this is the\n"
-"> isoconversional effect in action."
-msgstr ""
-
-#: src/views/walkthrough.py:220
-msgid "Theory — what the curves tell you"
-msgstr ""
-
-#: src/views/walkthrough.py:236
-msgid "Step 4 — Conversion Calculation"
-msgstr ""
-
-#: src/views/walkthrough.py:238
-#, python-brace-format
-msgid ""
-"**What:** Convert raw mass data into the dimensionless quantity α "
-"(conversion), ranging from\n"
-"0 (reaction not started) to 1 (reaction complete), over a user-selected "
-"temperature window.\n"
-"\n"
-"**Why:** Raw mass in mg depends on how much sample was loaded and what "
-"fraction remains as\n"
-"residue — these vary between runs. Conversion α normalises everything to "
-"a universal 0–1 scale\n"
-"that is comparable across experiments and required by the kinetic "
-"equations.\n"
-"\n"
-"**How:** On the Tool page, use the temperature range slider to select "
-"[Tᵢ, Tf] — the window\n"
-"that contains the reaction of interest. Then click **Compute "
-"Conversion**.\n"
-"\n"
-"The formula used is:\n"
-"\n"
-"$$\\alpha = \\frac{m_0 - m_t}{m_0 - m_\\infty}$$\n"
-"\n"
-"where m₀ is the mass at Tᵢ, m_t is the current mass, and m_∞ is the mass "
-"at Tf.\n"
-"\n"
-"> **Tip:** use the DTG plot to find the reaction boundaries. Set Tᵢ just "
-"before the DTG\n"
-"> peak rises from baseline, and Tf just after it returns to baseline."
-msgstr ""
-
-#: src/views/walkthrough.py:252
-msgid "Theory — from TG(%) to conversion α"
-msgstr ""
-
-#: src/views/walkthrough.py:293
-msgid "Step 5 — Isoconversional Tables"
-msgstr ""
-
-#: src/views/walkthrough.py:295
-msgid ""
-"**What:** Build three tables that record, for each conversion level α and"
-" each heating rate,\n"
-"the temperature T, time t, and conversion rate dα/dt at which that "
-"conversion was reached.\n"
-"\n"
-"**Why:** The raw data from each experiment is recorded at regular time "
-"intervals — not at\n"
-"regular α values. To apply the isoconversional principle, you need "
-"exactly the same α values\n"
-"across all experiments. These tables extract and align that information.\n"
-"\n"
-"**How:** Click **Compute Isoconversion** on the Tool page. The parameter "
-"`d_a` controls the\n"
-"spacing between conversion values:\n"
-"\n"
-"| d_a | Number of rows | Speed |\n"
-"|-----|---------------|-------|\n"
-"| 0.005 | ~200 | Slow, precise |\n"
-"| 0.02 | ~50 | Default (recommended) |\n"
-"| 0.05 | ~20 | Fast, coarse |\n"
-"\n"
-"**The three tables produced:**\n"
-"\n"
-"| Table | Contents |\n"
-"|-------|----------|\n"
-"| `TempAdvIsoDF` | Temperature (K) at each α for every heating rate |\n"
-"| `timeAdvIsoDF` | Time (min) at each α for every heating rate |\n"
-"| `diffAdvIsoDF` | Conversion rate dα/dt at each α for every heating rate"
-" |\n"
-"\n"
-"Each row is a conversion level; each column is a heating rate. These "
-"tables are the input\n"
-"to all five activation energy methods."
-msgstr ""
-
-#: src/views/walkthrough.py:317
-msgid "Theory — interpolation and the Advanced tables"
-msgstr ""
-
-#: src/views/walkthrough.py:334
-msgid "Step 6 — Activation Energy Calculation"
-msgstr ""
-
-#: src/views/walkthrough.py:336
-msgid ""
-"**What:** Compute the activation energy E as a function of conversion α "
-"using up to five\n"
-"isoconversional methods.\n"
-"\n"
-"**Why:** E(α) is the central result of the analysis. If E is constant "
-"across α, the reaction\n"
-"follows a simple single-step process. If E varies, the process has "
-"overlapping steps with\n"
-"different barriers. Five methods are available so each user can choose "
-"the one whose\n"
-"mathematical hypotheses they understand well enough to justify in their "
-"analysis.\n"
-"\n"
-"**How:** On the Tool page, select the method(s) and click **Compute "
-"Activation Energy**.\n"
-"Results are plotted as E(α) curves with error bars.\n"
-"\n"
-"> **Which method?** Use KAS or OFW for a quick estimate. Use aVy for "
-"publication-quality\n"
-"> results. If all five agree (within error bars), your data is excellent."
-msgstr ""
-
-#: src/views/walkthrough.py:348
-msgid "Theory — the five methods in detail"
-msgstr ""
-
-#: src/views/walkthrough.py:453
-msgid "Step 7 — Pre-exponential Factor via the Compensation Effect"
-msgstr ""
-
-#: src/views/walkthrough.py:455
-msgid ""
-"**What:** Obtain the pre-exponential factor A(α) — the second element of "
-"the kinetic triplet.\n"
-"\n"
-"**Why:** The five isoconversional methods give E(α), but they do not give"
-" A(α). The\n"
-"compensation effect provides a way to extract A from E without assuming a"
-" reaction model.\n"
-"\n"
-"**How:** On the Tool page, select the heating rate column to use as the "
-"reference experiment\n"
-"and click **Compute Compensation Effect**. The tool fits all candidate "
-"reaction models to\n"
-"that experiment, collects (E, ln A) pairs, and performs a linear "
-"regression to obtain the\n"
-"compensation line. It then evaluates that line at each E(α) value to "
-"produce ln A(α).\n"
-"\n"
-"> **Check:** Look at the scatter plot. The (E, ln A) pairs from different"
-" models should\n"
-"> fall on a clear straight line. If the scatter is large, the "
-"compensation effect is\n"
-"> unreliable for this dataset."
-msgstr ""
-
-#: src/views/walkthrough.py:467
-msgid "Theory — the compensation effect"
-msgstr ""
-
-#: src/views/walkthrough.py:502
-msgid "Step 8 — Reaction Model Reconstruction — g(α)"
-msgstr ""
-
-#: src/views/walkthrough.py:504
-msgid ""
-"**What:** Numerically reconstruct the integral reaction model g(α) from "
-"the E(α) and A(α)\n"
-"arrays obtained in the previous steps.\n"
-"\n"
-"**Why:** g(α) is the third element of the kinetic triplet. It describes "
-"the reaction model\n"
-"and is needed for model-based isothermal predictions (Step 9). Its shape "
-"can also be compared\n"
-"to known analytical models to identify the reaction model.\n"
-"\n"
-"**How:** Click **Reconstruct g(α)** on the Tool page. The reconstructed "
-"curve is plotted\n"
-"alongside a library of analytical models. Compare the shape:\n"
-"\n"
-"| Shape of g(α) | Likely mechanism |\n"
-"|--------------|------------------|\n"
-"| Linear (slope ≈ 1) | F1 — first-order |\n"
-"| Concave (slow then fast) | Diffusion-controlled (D2, D3) |\n"
-"| Convex at start | Nucleation-growth (A2, A3) |\n"
-"| S-shaped | Power-law (P2, P3) |"
-msgstr ""
-
-#: src/views/walkthrough.py:519
-msgid "Theory — g(α) and model-free reconstruction"
-msgstr ""
-
-#: src/views/walkthrough.py:550
-msgid "Step 9 — Kinetic Predictions"
-msgstr ""
-
-#: src/views/walkthrough.py:552
-#, python-brace-format
-msgid ""
-"**What:** Use the kinetic triplet to predict reaction behaviour under any"
-" temperature programme.\n"
-"\n"
-"**Why:** This is the ultimate goal — knowing E, A, and g(α) lets you "
-"simulate the process\n"
-"at conditions you never tested experimentally.\n"
-"\n"
-"**How:** The Tool page offers two prediction modes:\n"
-"\n"
-"### Model-free prediction\n"
-"\n"
-"Based on E(α) only. Uses the isoconversional equality principle. Three "
-"sub-modes:\n"
-"\n"
-"| Mode | Description | Input |\n"
-"|------|-------------|-------|\n"
-"| **Isothermal** | Predict time to reach each α at a constant temperature"
-" | Temperature in K |\n"
-"| **Linear heating** | Predict α(T) under a new heating rate β | Heating "
-"rate in K/min |\n"
-"| **Custom** | Predict under any T(t) function | Python function |\n"
-"\n"
-"### Model-based prediction (isothermal only)\n"
-"\n"
-"Uses the full kinetic triplet (E, A, g(α)) via:\n"
-"\n"
-"$$t(\\alpha) = \\frac{g(\\alpha)}{A \\cdot \\exp(-E / R T_0)}$$\n"
-"\n"
-"More accurate near the experimental conditions. Requires a valid g(α) "
-"from Step 8.\n"
-"\n"
-"> **Bounds:** The model-free prediction involves a minimisation at each "
-"conversion step.\n"
-"> The bounds parameter sets the search window in minutes — set it to the "
-"expected order\n"
-"> of magnitude of the total process duration."
-msgstr ""
-
-#: src/views/walkthrough.py:572
-msgid "Theory — how predictions work"
-msgstr ""
-
-#: src/views/walkthrough.py:610
-msgid "Step 10 — Export Results"
-msgstr ""
-
-#: src/views/walkthrough.py:612
-msgid ""
-"**What:** Download all computed results as CSV files.\n"
-"\n"
-"**Why:** Results are stored in session state during your browser session "
-"but are not\n"
-"saved permanently. Export everything you need before closing the tab.\n"
-"\n"
-"**How:** Every step in the Tool page has download buttons. Available "
-"exports:\n"
-"\n"
-"| Export | File | Contents |\n"
-"|--------|------|----------|\n"
-"| Activation energy | `activation_energy_<method>.csv` | α, E, error |\n"
-"| Isoconversion tables | `isoconversion_temperature.csv` etc. | T, t, "
-"dα/dt tables |\n"
-"| Compensation effect | `compensation_effect_lnA.csv` | α, ln(A), error |"
-"\n"
-"| Model reconstruction | `reaction_model_g_alpha.csv` | α, g(α) |\n"
-"| Model-free prediction | `modelfree_prediction_<mode>.csv` | time, T, α "
-"|\n"
-"| Model-based prediction | `isothermal_prediction_<T>K.csv` | time, α |"
-msgstr ""
-
-#: src/views/walkthrough.py:630
-msgid "Why All Steps Are Necessary"
-msgstr ""
-
-#: src/views/walkthrough.py:632
-msgid ""
-"Each step is required — skipping any one of them makes the result "
-"unreliable or impossible:\n"
-"\n"
-"| Step | Why it cannot be skipped |\n"
-"|------|---------------------------|\n"
-"| Multiple heating rates | Without them the isoconversional principle "
-"cannot be applied — E and f(α) cannot be separated from a single curve |"
-"\n"
-"| Temperature range selection | The TGA curve contains multiple "
-"processes; you must isolate the one of interest |\n"
-"| Conversion α | Normalises mass loss; allows universal mathematical "
-"treatment and comparison between runs |\n"
-"| Isoconversion tables | Raw data is not at fixed α values — "
-"interpolation extracts the isoconversional points the equations require |"
-"\n"
-"| 5 activation energy methods | Each is based on different mathematical "
-"hypotheses; having all five gives the user flexibility to choose the "
-"method they understand well enough to justify |\n"
-"| Compensation effect | The isoconversional methods give E but not A; the"
-" compensation trick extracts A using kinetic consistency |\n"
-"| g(α) reconstruction | Needed for model-based isothermal predictions and"
-" identifies the reaction mechanism |\n"
-"| Predictions | The whole point — knowing E, A, g(α) lets you simulate "
-"the process at any temperature |"
-msgstr ""
-
-#: src/views/walkthrough.py:649
-msgid "Frequently Asked Questions"
-msgstr ""
-
-#: src/views/walkthrough.py:651
-msgid "Why does E depend on α?"
-msgstr ""
-
-#: src/views/walkthrough.py:653
-msgid ""
-"If E is constant across all α, the reaction is a simple single-step "
-"process with one\n"
-"energy barrier. If E varies, the reaction has multiple overlapping steps "
-"each with its\n"
-"own barrier — the observed E is a weighted average that shifts as each "
-"step dominates\n"
-"at different conversion levels.\n"
-"\n"
-"A rising E(α) often indicates competing parallel reactions; a falling "
-"E(α) often\n"
-"indicates a two-step sequential process."
-msgstr ""
-
-#: src/views/walkthrough.py:661
-msgid "Why do OFW, KAS, and Fr sometimes give different results?"
-msgstr ""
-
-#: src/views/walkthrough.py:663
-msgid ""
-"OFW and KAS use different approximations for the temperature integral "
-"(Doyle and\n"
-"Coats-Redfern respectively). Friedman uses instantaneous rates, which are"
-" more sensitive\n"
-"to noise in dα/dt.\n"
-"\n"
-"If the differences between methods are small (< 5 kJ/mol), all results "
-"are consistent.\n"
-"Large differences suggest significant E(α) variation — use aVy in that "
-"case, as it\n"
-"makes the fewest assumptions and handles variable E most accurately."
-msgstr ""
-
-#: src/views/walkthrough.py:671
-msgid "What does it mean if E is not constant?"
-msgstr ""
-
-#: src/views/walkthrough.py:673
-msgid ""
-"It means the process has multiple kinetic steps occurring at different "
-"conversion levels,\n"
-"each with its own energy barrier. This is common in real materials: "
-"moisture evaporation,\n"
-"primary decomposition, and secondary oxidation can all overlap in the "
-"same temperature\n"
-"window.\n"
-"\n"
-"A variable E does not invalidate the analysis — it makes it richer. The "
-"isoconversional\n"
-"methods still give a valid E(α) curve that captures the changing "
-"barriers. aVy is\n"
-"specifically designed to handle this case."
-msgstr ""
-
-#: src/views/walkthrough.py:682
-msgid "What is the compensation effect, physically?"
-msgstr ""
-
-#: src/views/walkthrough.py:684
-msgid ""
-"The rate constant k(T) = A·exp(−E/RT) must remain physically consistent "
-"for a given\n"
-"reaction at a given temperature. When different candidate reaction models"
-" are fitted to\n"
-"the same experimental data, each model yields a different E (because the "
-"models have\n"
-"different f(α)). Since k(T) cannot change, a model that produces a higher"
-" E must also\n"
-"produce a higher A to compensate — the product A·exp(−E/RT) is "
-"constrained. This\n"
-"constraint is what forces the linear correlation between E and ln A that "
-"is observed\n"
-"across the candidate models, and is the origin of the compensation "
-"effect.\n"
-"\n"
-"pICNIK uses this linear relationship as a tool to extract A(α) from the "
-"E(α) values\n"
-"already computed by the isoconversional methods."
-msgstr ""
-
-#: src/views/walkthrough.py:695
-msgid "How many heating rate files do I need?"
-msgstr ""
-
-#: src/views/walkthrough.py:697
-msgid ""
-"**Minimum:** 2 (the tool accepts this, but statistical quality is poor).\n"
-"\n"
-"**Recommended:** 4–5 files spanning a reasonable range, e.g., 5, 10, 15, "
-"20 K/min.\n"
-"The range should span at least a factor of 2 between the slowest and "
-"fastest rate.\n"
-"\n"
-"More heating rates give smaller confidence intervals on E."
-msgstr ""
-
-#: src/views/walkthrough.py:703
-msgid "Which activation energy method should I use for a publication?"
-msgstr ""
-
-#: src/views/walkthrough.py:705
-msgid ""
-"For publication-quality results, use **aVy (Advanced Vyazovkin)**. It "
-"makes the fewest\n"
-"assumptions, handles variable E(α) correctly, and does not require linear"
-" heating.\n"
-"\n"
-"Report all five methods in a comparison plot — if they agree, it "
-"strengthens the\n"
-"credibility of the result. If they disagree significantly, discuss the "
-"likely source\n"
-"(noise in Fr, integral approximation bias in OFW/KAS, assumption of "
-"linear heating in Vy).\n"
-"\n"
-"Always report confidence intervals and the number of heating rates used."
-msgstr ""
-
-#: src/views/walkthrough.py:717
-msgid "Notation Reference"
-msgstr ""
-
-#: src/views/walkthrough.py:719
-msgid ""
-"| Symbol | Meaning | Typical range |\n"
-"|--------|---------|---------------|\n"
-"| α | Conversion (dimensionless) | 0 to 1 |\n"
-"| β | Heating rate | 2–20 K/min typical |\n"
-"| T₀ | Initial temperature | ~300 K |\n"
-"| E | Activation energy | 50–300 kJ/mol typical |\n"
-"| A | Pre-exponential factor | 10³–10¹⁵ min⁻¹ typical |\n"
-"| R | Gas constant | 0.008314 kJ/(mol·K) |\n"
-"| f(α) | Differential reaction model | dimensionless |\n"
-"| g(α) | Integral reaction model | dimensionless, monotonically "
-"increasing |\n"
-"| dα/dt | Conversion rate | min⁻¹ |\n"
-"| J(E, T(t)) | Time integral of Arrhenius term | units of time |\n"
-"| I(E, T) | Temperature integral of Arrhenius term | units of temperature"
-" |"
-msgstr ""
-
-#: src/views/walkthrough.py:735
-msgid ""
-"You are ready to use the **Tool** page for your own analysis. Follow the "
-"steps in order: Extract → Conversion → Isoconversion → Activation Energy "
-"→ Compensation Effect → Reconstruction → Predictions."
+"You have seen all 10 steps. Open the **Tool** page from the sidebar to "
+"run the analysis with your own data. Download your results with the "
+"buttons next to each table or plot."
 msgstr ""
 

@@ -15,21 +15,28 @@ import plotly.graph_objects as go
 from src.utils.SessionManager import SessionManager
 from src.config import SESS_ACTIVATION_ENERGY_OBJECT, SESS_ACTIVATION_ENERGY_RESULTS, SESS_COMP_RESULTS, SESS_RUN_COMP, SESS_COMP_COL, SESS_COMP_ERROR_M
 from src.models.results import CompensationEffectResults
-from src.components.kinetics.ActivationEnergyHandler import get_active_ae_result
 
 
 class CompensationEffectHandler:
     """Handles the computation of the pre-exponential factor via the compensation effect."""
 
     def handle_compensation_effect(self) -> None:
-        """Execute compensation effect calculation and display results."""
+        """Compute the pre-exponential factor A(α) via the compensation effect.
+
+        Reads SESS_RUN_COMP. When True, calls ActivationEnergy.compensation_effect()
+        using E(α) from the active method and the configured error metric (mse_NL,
+        r_NL, or r_Lin). Stores a CompensationEffectResults in session state and
+        invalidates reconstruction and prediction results. Always renders stored
+        results at the end of the call.
+        """
         if SessionManager.get(SESS_RUN_COMP):
             activation_energy_object = SessionManager.get(SESS_ACTIVATION_ENERGY_OBJECT)
-            ae_results = get_active_ae_result()
+            ae_results = SessionManager.get_active_ae_result()
 
             if activation_energy_object is None or ae_results is None:
                 st.error("Activation energy object or results not available.")
             else:
+                SessionManager.clear_downstream_from("compensation")
                 try:
                     E = ae_results.E
                     errorE = ae_results.error
@@ -78,7 +85,12 @@ class CompensationEffectHandler:
             self._display_results(comp_results)
 
     def _display_results(self, results: CompensationEffectResults) -> None:
-        """Display compensation effect results."""
+        """Render ln(A) vs α chart, compensation scatter plot, and accepted-models list.
+
+        Args:
+            results: Stored compensation effect output containing ln(A), fit
+                parameters a and b, and the list of accepted reaction models.
+        """
         st.subheader("Compensation Effect Results")
 
         col1, col2, col3 = st.columns(3)

@@ -53,16 +53,31 @@ class PlotViewer:
                 st.error(f"Failed to create plot for {plot_tabs[idx]}")
                 return
 
-            # Apply saved ranges from session if available
-            saved_ranges = SessionManager.get(SESS_CONVERSION_RANGES, {})
-            if saved_ranges:
-                for trace_idx, (x_min, x_max) in saved_ranges.items():
-                    if x_min is not None or x_max is not None:
-                        try:
-                            plotter.update_curve_xrange(trace_idx, x_min, x_max)
-                        except (IndexError, ValueError):
-                            # Skip if trace index doesn't exist for this plot
-                            pass
+            # Apply saved temperature ranges only to temperature-axis plots.
+            # Time-axis plots use a completely different x unit (min), so applying
+            # Kelvin ranges would filter out all data points.
+            if x_data == 'temperature':
+                saved_ranges = SessionManager.get(SESS_CONVERSION_RANGES, {})
+                if saved_ranges:
+                    for trace_idx, (x_min, x_max) in saved_ranges.items():
+                        if x_min is not None or x_max is not None:
+                            try:
+                                plotter.update_curve_xrange(trace_idx, x_min, x_max)
+                            except (IndexError, ValueError):
+                                # Skip if trace index doesn't exist for this plot
+                                pass
+
+            # For time-axis plots, warn that curves are not directly comparable:
+            # experiments at different heating rates cover very different time spans,
+            # so faster rates appear compressed on the left of the shared x-axis.
+            if x_data == 'time':
+                st.info(
+                    "Each heating rate covers a different total time "
+                    "(e.g. β=2 K/min takes ~10x longer than β=20 K/min). "
+                    "On a shared time axis, faster experiments appear compressed "
+                    "on the left and their transitions may be hard to see. "
+                    "Use the temperature plots for direct comparisons."
+                )
 
             # Display plot
             placeholder = st.empty()

@@ -40,14 +40,18 @@ from src.config import (
     SESS_PRED_MB_COL,
 )
 from src.models.results import ModelfreePredictionResults, ModelbasedPredictionResults
-from src.components.kinetics.ActivationEnergyHandler import get_active_ae_result
 
 
 class PredictionHandler:
     """Handles model-free and model-based kinetic predictions."""
 
     def handle_predictions(self) -> None:
-        """Dispatch to the appropriate prediction handler."""
+        """Dispatch model-free and model-based predictions and display stored results.
+
+        Checks SESS_RUN_PRED_MF and SESS_RUN_PRED_MB independently, so both
+        predictions can be triggered and displayed in the same render cycle.
+        Always renders any results already stored in session at the end of the call.
+        """
         if SessionManager.get(SESS_RUN_PRED_MF):
             self._handle_modelfree_prediction()
 
@@ -64,9 +68,14 @@ class PredictionHandler:
             self._display_modelbased_results(mb)
 
     def _handle_modelfree_prediction(self) -> None:
-        """Execute model-free prediction."""
+        """Run modelfree_prediction() for isothermal or linear-ramp temperature programs.
+
+        Reads mode, temperature/rate, alpha target, and solver bounds from session.
+        Stores a ModelfreePredictionResults on success. Does not require a reaction
+        model — only E(α) from the active activation energy method is needed.
+        """
         activation_energy_object = SessionManager.get(SESS_ACTIVATION_ENERGY_OBJECT)
-        ae_results = get_active_ae_result()
+        ae_results = SessionManager.get_active_ae_result()
 
         if activation_energy_object is None or ae_results is None:
             st.error("Activation energy object not available.")
@@ -118,9 +127,14 @@ class PredictionHandler:
         SessionManager.set(SESS_RUN_PRED_MF, False)
 
     def _handle_modelbased_prediction(self) -> None:
-        """Execute model-based isothermal prediction using t_isothermal."""
+        """Run t_isothermal() to predict time-to-conversion at a constant temperature.
+
+        Requires the full kinetic triplet: E(α) from the active method, ln(A) from
+        the compensation effect step, and g(α) from the reconstruction step.
+        Stores a ModelbasedPredictionResults on success.
+        """
         activation_energy_object = SessionManager.get(SESS_ACTIVATION_ENERGY_OBJECT)
-        ae_results = get_active_ae_result()
+        ae_results = SessionManager.get_active_ae_result()
         comp_results = SessionManager.get(SESS_COMP_RESULTS)
         recon_results = SessionManager.get(SESS_RECON_RESULTS)
 
@@ -172,7 +186,12 @@ class PredictionHandler:
     # ------------------------------------------------------------------ #
 
     def _display_modelfree_results(self, results: ModelfreePredictionResults) -> None:
-        """Display model-free prediction results."""
+        """Render α(t) chart, summary metrics, and CSV download for model-free prediction.
+
+        Args:
+            results: Stored model-free prediction output containing predicted
+                conversion, temperature, and time arrays, plus the temperature mode.
+        """
         st.subheader(f"Model-free Prediction — {results.mode}")
 
         fig = go.Figure()
@@ -215,7 +234,12 @@ class PredictionHandler:
         )
 
     def _display_modelbased_results(self, results: ModelbasedPredictionResults) -> None:
-        """Display model-based isothermal prediction results."""
+        """Render α(t) chart and CSV download for model-based isothermal prediction.
+
+        Args:
+            results: Stored model-based prediction output containing time array,
+                conversion values, and the isothermal temperature used.
+        """
         st.subheader(f"Model-based Isothermal Prediction — T = {results.iso_T:.0f} K")
 
         alpha_plot = results.alpha_values[: len(results.t_pred)]

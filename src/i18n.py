@@ -15,6 +15,8 @@ from pathlib import Path
 
 import streamlit as st
 
+from src.config import SESS_LOCALE
+
 LOCALES_DIR = Path(__file__).parent.parent / "locales"
 SUPPORTED_LOCALES: dict[str, str] = {
     "en": "English",
@@ -24,7 +26,7 @@ DEFAULT_LOCALE = "en"
 
 
 def get_locale() -> str:
-    return st.session_state.get("locale", DEFAULT_LOCALE)
+    return st.session_state.get(SESS_LOCALE, DEFAULT_LOCALE)
 
 
 @lru_cache(maxsize=None)
@@ -47,12 +49,12 @@ def language_selector() -> None:
     current = get_locale()
 
     selected_label = st.selectbox(
-        label="🌐 Language / Idioma",
+        label="Language / Idioma",
         options=labels,
         index=options.index(current) if current in options else 0,
     )
 
     selected_locale = options[labels.index(selected_label)]
     if selected_locale != current:
-        st.session_state["locale"] = selected_locale
+        st.session_state[SESS_LOCALE] = selected_locale
         st.rerun()
