@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-05-25 18:56-0600\n"
+"POT-Creation-Date: 2026-07-13 21:13-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -82,7 +82,7 @@ msgid ""
 "Units: kJ/mol. A constant E means a simple single-step process; a varying"
 " E indicates overlapping steps.\n"
 "\n"
-"            </div>"
+"</div>"
 msgstr ""
 
 #: src/views/home.py:59
@@ -96,7 +96,7 @@ msgid ""
 "Obtained from E(α) via the compensation effect — no reaction model "
 "assumed.\n"
 "\n"
-"            </div>"
+"</div>"
 msgstr ""
 
 #: src/views/home.py:70
@@ -110,7 +110,7 @@ msgid ""
 "reacted. Reconstructed numerically from your data — no model assumed "
 "beforehand.\n"
 "\n"
-"            </div>"
+"</div>"
 msgstr ""
 
 #: src/views/home.py:80
@@ -128,15 +128,32 @@ msgid ""
 "assuming which reaction model applies."
 msgstr ""
 
+#: src/views/home.py:92
+msgid "Why isoconversion works"
+msgstr ""
+
 #: src/views/home.py:95
+msgid ""
+"The isoconversional principle states that at a fixed conversion level α, "
+"the reaction rate depends only on temperature — not on the reaction "
+"model. Comparing the same α across experiments run at different heating "
+"rates isolates that temperature dependence, which is exactly what Step 6 "
+"does before computing E(α) in Step 7.\n"
+"\n"
+"This is why these methods are called \"model-free\": they don't skip the "
+"reaction model, they just avoid having to guess it before calculating the"
+" activation energy."
+msgstr ""
+
+#: src/views/home.py:110
 msgid "TGA mass loss and conversion α"
 msgstr ""
 
-#: src/views/home.py:100
+#: src/views/home.py:115
 msgid "Further reading"
 msgstr ""
 
-#: src/views/home.py:103
+#: src/views/home.py:118
 msgid ""
 "- Vyazovkin, S. (2015). *Isoconversional kinetics of thermally stimulated"
 " processes*. Springer International Publishing. "
@@ -146,44 +163,44 @@ msgid ""
 "*Computer Physics Communications*, 278, 108416."
 msgstr ""
 
-#: src/views/home.py:114
+#: src/views/home.py:129
 msgid "Get started"
 msgstr ""
 
-#: src/views/home.py:117
+#: src/views/home.py:132
 msgid "### 1. Tutorial"
 msgstr ""
 
-#: src/views/home.py:120
+#: src/views/home.py:135
 msgid ""
 "New to isoconversional analysis? Start here. The Tutorial walks you "
 "through all 10 steps with instructions on what to do and what to expect."
 msgstr ""
 
-#: src/views/home.py:124
+#: src/views/home.py:139
 msgid "Go to Tutorial"
 msgstr ""
 
-#: src/views/home.py:127
+#: src/views/home.py:142
 msgid "### 2. Tool"
 msgstr ""
 
-#: src/views/home.py:130
+#: src/views/home.py:145
 msgid ""
 "Upload your TGA CSV files and run the full analysis: extraction, "
 "conversion, isoconversion, activation energy, compensation effect, "
 "reconstruction, and predictions."
 msgstr ""
 
-#: src/views/home.py:135 src/views/walkthrough.py:183
+#: src/views/home.py:150 src/views/walkthrough.py:188
 msgid "Go to Tool"
 msgstr ""
 
-#: src/views/home.py:138
+#: src/views/home.py:153
 msgid "### 3. Export"
 msgstr ""
 
-#: src/views/home.py:141
+#: src/views/home.py:156
 msgid ""
 "Download results as CSV files directly from the Tool page after each "
 "step. Every computed table and curve can be exported."
@@ -320,6 +337,12 @@ msgstr ""
 
 #: src/views/walkthrough.py:101
 msgid ""
+"Isoconversion means comparing your experiments at the same conversion "
+"level α instead of the same time or temperature. At fixed α, the reaction"
+" rate depends only on temperature — the reaction model cancels out. That "
+"is what makes it possible to calculate E(α) in the next step without "
+"assuming any reaction model.\n"
+"\n"
 "Leave the **Conversion step size (Δα)** at the default `0.02` and click "
 "**Run Isoconversion**.\n"
 "\n"
@@ -331,15 +354,15 @@ msgid ""
 "Download any table as CSV with the button below it."
 msgstr ""
 
-#: src/views/walkthrough.py:108
+#: src/views/walkthrough.py:113
 msgid "Step 6 — Isoconversion temperature table (rows = α levels, columns = β)"
 msgstr ""
 
-#: src/views/walkthrough.py:113
+#: src/views/walkthrough.py:118
 msgid "Step 7 — Activation Energy Analysis"
 msgstr ""
 
-#: src/views/walkthrough.py:115
+#: src/views/walkthrough.py:120
 msgid ""
 "Check one or more methods and click **Calculate Activation Energy**.\n"
 "\n"
@@ -357,19 +380,19 @@ msgid ""
 "result feeds into Steps 8–10."
 msgstr ""
 
-#: src/views/walkthrough.py:125
+#: src/views/walkthrough.py:130
 msgid "Step 7 — Method selection and Vy/aVy search bounds"
 msgstr ""
 
-#: src/views/walkthrough.py:126
+#: src/views/walkthrough.py:131
 msgid "Step 7 — E(α) results for all five methods"
 msgstr ""
 
-#: src/views/walkthrough.py:131
+#: src/views/walkthrough.py:136
 msgid "Step 8 — Pre-exponential Factor"
 msgstr ""
 
-#: src/views/walkthrough.py:133
+#: src/views/walkthrough.py:138
 msgid ""
 "Select a **reference heating rate** (any file works) and click "
 "**Calculate Compensation Effect**.\n"
@@ -382,15 +405,15 @@ msgid ""
 "the number of accepted models, and the ln(A) vs α curve."
 msgstr ""
 
-#: src/views/walkthrough.py:140
+#: src/views/walkthrough.py:145
 msgid "Step 8 — Compensation effect results and ln(A) vs α"
 msgstr ""
 
-#: src/views/walkthrough.py:145
+#: src/views/walkthrough.py:150
 msgid "Step 9 — Reaction Model Reconstruction"
 msgstr ""
 
-#: src/views/walkthrough.py:147
+#: src/views/walkthrough.py:152
 msgid ""
 "Select a **heating rate for temperature integration** and click "
 "**Reconstruct g(α)**.\n"
@@ -401,15 +424,15 @@ msgid ""
 "mechanism. Download the reconstructed g(α) data as CSV."
 msgstr ""
 
-#: src/views/walkthrough.py:153
+#: src/views/walkthrough.py:158
 msgid "Step 9 — Numerically reconstructed integral model g(α)"
 msgstr ""
 
-#: src/views/walkthrough.py:158
+#: src/views/walkthrough.py:163
 msgid "Step 10 — Kinetic Predictions"
 msgstr ""
 
-#: src/views/walkthrough.py:160
+#: src/views/walkthrough.py:165
 msgid ""
 "The kinetic triplet E(α), A(α), g(α) is now complete. Choose a prediction"
 " mode from the two tabs:\n"
@@ -425,15 +448,15 @@ msgid ""
 "CSV."
 msgstr ""
 
-#: src/views/walkthrough.py:170
+#: src/views/walkthrough.py:175
 msgid "Step 10 — Prediction inputs (isothermal model-free mode)"
 msgstr ""
 
-#: src/views/walkthrough.py:171
+#: src/views/walkthrough.py:176
 msgid "Step 10 — Predicted α(t) curve; final conversion reached at 131.98 min"
 msgstr ""
 
-#: src/views/walkthrough.py:178
+#: src/views/walkthrough.py:183
 msgid ""
 "You have seen all 10 steps. Open the **Tool** page from the sidebar to "
 "run the analysis with your own data. Download your results with the "

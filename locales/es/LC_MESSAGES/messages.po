@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: picnik-ui 1.0\n"
 "Report-Msgid-Bugs-To: mr.samuel.perea@gmail.com\n"
-"POT-Creation-Date: 2026-05-25 18:56-0600\n"
+"POT-Creation-Date: 2026-07-13 21:13-0600\n"
 "PO-Revision-Date: 2026-05-16 10:30-0600\n"
 "Last-Translator: Edgar Samuel Perea Dominguez <mr.samuel.perea@gmail.com>"
 "\n"
@@ -48,7 +48,7 @@ msgstr ""
 "isoconversional de datos termogravimétricos (TGA).\n"
 "\n"
 "Carga tus archivos TGA, ejecuta el análisis paso a paso y descarga los "
-"resultados — sin necesidad de saber Python.\\"
+"resultados — sin necesidad de saber Python."
 
 #: src/views/home.py:20
 msgid "What you can do"
@@ -75,7 +75,7 @@ msgstr ""
 "programa de temperatura\n"
 "- Exportar todos los resultados como **archivos CSV** y **gráficas PNG** "
 "listas para publicación\n"
-"- Cambiar la interfaz entre **español e inglés**\\"
+"- Cambiar la interfaz entre **español e inglés**"
 
 #: src/views/home.py:34
 msgid "The kinetic triplet"
@@ -102,7 +102,7 @@ msgid ""
 "Units: kJ/mol. A constant E means a simple single-step process; a varying"
 " E indicates overlapping steps.\n"
 "\n"
-"            </div>"
+"</div>"
 msgstr ""
 "<div style=\"border-left: 4px solid #1f77b4; padding-left: 12px; margin-"
 "bottom: 8px\">\n"
@@ -120,7 +120,7 @@ msgstr ""
 "temperatura mucho más estrecha\n"
 "que para una reacción con E baja.\n"
 "\n"
-"            </div>"
+"</div>"
 
 #: src/views/home.py:59
 msgid ""
@@ -133,7 +133,7 @@ msgid ""
 "Obtained from E(α) via the compensation effect — no reaction model "
 "assumed.\n"
 "\n"
-"            </div>"
+"</div>"
 msgstr ""
 "<div style=\"border-left: 4px solid #ff7f0e; padding-left: 12px; margin-"
 "bottom: 8px\">\n"
@@ -144,7 +144,7 @@ msgstr ""
 " Se obtiene de E(α) mediante el efecto de compensación — sin asumir "
 "ningún modelo de reacción.\n"
 "\n"
-"            </div>\\"
+"</div>"
 
 #: src/views/home.py:70
 msgid ""
@@ -157,7 +157,7 @@ msgid ""
 "reacted. Reconstructed numerically from your data — no model assumed "
 "beforehand.\n"
 "\n"
-"            </div>"
+"</div>"
 msgstr ""
 "<div style=\"border-left: 4px solid #2ca02c; padding-left: 12px; margin-"
 "bottom: 8px\">\n"
@@ -168,7 +168,7 @@ msgstr ""
 "Se reconstruye numéricamente a partir de tus datos — sin asumir ningún "
 "modelo previamente.\n"
 "\n"
-"            </div>\\"
+"</div>"
 
 #: src/views/home.py:80
 msgid "What the tool needs"
@@ -190,17 +190,37 @@ msgstr ""
 "\n"
 "Comparar el mismo nivel de conversión entre experimentos a distintas "
 "tasas de calentamiento es lo que permite extraer E(α) sin asumir nunca "
-"qué modelo de reacción aplica.\\"
+"qué modelo de reacción aplica."
+
+#: src/views/home.py:92
+msgid "Why isoconversion works"
+msgstr "Por qué funciona la isoconversión"
 
 #: src/views/home.py:95
+msgid ""
+"The isoconversional principle states that at a fixed conversion level α, "
+"the reaction rate depends only on temperature — not on the reaction "
+"model. Comparing the same α across experiments run at different heating "
+"rates isolates that temperature dependence, which is exactly what Step 6 "
+"does before computing E(α) in Step 7.\n"
+"\n"
+"This is why these methods are called \"model-free\": they don't skip the "
+"reaction model, they just avoid having to guess it before calculating the"
+" activation energy."
+msgstr ""
+"El principio isoconversional establece que, a un nivel de conversión α fijo, la tasa de reacción depende únicamente de la temperatura — no del modelo de reacción. Comparar el mismo α entre experimentos realizados a distintas tasas de calentamiento aísla esa dependencia con la temperatura, que es justamente lo que hace el Paso 6 antes de calcular E(α) en el Paso 7.\n"
+"\n"
+"Por eso a estos métodos se les llama \"sin modelo\": no omiten el modelo de reacción, solo evitan tener que suponerlo antes de calcular la energía de activación."
+
+#: src/views/home.py:110
 msgid "TGA mass loss and conversion α"
 msgstr "Pérdida de masa TGA y conversión α"
 
-#: src/views/home.py:100
+#: src/views/home.py:115
 msgid "Further reading"
 msgstr "Lecturas adicionales"
 
-#: src/views/home.py:103
+#: src/views/home.py:118
 msgid ""
 "- Vyazovkin, S. (2015). *Isoconversional kinetics of thermally stimulated"
 " processes*. Springer International Publishing. "
@@ -219,15 +239,15 @@ msgstr ""
 "package with isoconversional computations for non-isothermal kinetics. "
 "*Computer Physics Communications*, 278, 108416."
 
-#: src/views/home.py:114
+#: src/views/home.py:129
 msgid "Get started"
 msgstr "Comenzar"
 
-#: src/views/home.py:117
+#: src/views/home.py:132
 msgid "### 1. Tutorial"
 msgstr "### 1. Tutorial"
 
-#: src/views/home.py:120
+#: src/views/home.py:135
 msgid ""
 "New to isoconversional analysis? Start here. The Tutorial walks you "
 "through all 10 steps with instructions on what to do and what to expect."
@@ -235,15 +255,15 @@ msgstr ""
 "¿Nuevo en el análisis isoconversional? Empieza aquí. El Tutorial te guía "
 "por los 8 pasos con instrucciones sobre qué hacer y qué esperar ver."
 
-#: src/views/home.py:124
+#: src/views/home.py:139
 msgid "Go to Tutorial"
 msgstr "Ir al Tutorial"
 
-#: src/views/home.py:127
+#: src/views/home.py:142
 msgid "### 2. Tool"
 msgstr "### 2. Herramienta"
 
-#: src/views/home.py:130
+#: src/views/home.py:145
 msgid ""
 "Upload your TGA CSV files and run the full analysis: extraction, "
 "conversion, isoconversion, activation energy, compensation effect, "
@@ -253,15 +273,15 @@ msgstr ""
 " conversión, isoconversión, energía de activación, efecto de "
 "compensación, reconstrucción y predicciones."
 
-#: src/views/home.py:135 src/views/walkthrough.py:183
+#: src/views/home.py:150 src/views/walkthrough.py:188
 msgid "Go to Tool"
 msgstr "Ir a la Herramienta"
 
-#: src/views/home.py:138
+#: src/views/home.py:153
 msgid "### 3. Export"
 msgstr "### 3. Exportar"
 
-#: src/views/home.py:141
+#: src/views/home.py:156
 msgid ""
 "Download results as CSV files directly from the Tool page after each "
 "step. Every computed table and curve can be exported."
@@ -416,11 +436,15 @@ msgstr ""
 
 #: src/views/walkthrough.py:80
 msgid "Step 4 — TG curves for all heating rates (temperature axis)"
-msgstr "Paso 4 — Curvas TG para todas las tasas de calentamiento (eje de temperatura)"
+msgstr ""
+"Paso 4 — Curvas TG para todas las tasas de calentamiento (eje de "
+"temperatura)"
 
 #: src/views/walkthrough.py:81
 msgid "Step 4 — x-range sliders to trim each curve independently"
-msgstr "Paso 4 — Deslizadores de rango x para recortar cada curva de forma independiente"
+msgstr ""
+"Paso 4 — Deslizadores de rango x para recortar cada curva de forma "
+"independiente"
 
 #: src/views/walkthrough.py:86
 msgid "Step 5 — Conversion Analysis"
@@ -453,6 +477,12 @@ msgstr "Paso 6 — Análisis isoconversional"
 
 #: src/views/walkthrough.py:101
 msgid ""
+"Isoconversion means comparing your experiments at the same conversion "
+"level α instead of the same time or temperature. At fixed α, the reaction"
+" rate depends only on temperature — the reaction model cancels out. That "
+"is what makes it possible to calculate E(α) in the next step without "
+"assuming any reaction model.\n"
+"\n"
 "Leave the **Conversion step size (Δα)** at the default `0.02` and click "
 "**Run Isoconversion**.\n"
 "\n"
@@ -463,25 +493,25 @@ msgid ""
 "\n"
 "Download any table as CSV with the button below it."
 msgstr ""
-"Deja el **tamaño de paso de conversión (Δα)** en el valor predeterminado "
-"`0.02` y haz clic en **Run Isoconversion**.\n"
+"La isoconversión consiste en comparar tus experimentos al mismo nivel de conversión α, en lugar de al mismo tiempo o temperatura. A α fijo, la tasa de reacción depende únicamente de la temperatura — el modelo de reacción se cancela. Eso es lo que permite calcular E(α) en el siguiente paso sin asumir ningún modelo de reacción.\n"
 "\n"
-"La herramienta construye tres tablas — Temperatura (K), Tiempo (min) y "
-"Tasa de conversión (Δα/Δt) — una fila por nivel de α, una columna por "
-"tasa de calentamiento. Estas tablas son la entrada numérica para los "
-"cinco métodos de energía de activación.\n"
+"Deja el **tamaño de paso de conversión (Δα)** en el valor predeterminado `0.02` y haz clic en **Run Isoconversion**.\n"
+"\n"
+"La herramienta construye tres tablas — Temperatura (K), Tiempo (min) y Tasa de conversión (Δα/Δt) — una fila por nivel de α, una columna por tasa de calentamiento. Estas tablas son la entrada numérica para los cinco métodos de energía de activación.\n"
 "\n"
 "Descarga cualquier tabla como CSV con el botón que aparece debajo."
 
-#: src/views/walkthrough.py:108
-msgid "Step 6 — Isoconversion temperature table (rows = α levels, columns = β)"
-msgstr "Paso 6 — Tabla isoconversional de temperatura (filas = niveles de α, columnas = β)"
-
 #: src/views/walkthrough.py:113
+msgid "Step 6 — Isoconversion temperature table (rows = α levels, columns = β)"
+msgstr ""
+"Paso 6 — Tabla isoconversional de temperatura (filas = niveles de α, "
+"columnas = β)"
+
+#: src/views/walkthrough.py:118
 msgid "Step 7 — Activation Energy Analysis"
 msgstr "Paso 7 — Análisis de energía de activación"
 
-#: src/views/walkthrough.py:115
+#: src/views/walkthrough.py:120
 msgid ""
 "Check one or more methods and click **Calculate Activation Energy**.\n"
 "\n"
@@ -513,19 +543,19 @@ msgstr ""
 "Usa el **selector de método activo** debajo de la gráfica para elegir qué"
 " resultado de E(α) se utiliza en los Pasos 8–10."
 
-#: src/views/walkthrough.py:125
+#: src/views/walkthrough.py:130
 msgid "Step 7 — Method selection and Vy/aVy search bounds"
 msgstr "Paso 7 — Selección de método y límites de búsqueda Vy/aVy"
 
-#: src/views/walkthrough.py:126
+#: src/views/walkthrough.py:131
 msgid "Step 7 — E(α) results for all five methods"
 msgstr "Paso 7 — Resultados de E(α) para los cinco métodos"
 
-#: src/views/walkthrough.py:131
+#: src/views/walkthrough.py:136
 msgid "Step 8 — Pre-exponential Factor"
 msgstr "Paso 8 — Factor preexponencial"
 
-#: src/views/walkthrough.py:133
+#: src/views/walkthrough.py:138
 msgid ""
 "Select a **reference heating rate** (any file works) and click "
 "**Calculate Compensation Effect**.\n"
@@ -547,15 +577,15 @@ msgstr ""
 "El panel de resultados muestra la ecuación de compensación ln(A) = a·E + "
 "b, el número de modelos aceptados y la curva ln(A) vs α."
 
-#: src/views/walkthrough.py:140
+#: src/views/walkthrough.py:145
 msgid "Step 8 — Compensation effect results and ln(A) vs α"
 msgstr "Paso 8 — Resultados del efecto de compensación y ln(A) vs α"
 
-#: src/views/walkthrough.py:145
+#: src/views/walkthrough.py:150
 msgid "Step 9 — Reaction Model Reconstruction"
 msgstr "Paso 9 — Reconstrucción del modelo de reacción"
 
-#: src/views/walkthrough.py:147
+#: src/views/walkthrough.py:152
 msgid ""
 "Select a **heating rate for temperature integration** and click "
 "**Reconstruct g(α)**.\n"
@@ -574,15 +604,15 @@ msgstr ""
 "identificar el mecanismo de reacción probable. Descarga los datos de g(α)"
 " reconstruidos como CSV."
 
-#: src/views/walkthrough.py:153
+#: src/views/walkthrough.py:158
 msgid "Step 9 — Numerically reconstructed integral model g(α)"
 msgstr "Paso 9 — Modelo integral g(α) reconstruido numéricamente"
 
-#: src/views/walkthrough.py:158
+#: src/views/walkthrough.py:163
 msgid "Step 10 — Kinetic Predictions"
 msgstr "Paso 10 — Predicciones cinéticas"
 
-#: src/views/walkthrough.py:160
+#: src/views/walkthrough.py:165
 msgid ""
 "The kinetic triplet E(α), A(α), g(α) is now complete. Choose a prediction"
 " mode from the two tabs:\n"
@@ -611,15 +641,15 @@ msgstr ""
 "resultado muestra la curva α(t) predicha y el tiempo para alcanzar la "
 "conversión final, con un CSV descargable."
 
-#: src/views/walkthrough.py:170
+#: src/views/walkthrough.py:175
 msgid "Step 10 — Prediction inputs (isothermal model-free mode)"
 msgstr "Paso 10 — Parámetros de predicción (modo isotérmico sin modelo)"
 
-#: src/views/walkthrough.py:171
+#: src/views/walkthrough.py:176
 msgid "Step 10 — Predicted α(t) curve; final conversion reached at 131.98 min"
 msgstr "Paso 10 — Curva α(t) predicha; conversión final alcanzada a los 131,98 min"
 
-#: src/views/walkthrough.py:178
+#: src/views/walkthrough.py:183
 msgid ""
 "You have seen all 10 steps. Open the **Tool** page from the sidebar to "
 "run the analysis with your own data. Download your results with the "
@@ -2595,7 +2625,7 @@ msgstr ""
 #~ "uno por tasa de calentamiento. La "
 #~ "herramienta valida la estructura "
 #~ "automáticamente y confirma cuántos archivos"
-#~ " válidos se cargaron.\\"
+#~ " válidos se cargaron."
 
 #~ msgid "Step 2 — Extract and Visualise Data"
 #~ msgstr "Paso 2 — Extraer y visualizar datos"
@@ -2636,7 +2666,7 @@ msgstr ""
 #~ "mayores aparecen desplazadas a temperaturas"
 #~ " más altas. Usa el pico DTG "
 #~ "para elegir el rango de temperatura "
-#~ "en el siguiente paso.\\"
+#~ "en el siguiente paso."
 
 #~ msgid ""
 #~ "Use the DTG plot to find where "
@@ -2662,7 +2692,7 @@ msgstr ""
 #~ " = reacción no iniciada, 1 = "
 #~ "reacción completa. Aparece una curva "
 #~ "α(T) por archivo en una escala "
-#~ "compartida de 0 a 1.\\"
+#~ "compartida de 0 a 1."
 
 #~ msgid ""
 #~ "Check one or more methods in the"
@@ -2696,7 +2726,7 @@ msgstr ""
 #~ "Empieza con **KAS** si no sabes "
 #~ "cuál elegir. Usa **aVy** para "
 #~ "publicaciones (nota: aVy es más lento"
-#~ " — dale tiempo extra).\\"
+#~ " — dale tiempo extra)."
 
 #~ msgid "Step 5 — E(α) curve computed with KAS and OFW methods"
 #~ msgstr "Paso 5 — Curva E(α) calculada con los métodos KAS y OFW"
@@ -2737,7 +2767,7 @@ msgstr ""
 #~ " una temperatura (K) → tiempo usando"
 #~ " la tripleta completa\n"
 #~ "\n"
-#~ "Cada predicción produce un CSV descargable y una gráfica interactiva.\\"
+#~ "Cada predicción produce un CSV descargable y una gráfica interactiva."
 
 #~ msgid "Step 8 — Isothermal prediction result"
 #~ msgstr "Paso 8 — Predicciones cinéticas"

@@ -98,6 +98,11 @@ def main():
     # ------------------------------------------------------------------ #
     st.header(_("Step 6 — Isoconversion Analysis"))
     st.info(_(
+        "Isoconversion means comparing your experiments at the same conversion "
+        "level α instead of the same time or temperature. At fixed α, the reaction "
+        "rate depends only on temperature — the reaction model cancels out. That "
+        "is what makes it possible to calculate E(α) in the next step without "
+        "assuming any reaction model.\n\n"
         "Leave the **Conversion step size (Δα)** at the default `0.02` and click "
         "**Run Isoconversion**.\n\n"
         "The tool builds three tables — Temperature (K), Time (min), and Conversion Rate "
