@@ -12,6 +12,7 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
+import plotly.express as px
 
 from src.utils.SessionManager import SessionManager
 from src.config import (
@@ -67,7 +68,26 @@ class ReconstructionHandler:
                     if len(alpha_plot) > len(g_r):
                         alpha_plot = alpha_plot[: len(g_r)]
 
-                    st.session_state[SESS_RECON_RESULTS] = ReconstructionResults(g_r=g_r, alpha_plot=alpha_plot)
+                    # Evaluate each accepted reaction model's integral form g(alpha)
+                    # on the same alpha grid as the reconstruction, so they can be
+                    # compared on the same chart. Some models (e.g. diffusion-type
+                    # D-series) blow up or are undefined near alpha=0 or alpha=1;
+                    # non-finite values are filtered out at plot time instead of
+                    # here, so a single bad model doesn't discard the whole curve.
+                    model_curves = []
+                    accepted_models = getattr(comp_results, "accepted_models", None) or []
+                    for m in accepted_models:
+                        name = getattr(m, "__name__", str(m))
+                        try:
+                            with np.errstate(all="ignore"):
+                                curve = np.asarray(m(alpha_plot, integral=True), dtype=float)
+                        except Exception:
+                            continue
+                        model_curves.append((name, curve))
+
+                    st.session_state[SESS_RECON_RESULTS] = ReconstructionResults(
+                        g_r=g_r, alpha_plot=alpha_plot, model_curves=model_curves
+                    )
 
                 except AttributeError:
                     st.error(
@@ -85,15 +105,40 @@ class ReconstructionHandler:
             self._display_results(recon_results)
 
     def _display_results(self, results: ReconstructionResults) -> None:
-        """Render the reconstructed g(α) curve and CSV download button.
+        """Render the reconstructed g(α) curve against accepted reaction models.
 
         Args:
-            results: Stored reconstruction output containing the g_r array
-                and the corresponding alpha_plot values.
+            results: Stored reconstruction output containing the g_r array,
+                the corresponding alpha_plot values, and the per-model g(α)
+                curves (model_curves) used for comparison.
         """
         st.subheader("Reconstructed Integral Model g(α)")
 
         fig = go.Figure()
+
+        # Comparison curves: one per accepted reaction model, dashed, colored
+        # with the same qualitative palette (and index order) used for the
+        # compensation-effect scatter plot, so a given model keeps the same
+        # color across both charts.
+        palette = px.colors.qualitative.Plotly
+        for i, (name, curve) in enumerate(results.model_curves or []):
+            curve = np.asarray(curve, dtype=float)
+            mask = np.isfinite(curve)
+            if not np.any(mask):
+                continue
+            color = palette[i % len(palette)]
+            fig.add_trace(
+                go.Scatter(
+                    x=np.asarray(results.alpha_plot)[mask],
+                    y=curve[mask],
+                    mode="lines",
+                    name=name,
+                    line=dict(width=1.5, dash="dash", color=color),
+                )
+            )
+
+        # Reconstructed curve, drawn last and thicker so it stands out as the
+        # main reference against the model comparison curves above.
         fig.add_trace(
             go.Scatter(
                 x=results.alpha_plot,
@@ -101,16 +146,16 @@ class ReconstructionHandler:
                 mode="lines+markers",
                 name="g(α) reconstructed",
                 marker=dict(size=4, symbol="star"),
-                line=dict(width=2, color="#6963DB"),
+                line=dict(width=4, color="#6963DB"),
             )
         )
         fig.update_layout(
-            title="Numerically Reconstructed Integral Model g(α)",
+            title="Reconstructed g(α) vs Accepted Reaction Models",
             xaxis_title="Conversion (α)",
             yaxis_title="g(α)",
             yaxis_range=[0, min(2.0, float(np.max(results.g_r)) * 1.2)],
             xaxis_range=[0, 1],
-            height=400,
+            height=450,
         )
         st.plotly_chart(fig, width="stretch")
 

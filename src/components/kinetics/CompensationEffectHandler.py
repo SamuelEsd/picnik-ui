@@ -11,6 +11,7 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
+import plotly.express as px
 
 from src.utils.SessionManager import SessionManager
 from src.config import SESS_ACTIVATION_ENERGY_OBJECT, SESS_ACTIVATION_ENERGY_RESULTS, SESS_COMP_RESULTS, SESS_RUN_COMP, SESS_COMP_COL, SESS_COMP_ERROR_M
@@ -128,41 +129,49 @@ class CompensationEffectHandler:
             st.write(f"**Min:** {float(np.min(lnA)):.4f}  (α = {float(results.alpha[int(np.argmin(lnA))]):.3f})")
             st.write(f"**Max:** {float(np.max(lnA)):.4f}  (α = {float(results.alpha[int(np.argmax(lnA))]):.3f})")
 
-        # Plot 2: compensation effect scatter — ln(A) vs E
+        # Plot 2: compensation effect scatter — ln(A) vs E, one trace per model
+        # so each point can be identified by its reaction model name.
+        model_names = [getattr(m, "__name__", str(m)) for m in results.accepted_models]
+
         if len(results.E_fit) > 1:
             E_line = np.linspace(min(results.E_fit) * 0.8, max(results.E_fit) * 1.2, 100)
             lnA_line = results.a * E_line + results.b
 
             fig2 = go.Figure()
-            fig2.add_trace(
-                go.Scatter(
-                    x=results.E_fit,
-                    y=np.log(results.A_fit),
-                    mode="markers",
-                    name="Model fits (Eᵢ, ln Aᵢ)",
-                    marker=dict(size=9, symbol="circle"),
+            palette = px.colors.qualitative.Plotly
+            for i in range(len(results.E_fit)):
+                name = model_names[i] if i < len(model_names) else f"model_{i}"
+                color = palette[i % len(palette)]
+                fig2.add_trace(
+                    go.Scatter(
+                        x=[results.E_fit[i]],
+                        y=[np.log(results.A_fit[i])],
+                        mode="markers",
+                        name=name,
+                        marker=dict(size=9, symbol="circle", color=color),
+                        hovertemplate=f"{name}<br>E=%{{x:.2f}} kJ/mol<br>ln(A)=%{{y:.3f}}<extra></extra>",
+                    )
                 )
-            )
             fig2.add_trace(
                 go.Scatter(
                     x=E_line,
                     y=lnA_line,
                     mode="lines",
                     name=f"ln(A) = {results.a:.3f}·E + {results.b:.3f}",
-                    line=dict(dash="dash", width=2),
+                    line=dict(dash="dash", width=2, color="#333333"),
                 )
             )
             fig2.update_layout(
-                title="Compensation Effect: ln(A) vs E",
+                title="Compensation Effect: ln(A) vs E (by reaction model)",
                 xaxis_title="E [kJ/mol]",
                 yaxis_title="ln(A / min⁻¹)",
                 height=380,
             )
             st.plotly_chart(fig2, width="stretch")
 
-            if results.accepted_models:
-                st.markdown(f"**Accepted models ({len(results.accepted_models)}):** "
-                            + ", ".join(str(m) for m in results.accepted_models))
+        if results.accepted_models:
+            st.markdown(f"**Accepted models ({len(results.accepted_models)}):** "
+                        + ", ".join(model_names))
 
         df_out = pd.DataFrame({
             "alpha": results.alpha,

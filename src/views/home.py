@@ -88,6 +88,21 @@ def show_description():
         )
     )
 
+    st.divider()
+    st.subheader(_("Why isoconversion works"), anchor=False)
+    st.markdown(
+        _(
+            "The isoconversional principle states that at a fixed conversion level α, "
+            "the reaction rate depends only on temperature — not on the reaction "
+            "model. Comparing the same α across experiments run at different heating "
+            "rates isolates that temperature dependence, which is exactly what Step 6 "
+            "does before computing E(α) in Step 7.\n\n"
+            "This is why these methods are called \"model-free\": they don't skip the "
+            "reaction model, they just avoid having to guess it before calculating the "
+            "activation energy."
+        )
+    )
+
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         st.image(

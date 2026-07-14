@@ -5,7 +5,7 @@ Each dataclass represents the computed outputs of one workflow step and is
 stored in Streamlit session state so results persist across reruns.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import numpy as np
 import pandas as pd
@@ -59,6 +59,9 @@ class ReconstructionResults:
 
     g_r: np.ndarray
     alpha_plot: np.ndarray
+    # Per accepted-model g(alpha) curves, evaluated on alpha_plot, for comparison
+    # against the reconstructed g_r curve: list of (model_name, g_alpha_array).
+    model_curves: list = field(default_factory=list)
 
 
 @dataclass
