@@ -13,6 +13,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
 
+from src.i18n import _
 from src.utils.SessionManager import SessionManager
 from src.config import SESS_ACTIVATION_ENERGY_OBJECT, SESS_ACTIVATION_ENERGY_RESULTS, SESS_COMP_RESULTS, SESS_RUN_COMP, SESS_COMP_COL, SESS_COMP_ERROR_M
 from src.models.results import CompensationEffectResults
@@ -35,7 +36,7 @@ class CompensationEffectHandler:
             ae_results = SessionManager.get_active_ae_result()
 
             if activation_energy_object is None or ae_results is None:
-                st.error("Activation energy object or results not available.")
+                st.error(_("Activation energy object or results not available."))
             else:
                 SessionManager.clear_downstream_from("compensation")
                 try:
@@ -45,7 +46,7 @@ class CompensationEffectHandler:
                     error_m = st.session_state.get(SESS_COMP_ERROR_M, 'mse_NL')
 
                     with st.spinner(
-                        "Computing compensation effect — fitting reaction models to data..."
+                        _("Computing compensation effect — fitting reaction models to data...")
                     ):
                         comp_result = activation_energy_object.compensation_effect(
                             col=col, E=E, errorE=errorE, error_m=error_m
@@ -53,12 +54,14 @@ class CompensationEffectHandler:
 
                     if comp_result is None:
                         st.error(
-                            "Compensation effect could not be computed. "
-                            "Try a different reference heating rate column or a different activation energy method."
+                            _(
+                                "Compensation effect could not be computed. "
+                                "Try a different reference heating rate column or a different activation energy method."
+                            )
                         )
                     else:
                         ln_A, errorlnA, a, errora, b, errorb, Afit, Efit, r_sq, mod = comp_result
-                        st.success("Compensation effect computed successfully")
+                        st.success(_("Compensation effect computed successfully"))
                         st.session_state[SESS_COMP_RESULTS] = CompensationEffectResults(
                                 alpha=ae_results.alpha,
                                 ln_A=ln_A,
@@ -73,7 +76,7 @@ class CompensationEffectHandler:
                             )
 
                 except Exception as e:
-                    st.error(f"Error during compensation effect calculation: {str(e)}")
+                    st.error(_("Error during compensation effect calculation: {error}").format(error=str(e)))
 
             st.session_state[SESS_RUN_COMP] = False
 
@@ -89,18 +92,18 @@ class CompensationEffectHandler:
             results: Stored compensation effect output containing ln(A), fit
                 parameters a and b, and the list of accepted reaction models.
         """
-        st.subheader("Compensation Effect Results")
+        st.subheader(_("Compensation Effect Results"))
 
         col1, col2, col3 = st.columns(3)
         with col1:
-            st.metric("Slope a", f"{results.a:.5f}", delta=f"±{results.error_a:.5f} (stderr)")
+            st.metric(_("Slope a"), f"{results.a:.5f}", delta=_("±{value:.5f} (stderr)").format(value=results.error_a))
         with col2:
-            st.metric("Intercept b", f"{results.b:.4f}", delta=f"±{results.error_b:.4f} (stderr)")
+            st.metric(_("Intercept b"), f"{results.b:.4f}", delta=_("±{value:.4f} (stderr)").format(value=results.error_b))
         with col3:
-            st.metric("Accepted models", f"{len(results.A_fit)}")
+            st.metric(_("Accepted models"), f"{len(results.A_fit)}")
 
         st.markdown(
-            f"**Compensation effect equation:** `ln(A) = {results.a:.4f} · E + {results.b:.4f}`"
+            _("**Compensation effect equation:** `ln(A) = {a:.4f} · E + {b:.4f}`").format(a=results.a, b=results.b)
         )
 
         # Plot 1: ln(A) vs alpha
@@ -116,18 +119,22 @@ class CompensationEffectHandler:
             )
         )
         fig1.update_layout(
-            title="Pre-exponential Factor ln(A) vs Conversion α",
-            xaxis_title="Conversion (α)",
-            yaxis_title="ln(A / min⁻¹)",
+            title=_("Pre-exponential Factor ln(A) vs Conversion α"),
+            xaxis_title=_("Conversion (α)"),
+            yaxis_title=_("ln(A / min⁻¹)"),
             height=380,
         )
         st.plotly_chart(fig1, width="stretch")
 
-        with st.expander("ln(A) statistics"):
+        with st.expander(_("ln(A) statistics")):
             lnA = results.ln_A
-            st.write(f"**Mean:** {float(np.mean(lnA)):.4f}")
-            st.write(f"**Min:** {float(np.min(lnA)):.4f}  (α = {float(results.alpha[int(np.argmin(lnA))]):.3f})")
-            st.write(f"**Max:** {float(np.max(lnA)):.4f}  (α = {float(results.alpha[int(np.argmax(lnA))]):.3f})")
+            st.write(_("**Mean:** {value:.4f}").format(value=float(np.mean(lnA))))
+            st.write(_("**Min:** {value:.4f}  (α = {alpha:.3f})").format(
+                value=float(np.min(lnA)), alpha=float(results.alpha[int(np.argmin(lnA))])
+            ))
+            st.write(_("**Max:** {value:.4f}  (α = {alpha:.3f})").format(
+                value=float(np.max(lnA)), alpha=float(results.alpha[int(np.argmax(lnA))])
+            ))
 
         # Plot 2: compensation effect scatter — ln(A) vs E, one trace per model
         # so each point can be identified by its reaction model name.
@@ -146,8 +153,11 @@ class CompensationEffectHandler:
                     go.Scatter(
                         x=[results.E_fit[i]],
                         y=[np.log(results.A_fit[i])],
-                        mode="markers",
+                        mode="markers+text",
                         name=name,
+                        text=[name],
+                        textposition="top center",
+                        textfont=dict(size=10, color=color),
                         marker=dict(size=9, symbol="circle", color=color),
                         hovertemplate=f"{name}<br>E=%{{x:.2f}} kJ/mol<br>ln(A)=%{{y:.3f}}<extra></extra>",
                     )
@@ -162,16 +172,17 @@ class CompensationEffectHandler:
                 )
             )
             fig2.update_layout(
-                title="Compensation Effect: ln(A) vs E (by reaction model)",
-                xaxis_title="E [kJ/mol]",
-                yaxis_title="ln(A / min⁻¹)",
+                title=_("Compensation Effect: ln(A) vs E (by reaction model)"),
+                xaxis_title=_("E [kJ/mol]"),
+                yaxis_title=_("ln(A / min⁻¹)"),
                 height=380,
             )
             st.plotly_chart(fig2, width="stretch")
 
         if results.accepted_models:
-            st.markdown(f"**Accepted models ({len(results.accepted_models)}):** "
-                        + ", ".join(model_names))
+            st.markdown(_("**Accepted models ({n}):** {names}").format(
+                n=len(results.accepted_models), names=", ".join(model_names)
+            ))
 
         df_out = pd.DataFrame({
             "alpha": results.alpha,
@@ -179,7 +190,7 @@ class CompensationEffectHandler:
             "error_ln_A": results.error_ln_A,
         })
         st.download_button(
-            label="Download ln(A) Data (CSV)",
+            label=_("Download ln(A) Data (CSV)"),
             data=df_out.to_csv(index=False),
             file_name="compensation_effect_lnA.csv",
             mime="text/csv",

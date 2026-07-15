@@ -14,6 +14,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
 
+from src.i18n import _
 from src.utils.SessionManager import SessionManager
 from src.config import (
     SESS_BNUM,
@@ -46,7 +47,7 @@ class ReconstructionHandler:
 
             if activation_energy_object is None or ae_results is None or comp_results is None:
                 st.error(
-                    "Missing data. Ensure activation energy and compensation effect have been computed."
+                    _("Missing data. Ensure activation energy and compensation effect have been computed.")
                 )
             else:
                 SessionManager.clear_downstream_from("reconstruction")
@@ -58,10 +59,10 @@ class ReconstructionHandler:
                     beta_idx = st.session_state.get(SESS_RECON_BETA_IDX, 0)
                     B = float(b_num[beta_idx])
 
-                    with st.spinner("Reconstructing g(α)..."):
+                    with st.spinner(_("Reconstructing g(α)...")):
                         g_r = activation_energy_object.reconstruction(E, A, B)
 
-                    st.success("Reaction model g(α) reconstructed successfully")
+                    st.success(_("Reaction model g(α) reconstructed successfully"))
 
                     alpha_full = activation_energy_object.timeAdvIsoDF.index.values
                     alpha_plot = alpha_full[1: len(g_r) + 1]
@@ -91,11 +92,13 @@ class ReconstructionHandler:
 
                 except AttributeError:
                     st.error(
-                        "Reconstruction requires accepted_models from the compensation effect step. "
-                        "Please re-run Step 8 before this step."
+                        _(
+                            "Reconstruction requires accepted_models from the compensation effect step. "
+                            "Please re-run Step 8 before this step."
+                        )
                     )
                 except Exception as e:
-                    st.error(f"Error during reconstruction: {str(e)}")
+                    st.error(_("Error during reconstruction: {error}").format(error=str(e)))
 
             st.session_state[SESS_RUN_RECON] = False
 
@@ -112,7 +115,7 @@ class ReconstructionHandler:
                 the corresponding alpha_plot values, and the per-model g(α)
                 curves (model_curves) used for comparison.
         """
-        st.subheader("Reconstructed Integral Model g(α)")
+        st.subheader(_("Reconstructed Integral Model g(α)"))
 
         fig = go.Figure()
 
@@ -144,14 +147,14 @@ class ReconstructionHandler:
                 x=results.alpha_plot,
                 y=results.g_r,
                 mode="lines+markers",
-                name="g(α) reconstructed",
+                name=_("g(α) reconstructed"),
                 marker=dict(size=4, symbol="star"),
                 line=dict(width=4, color="#6963DB"),
             )
         )
         fig.update_layout(
-            title="Reconstructed g(α) vs Accepted Reaction Models",
-            xaxis_title="Conversion (α)",
+            title=_("Reconstructed g(α) vs Accepted Reaction Models"),
+            xaxis_title=_("Conversion (α)"),
             yaxis_title="g(α)",
             yaxis_range=[0, min(2.0, float(np.max(results.g_r)) * 1.2)],
             xaxis_range=[0, 1],
@@ -161,7 +164,7 @@ class ReconstructionHandler:
 
         df_recon = pd.DataFrame({"alpha": results.alpha_plot, "g_alpha": results.g_r})
         st.download_button(
-            label="Download g(α) Data (CSV)",
+            label=_("Download g(α) Data (CSV)"),
             data=df_recon.to_csv(index=False),
             file_name="reaction_model_g_alpha.csv",
             mime="text/csv",

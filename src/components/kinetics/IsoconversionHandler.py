@@ -7,6 +7,7 @@ Manages isoconversion analysis execution and results display.
 import streamlit as st
 import pandas as pd
 
+from src.i18n import _
 from src.utils.SessionManager import SessionManager
 from src.config import (
     DEFAULT_ISO_DA, SESS_DATA_EXTRACTOR, SESS_ISOCONVERSION_RESULT,
@@ -30,15 +31,15 @@ class IsoconversionHandler:
             data_extractor = st.session_state.get(SESS_DATA_EXTRACTOR)
 
             if data_extractor is None:
-                st.error("No extracted data available for isoconversion.")
+                st.error(_("No extracted data available for isoconversion."))
             else:
                 try:
                     d_a = st.session_state.get(SESS_ISO_DA, DEFAULT_ISO_DA)
 
-                    with st.spinner("Running isoconversion analysis..."):
+                    with st.spinner(_("Running isoconversion analysis...")):
                         temp_df, time_df, diff_df = data_extractor.Isoconversion(d_a=d_a)
 
-                    st.success("Isoconversion analysis completed")
+                    st.success(_("Isoconversion analysis completed"))
                     st.session_state[SESS_ISOCONVERSION_RESULT] = IsoconversionResults(
                             temperature=temp_df,
                             time=time_df,
@@ -47,7 +48,7 @@ class IsoconversionHandler:
                     SessionManager.clear_downstream_from("isoconversion")
 
                 except Exception as e:
-                    st.error(f"Error during isoconversion analysis: {str(e)}")
+                    st.error(_("Error during isoconversion analysis: {error}").format(error=str(e)))
 
             st.session_state[SESS_RUN_ISOCONVERSION] = False
 
@@ -63,16 +64,16 @@ class IsoconversionHandler:
             results: Stored isoconversion output containing temperature, time,
                 and conversion rate DataFrames indexed by α.
         """
-        st.subheader("Isoconversion Results")
+        st.subheader(_("Isoconversion Results"))
 
         tab1, tab2, tab3 = st.tabs(
-            ["Temperature (K)", "Time (min)", "Conversion Rate (∆α/∆t)"]
+            [_("Temperature (K)"), _("Time (min)"), _("Conversion Rate (∆α/∆t)")]
         )
 
         with tab1:
             st.dataframe(results.temperature, width='stretch')
             st.download_button(
-                label="Download Temperature Data (CSV)",
+                label=_("Download Temperature Data (CSV)"),
                 data=results.temperature.to_csv(index=True),
                 file_name="isoconversion_temperature.csv",
                 mime="text/csv",
@@ -82,7 +83,7 @@ class IsoconversionHandler:
         with tab2:
             st.dataframe(results.time, width='stretch')
             st.download_button(
-                label="Download Time Data (CSV)",
+                label=_("Download Time Data (CSV)"),
                 data=results.time.to_csv(index=True),
                 file_name="isoconversion_time.csv",
                 mime="text/csv",
@@ -92,7 +93,7 @@ class IsoconversionHandler:
         with tab3:
             st.dataframe(results.conversion_rate, width='stretch')
             st.download_button(
-                label="Download Conversion Rate Data (CSV)",
+                label=_("Download Conversion Rate Data (CSV)"),
                 data=results.conversion_rate.to_csv(index=True),
                 file_name="isoconversion_rate.csv",
                 mime="text/csv",

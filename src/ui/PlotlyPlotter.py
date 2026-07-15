@@ -368,7 +368,7 @@ class PlotlyPlotter:
                 display_fig.show()
         else:
             # Fallback: if no original_data recorded, just display the internal figure as-is.
-            self.fig.update_layout(title=self.title, xaxis_title=dict(title=dict(text=self.x_label)), yaxis_title=dict(title=dict(text=self.y_label)))
+            self.fig.update_layout(title=self.title, xaxis_title=self.x_label, yaxis_title=self.y_label)
             if use_streamlit:
                 if container is not None:
                     try:

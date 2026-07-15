@@ -20,6 +20,7 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 
+from src.i18n import _
 from src.utils.SessionManager import SessionManager
 from src.config import (
     SESS_BNUM,
@@ -78,16 +79,17 @@ class PredictionHandler:
         ae_results = SessionManager.get_active_ae_result()
 
         if activation_energy_object is None or ae_results is None:
-            st.error("Activation energy object not available.")
+            st.error(_("Activation energy object not available."))
             return
 
         try:
             E = ae_results.E
             mode = st.session_state.get(SESS_PRED_MODE, "Isothermal")
+            mode_label = _("Isothermal") if mode == "Isothermal" else _("Linear heating")
             alpha_target = float(st.session_state.get(SESS_PRED_ALPHA_TARGET, 0.999))
             bounds = st.session_state.get(SESS_PRED_BOUNDS, (10.0, 10.0))
 
-            with st.spinner(f"Running {mode} model-free prediction..."):
+            with st.spinner(_("Running {mode} model-free prediction...").format(mode=mode_label)):
                 if mode == "Isothermal":
                     iso_T = float(st.session_state.get(SESS_PRED_ISO_T, 575.0))
                     a_prime, T_prime, t_prime = (
@@ -110,7 +112,7 @@ class PredictionHandler:
                         )
                     )
 
-            st.success("Model-free prediction completed")
+            st.success(_("Model-free prediction completed"))
             st.session_state[SESS_PRED_MF_RESULTS] = ModelfreePredictionResults(
                     a_prime=a_prime,
                     T_prime=T_prime,
@@ -119,7 +121,7 @@ class PredictionHandler:
                 )
 
         except Exception as e:
-            st.error(f"Error during model-free prediction: {str(e)}")
+            st.error(_("Error during model-free prediction: {error}").format(error=str(e)))
 
         st.session_state[SESS_RUN_PRED_MF] = False
 
@@ -142,8 +144,10 @@ class PredictionHandler:
             or recon_results is None
         ):
             st.error(
-                "Missing data. Ensure Steps 6 (activation energy), "
-                "7 (compensation effect), and 8 (reconstruction) are all complete."
+                _(
+                    "Missing data. Ensure Steps 6 (activation energy), "
+                    "7 (compensation effect), and 8 (reconstruction) are all complete."
+                )
             )
             return
 
@@ -152,7 +156,7 @@ class PredictionHandler:
             col = int(st.session_state.get(SESS_PRED_MB_COL, 0))
 
             with st.spinner(
-                f"Running model-based isothermal prediction at T = {iso_T:.0f} K..."
+                _("Running model-based isothermal prediction at T = {iso_T:.0f} K...").format(iso_T=iso_T)
             ):
                 t_pred = activation_energy_object.t_isothermal(
                     E=ae_results.E,
@@ -163,7 +167,7 @@ class PredictionHandler:
                     alpha=ae_results.alpha,
                 )
 
-            st.success("Model-based prediction completed")
+            st.success(_("Model-based prediction completed"))
             st.session_state[SESS_PRED_MB_RESULTS] = ModelbasedPredictionResults(
                     t_pred=t_pred,
                     alpha_values=ae_results.alpha,
@@ -171,7 +175,7 @@ class PredictionHandler:
                 )
 
         except Exception as e:
-            st.error(f"Error during model-based prediction: {str(e)}")
+            st.error(_("Error during model-based prediction: {error}").format(error=str(e)))
 
         st.session_state[SESS_RUN_PRED_MB] = False
 
@@ -186,7 +190,8 @@ class PredictionHandler:
             results: Stored model-free prediction output containing predicted
                 conversion, temperature, and time arrays, plus the temperature mode.
         """
-        st.subheader(f"Model-free Prediction — {results.mode}")
+        mode_label = _("Isothermal") if results.mode == "Isothermal" else _("Linear heating")
+        st.subheader(_("Model-free Prediction — {mode}").format(mode=mode_label))
 
         fig = go.Figure()
         fig.add_trace(
@@ -199,9 +204,9 @@ class PredictionHandler:
             )
         )
         fig.update_layout(
-            title=f"Predicted Conversion vs Time ({results.mode})",
-            xaxis_title="Time [min]",
-            yaxis_title="Conversion (α)",
+            title=_("Predicted Conversion vs Time ({mode})").format(mode=mode_label),
+            xaxis_title=_("Time [min]"),
+            yaxis_title=_("Conversion (α)"),
             yaxis_range=[0, 1.05],
             height=400,
         )
@@ -209,9 +214,9 @@ class PredictionHandler:
 
         col1, col2 = st.columns(2)
         with col1:
-            st.metric("Final conversion reached", f"{results.a_prime[-1]:.4f}")
+            st.metric(_("Final conversion reached"), f"{results.a_prime[-1]:.4f}")
         with col2:
-            st.metric("Time to final conversion", f"{results.t_prime[-1]:.2f} min")
+            st.metric(_("Time to final conversion"), f"{results.t_prime[-1]:.2f} min")
 
         df_pred = pd.DataFrame({
             "time [min]": results.t_prime,
@@ -220,7 +225,7 @@ class PredictionHandler:
         })
         safe_mode = results.mode.lower().replace(" ", "_")
         st.download_button(
-            label="Download Prediction Data (CSV)",
+            label=_("Download Prediction Data (CSV)"),
             data=df_pred.to_csv(index=False),
             file_name=f"modelfree_prediction_{safe_mode}.csv",
             mime="text/csv",
@@ -234,7 +239,7 @@ class PredictionHandler:
             results: Stored model-based prediction output containing time array,
                 conversion values, and the isothermal temperature used.
         """
-        st.subheader(f"Model-based Isothermal Prediction — T = {results.iso_T:.0f} K")
+        st.subheader(_("Model-based Isothermal Prediction — T = {iso_T:.0f} K").format(iso_T=results.iso_T))
 
         alpha_plot = results.alpha_values[: len(results.t_pred)]
 
@@ -250,9 +255,9 @@ class PredictionHandler:
             )
         )
         fig.update_layout(
-            title=f"Model-based Prediction: α vs Time at T = {results.iso_T:.0f} K",
-            xaxis_title="Time [min]",
-            yaxis_title="Conversion (α)",
+            title=_("Model-based Prediction: α vs Time at T = {iso_T:.0f} K").format(iso_T=results.iso_T),
+            xaxis_title=_("Time [min]"),
+            yaxis_title=_("Conversion (α)"),
             yaxis_range=[0, 1.05],
             height=400,
         )
@@ -260,13 +265,13 @@ class PredictionHandler:
 
         col1, col2 = st.columns(2)
         with col1:
-            st.metric("Final conversion", f"{alpha_plot[-1]:.4f}")
+            st.metric(_("Final conversion"), f"{alpha_plot[-1]:.4f}")
         with col2:
-            st.metric("Total time predicted", f"{results.t_pred[-1]:.2f} min")
+            st.metric(_("Total time predicted"), f"{results.t_pred[-1]:.2f} min")
 
         df_iso = pd.DataFrame({"time [min]": results.t_pred, "conversion": alpha_plot})
         st.download_button(
-            label="Download Isothermal Prediction (CSV)",
+            label=_("Download Isothermal Prediction (CSV)"),
             data=df_iso.to_csv(index=False),
             file_name=f"isothermal_prediction_{int(results.iso_T)}K.csv",
             mime="text/csv",

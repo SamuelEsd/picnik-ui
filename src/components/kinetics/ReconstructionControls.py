@@ -6,6 +6,7 @@ Renders the UI controls for g(alpha) reaction model reconstruction.
 
 import streamlit as st
 
+from src.i18n import _
 from src.utils.SessionManager import SessionManager
 from src.config import SESS_BNUM, SESS_COMP_RESULTS, SESS_RUN_RECON, SESS_RECON_BETA_IDX
 
@@ -16,10 +17,10 @@ class ReconstructionControls:
     def render(self) -> None:
         """Display controls for g(alpha) reconstruction."""
         st.divider()
-        st.subheader("Step 9: Reaction Model Reconstruction — g(α)")
+        st.subheader(_("Step 9: Reaction Model Reconstruction — g(α)"))
 
         if st.session_state.get(SESS_COMP_RESULTS) is None:
-            st.info("Complete Step 8 (Compensation Effect) first to enable reconstruction.")
+            st.info(_("Complete Step 8 (Compensation Effect) first to enable reconstruction."))
             return
 
         b_num = st.session_state.get(SESS_BNUM)
@@ -29,12 +30,12 @@ class ReconstructionControls:
         col1, col2 = st.columns([3, 1])
 
         with col1:
-            beta_options = {i: f"β = {b:.2f} K/min" for i, b in enumerate(b_num)}
+            beta_options = {i: _("β = {beta:.2f} K/min").format(beta=b) for i, b in enumerate(b_num)}
             selected_beta_idx = st.selectbox(
-                "Heating rate for temperature integration",
+                _("Heating rate for temperature integration"),
                 options=list(beta_options.keys()),
                 format_func=lambda x: beta_options[x],
-                help=(
+                help=_(
                     "The reconstruction integrates exp(-E/RT(t))dt along the temperature "
                     "profile of the selected experiment. Using the first (lowest) heating rate "
                     "is common."
@@ -46,5 +47,5 @@ class ReconstructionControls:
         with col2:
             st.write("")
             st.write("")
-            if st.button("Reconstruct g(α)", type="primary", key="recon_calc_btn"):
+            if st.button(_("Reconstruct g(α)"), type="primary", key="recon_calc_btn"):
                 st.session_state[SESS_RUN_RECON] = True

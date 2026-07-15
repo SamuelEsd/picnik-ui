@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 
+from src.i18n import _
 from src.utils.SessionManager import SessionManager
 from src.config import (
     SESS_BNUM,
@@ -67,7 +68,7 @@ class ActivationEnergyHandler:
             st.session_state[SESS_ACTIVATION_ENERGY_OBJECT] = ae_object
             return True
         except Exception as e:
-            st.error(f"Error creating Activation Energy object: {str(e)}")
+            st.error(_("Error creating Activation Energy object: {error}").format(error=str(e)))
             return False
 
     def handle_activation_energy(self) -> None:
@@ -85,9 +86,9 @@ class ActivationEnergyHandler:
             selected_methods = st.session_state.get(SESS_AE_METHODS, [])
 
             if activation_energy_object is None:
-                st.error("No Activation Energy object available for calculation.")
+                st.error(_("No Activation Energy object available for calculation."))
             elif not selected_methods:
-                st.warning("No methods selected.")
+                st.warning(_("No methods selected."))
             else:
                 SessionManager.clear_downstream_from("activation_energy")
                 # Preserve any previously computed results and add/overwrite with new ones.
@@ -97,11 +98,12 @@ class ActivationEnergyHandler:
                 )
 
                 for method in selected_methods:
-                    with st.spinner(f"Running {AE_METHODS[method]}..."):
+                    method_name = _(AE_METHODS[method])
+                    with st.spinner(_("Running {method}...").format(method=method_name)):
                         result = self._execute_method(activation_energy_object, method)
 
                     if result is None:
-                        st.error(f"{AE_METHODS[method]} calculation failed.")
+                        st.error(_("{method} calculation failed.").format(method=method_name))
                     else:
                         alpha, E, error = self._parse_result(result, method)
                         results_dict[method] = ActivationEnergyResults(
@@ -112,7 +114,7 @@ class ActivationEnergyHandler:
                             error=error,
                             raw_result=result,
                         )
-                        st.success(f"{AE_METHODS[method]} completed")
+                        st.success(_("{method} completed").format(method=method_name))
 
                 if results_dict:
                     st.session_state[SESS_ACTIVATION_ENERGY_RESULTS] = results_dict
@@ -160,10 +162,10 @@ class ActivationEnergyHandler:
                 p_value = st.session_state.get(SESS_AVY_P_VALUE, 0.50)
                 return ae_object.aVy(bounds=bounds, p=p_value)
             else:
-                st.error(f"Unknown method: {method}")
+                st.error(_("Unknown method: {method}").format(method=method))
                 return None
         except Exception as e:
-            st.error(f"{method} execution failed: {str(e)}")
+            st.error(_("{method} execution failed: {error}").format(method=method, error=str(e)))
             return None
 
     def _parse_result(
@@ -195,7 +197,7 @@ class ActivationEnergyHandler:
             results_dict: Mapping of method key → ActivationEnergyResults for every
                 method that has been computed in the current session.
         """
-        st.subheader("Activation Energy Results — E(α)")
+        st.subheader(_("Activation Energy Results — E(α)"))
 
         show_error = st.session_state.get(SESS_AE_SHOW_ERROR, True)
 
@@ -208,7 +210,7 @@ class ActivationEnergyHandler:
                     x=res.alpha,
                     y=res.E,
                     mode="lines+markers",
-                    name=res.method_label,
+                    name=_(res.method_label),
                     marker=dict(size=5, color=color),
                     line=dict(color=color),
                     error_y=dict(
@@ -222,8 +224,8 @@ class ActivationEnergyHandler:
             )
 
         fig.update_layout(
-            xaxis_title="Conversion (α)",
-            yaxis_title="E [kJ/mol]",
+            xaxis_title=_("Conversion (α)"),
+            yaxis_title=_("E [kJ/mol]"),
             height=440,
             legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
         )
@@ -235,12 +237,12 @@ class ActivationEnergyHandler:
             active_method = next(iter(results_dict))
 
         new_active = st.selectbox(
-            "Use for downstream steps (Compensation Effect, Reconstruction, Prediction):",
+            _("Use for downstream steps (Compensation Effect, Reconstruction, Prediction):"),
             options=list(results_dict.keys()),
-            format_func=lambda k: AE_METHODS[k],
+            format_func=lambda k: _(AE_METHODS[k]),
             index=list(results_dict.keys()).index(active_method),
             key="ae_active_method_selector",
-            help=(
+            help=_(
                 "The E(α) from this method will be passed to Steps 8–10. "
                 "aVy is the most rigorous choice when methods disagree."
             ),
@@ -248,22 +250,22 @@ class ActivationEnergyHandler:
         st.session_state[SESS_AE_ACTIVE_METHOD] = new_active
 
         # Per-method metrics and download buttons
-        with st.expander("Method details & downloads", expanded=False):
+        with st.expander(_("Method details & downloads"), expanded=False):
             for method, res in results_dict.items():
                 color = AE_METHOD_COLORS.get(method, "#888888")
                 st.markdown(
                     f'<span style="display:inline-block;width:12px;height:12px;'
                     f'border-radius:2px;background:{color};margin-right:6px"></span>'
-                    f"**{res.method_label}**",
+                    f"**{_(res.method_label)}**",
                     unsafe_allow_html=True,
                 )
                 mc1, mc2, mc3 = st.columns(3)
                 with mc1:
-                    st.metric("Mean E", f"{float(np.mean(res.E)):.2f} kJ/mol")
+                    st.metric(_("Mean E"), f"{float(np.mean(res.E)):.2f} kJ/mol")
                 with mc2:
-                    st.metric("Min E", f"{float(np.min(res.E)):.2f} kJ/mol")
+                    st.metric(_("Min E"), f"{float(np.min(res.E)):.2f} kJ/mol")
                 with mc3:
-                    st.metric("Max E", f"{float(np.max(res.E)):.2f} kJ/mol")
+                    st.metric(_("Max E"), f"{float(np.max(res.E)):.2f} kJ/mol")
 
                 df = pd.DataFrame({
                     "alpha": res.alpha,
@@ -271,7 +273,7 @@ class ActivationEnergyHandler:
                     "error [kJ/mol]": res.error,
                 })
                 st.download_button(
-                    label=f"Download {method} results (CSV)",
+                    label=_("Download {method} results (CSV)").format(method=method),
                     data=df.to_csv(index=False),
                     file_name=f"activation_energy_{method}.csv",
                     mime="text/csv",
