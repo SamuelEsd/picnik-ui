@@ -20,40 +20,48 @@ class ConversionHandler:
     """Component for handling conversion analysis."""
 
     def handle_conversion(self) -> None:
-        """Execute conversion and isoconversion analysis."""
-        if not st.session_state.get(SESS_RUN_CONVERSION):
-            return
+        """Execute conversion and isoconversion analysis.
 
-        data_extractor = st.session_state.get(SESS_DATA_EXTRACTOR)
-        Bnum = st.session_state.get(SESS_BNUM)
+        Reads SESS_RUN_CONVERSION. When True, computes the conversion and
+        stores the resulting plotter and metadata in session state. Always
+        renders stored results at the end of the call, so the chart survives
+        reruns triggered by later steps (e.g. Isoconversion's own button).
+        """
+        if st.session_state.get(SESS_RUN_CONVERSION):
+            data_extractor = st.session_state.get(SESS_DATA_EXTRACTOR)
+            Bnum = st.session_state.get(SESS_BNUM)
 
-        if data_extractor is None or Bnum is None:
-            st.error("No extracted data available for conversion.")
-            return
+            if data_extractor is None or Bnum is None:
+                st.error("No extracted data available for conversion.")
+            else:
+                try:
+                    SessionManager.clear_downstream_from("conversion")
+                    st.info("Running conversion analysis...")
 
-        try:
-            SessionManager.clear_downstream_from("conversion")
-            st.info("Running conversion analysis...")
+                    # Get temperature ranges
+                    ranges = st.session_state.get(SESS_CONVERSION_RANGES)
+                    Ti_list, Tf_list = self._prepare_temperature_ranges(
+                        ranges, Bnum, data_extractor
+                    )
 
-            # Get temperature ranges
-            ranges = st.session_state.get(SESS_CONVERSION_RANGES)
-            Ti_list, Tf_list = self._prepare_temperature_ranges(
-                ranges, Bnum, data_extractor
-            )
+                    # Execute conversion
+                    conversion_figure = data_extractor.Conversion(Ti_list, Tf_list)
 
-            # Execute conversion
-            conversion_figure = data_extractor.Conversion(Ti_list, Tf_list)
+                    st.success("Conversion analysis completed")
 
-            st.success("Conversion analysis completed")
+                    # Build plotter and store results in session
+                    self._store_results(conversion_figure, Ti_list, Tf_list, Bnum)
 
-            # Display results
-            self._display_results(conversion_figure, Ti_list, Tf_list, Bnum)
+                except Exception as e:
+                    st.error(f"Error during conversion analysis: {str(e)}")
 
+            st.session_state[SESS_RUN_CONVERSION] = False
 
-        except Exception as e:
-            st.error(f"Error during conversion analysis: {str(e)}")
-
-        st.session_state[SESS_RUN_CONVERSION] = False
+        # Always display from session if results exist
+        plotter = st.session_state.get(SESS_CONVERSION_PLOTTER)
+        metadata = st.session_state.get(SESS_CONVERSION_METADATA)
+        if plotter is not None and metadata is not None:
+            self._render_results(plotter, metadata)
 
     def _prepare_temperature_ranges(
         self, ranges: Optional[dict], Bnum: list, data_extractor
@@ -91,7 +99,7 @@ class ConversionHandler:
         ]
         return Ti_list, Tf_list
 
-    def _display_results(
+    def _store_results(
         self,
         conversion_figure,
         Ti_list: List[float],
@@ -99,7 +107,7 @@ class ConversionHandler:
         Bnum: list,
     ) -> None:
         """
-        Display conversion results and save to session.
+        Build the plotter from the matplotlib figure and save results to session.
 
         Args:
             conversion_figure: Matplotlib figure from conversion.
@@ -107,31 +115,49 @@ class ConversionHandler:
             Tf_list: Final temperatures.
             Bnum: List of B numbers.
         """
+        plotly_plotter = PP(
+            title="Conversion",
+            y_label="<b>Conversion (α)</b>",
+            x_label="<b>Temperature [K]</b>",
+            from_matplotlib_fig=conversion_figure,
+        )
+
+        # Apply saved ranges from session if available
+        saved_ranges = st.session_state.get(SESS_CONVERSION_RANGES, {})
+        if saved_ranges:
+            for trace_idx, (x_min, x_max) in saved_ranges.items():
+                if x_min is not None or x_max is not None:
+                    try:
+                        plotly_plotter.update_curve_xrange(trace_idx, x_min, x_max)
+                    except (IndexError, ValueError):
+                        # Skip if trace index doesn't exist for this plot
+                        pass
+
+        st.session_state[SESS_CONVERSION_PLOTTER] = plotly_plotter
+        st.session_state[SESS_CONVERSION_METADATA] = {
+            "Ti_list": Ti_list,
+            "Tf_list": Tf_list,
+            "Bnum": Bnum,
+        }
+
+    def _render_results(self, plotter: PP, metadata: dict) -> None:
+        """
+        Render the stored conversion plotter and analysis summary.
+
+        Args:
+            plotter: PlotlyPlotter built from the conversion figure.
+            metadata: Dict with Ti_list, Tf_list and Bnum, as stored by
+                _store_results.
+        """
+        Ti_list = metadata["Ti_list"]
+        Tf_list = metadata["Tf_list"]
+        Bnum = metadata["Bnum"]
+
         col1, col2 = st.columns([2, 1])
 
         with col1:
-            plotly_plotter = PP(
-                title="Conversion",
-                y_label="<b>Conversion (α)</b>",
-                x_label="<b>Temperature [K]</b>",
-                from_matplotlib_fig=conversion_figure,
-            )
-
-            # Apply saved ranges from session if available
-            saved_ranges = st.session_state.get(SESS_CONVERSION_RANGES, {})
-            if saved_ranges:
-                for trace_idx, (x_min, x_max) in saved_ranges.items():
-                    if x_min is not None or x_max is not None:
-                        try:
-                            plotly_plotter.update_curve_xrange(trace_idx, x_min, x_max)
-                        except (IndexError, ValueError):
-                            # Skip if trace index doesn't exist for this plot
-                            pass
             placeholder = st.empty()
-            plotly_plotter.show(container=placeholder)
-
-            # Save plotter to session
-            st.session_state[SESS_CONVERSION_PLOTTER] = plotly_plotter
+            plotter.show(container=placeholder)
 
         with col2:
             st.subheader("Analysis Summary")
@@ -139,10 +165,3 @@ class ConversionHandler:
             st.write("Temperature ranges:")
             for i, (ti, tf) in enumerate(zip(Ti_list, Tf_list)):
                 st.write(f"  Dataset {i + 1}: {ti:.1f} K to {tf:.1f} K")
-        
-        # Save conversion metadata to session
-        st.session_state[SESS_CONVERSION_METADATA] = {
-            "Ti_list": Ti_list,
-            "Tf_list": Tf_list,
-            "Bnum": Bnum,
-        }

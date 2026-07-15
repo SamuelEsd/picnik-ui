@@ -2,6 +2,7 @@
 Plot management and visualization utilities.
 """
 
+import matplotlib.pyplot as plt
 import streamlit as st
 from typing import Optional, List, Tuple
 from src.ui.PlotlyPlotter import PlotlyPlotter as PP
@@ -86,13 +87,18 @@ class PlotManager:
                 x_units=x_unit,
                 y_units=y_unit
             )
-            
+            if matplotlib_figure is None:
+                # picnik's plot_data() draws onto the current figure but does
+                # not return it (unlike Conversion()) - grab it directly.
+                matplotlib_figure = plt.gcf()
+
             plotly_plotter = PP(
                 title=f"<b>{x_data} ({x_unit}) vs {y_data} ({y_unit})</b>",
                 x_label=f"<b>{x_data} [{x_unit}]</b>",
                 y_label=f"<b>{y_data} [{y_unit}]</b>",
                 from_matplotlib_fig=matplotlib_figure
             )
+            plt.close(matplotlib_figure)
             return plotly_plotter
         except KeyError as e:
             st.error(f"Invalid plot combination: {str(e)}")

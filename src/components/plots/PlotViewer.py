@@ -28,11 +28,22 @@ class PlotViewer:
         plot_manager = PlotManager(data_extractor)
         plot_tabs = plot_manager.generate_plot_tabs()
 
-        tabs = st.tabs(plot_tabs)
+        # st.tabs() has no way to read back the user's current selection, so
+        # a rerun triggered by an unrelated widget elsewhere on the page
+        # (e.g. "Run Conversion") silently resets it to the first tab. A
+        # keyed segmented_control persists the selection in session state
+        # across reruns like any other widget.
+        selected_tab = st.segmented_control(
+            "Plot",
+            options=plot_tabs,
+            default=plot_tabs[0],
+            key="plot_viewer_selected_tab",
+            label_visibility="collapsed",
+        )
+        if selected_tab not in plot_tabs:
+            selected_tab = plot_tabs[0]
 
-        for idx, tab in enumerate(tabs):
-            with tab:
-                self._render_plot_tab(idx, plot_manager, plot_tabs)
+        self._render_plot_tab(plot_tabs.index(selected_tab), plot_manager, plot_tabs)
 
     def _render_plot_tab(self, idx: int, plot_manager: PlotManager, plot_tabs: list) -> None:
         """
@@ -46,12 +57,24 @@ class PlotViewer:
         try:
             x_data, x_unit, y_data, y_unit = plot_manager.parse_tab_name(plot_tabs[idx])
 
-            # Create plot
-            plotter = plot_manager.create_plot(x_data, y_data, x_unit, y_unit)
-
-            if plotter is None:
-                st.error(f"Failed to create plot for {plot_tabs[idx]}")
-                return
+            # Reuse the plotter from session state if this tab was already
+            # built. picnik's plotting methods go through matplotlib's
+            # global pyplot state (plt.gcf()/plt.show()), which is fragile
+            # to rebuild on every rerun of the whole app (e.g. clicking
+            # "Run Conversion" triggers a full rerun of this page too) -
+            # so compute each tab once and cache it here, the same way
+            # every other step's results persist in session state.
+            plotters_dict = st.session_state.get(SESS_PLOTLY_PLOTTERS, {})
+            cached = plotters_dict.get(idx)
+            if cached is not None:
+                plotter = cached["plotter"]
+            else:
+                plotter = plot_manager.create_plot(x_data, y_data, x_unit, y_unit)
+                if plotter is None:
+                    st.error(f"Failed to create plot for {plot_tabs[idx]}")
+                    return
+                plotters_dict[idx] = {"plotter": plotter}
+                st.session_state[SESS_PLOTLY_PLOTTERS] = plotters_dict
 
             # Apply saved temperature ranges only to temperature-axis plots.
             # Time-axis plots use a completely different x unit (min), so applying
@@ -82,11 +105,6 @@ class PlotViewer:
             # Display plot
             placeholder = st.empty()
             plotter.show(container=placeholder)
-
-            # Store plotter in session for later manipulation
-            plotters_dict = st.session_state.get(SESS_PLOTLY_PLOTTERS, {})
-            plotters_dict[idx] = {"plotter": plotter, "placeholder": placeholder}
-            st.session_state[SESS_PLOTLY_PLOTTERS] = plotters_dict
 
             # Display range controls for interactive adjustment
             if idx == 0:
