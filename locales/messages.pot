@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-07-13 21:13-0600\n"
+"POT-Creation-Date: 2026-07-14 22:59-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -27,6 +27,659 @@ msgstr ""
 
 #: main.py:42
 msgid "Tool"
+msgstr ""
+
+#: src/components/kinetics/ActivationEnergyControls.py:32
+msgid "Friedman method"
+msgstr ""
+
+#: src/components/kinetics/ActivationEnergyControls.py:33
+msgid "Kissinger-Akahira-Sunose method"
+msgstr ""
+
+#: src/components/kinetics/ActivationEnergyControls.py:34
+msgid "Ozawa-Flynn-Wall method"
+msgstr ""
+
+#: src/components/kinetics/ActivationEnergyControls.py:35
+msgid "Vyazovkin method"
+msgstr ""
+
+#: src/components/kinetics/ActivationEnergyControls.py:36
+msgid "Advanced Vyazovkin method"
+msgstr ""
+
+#: src/components/kinetics/ActivationEnergyControls.py:54
+msgid "Step 7: Activation Energy Analysis"
+msgstr ""
+
+#: src/components/kinetics/ActivationEnergyControls.py:57
+msgid ""
+"Complete Step 6 (Isoconversion) first to enable activation energy "
+"analysis."
+msgstr ""
+
+#: src/components/kinetics/ActivationEnergyControls.py:60
+msgid "**Select one or more methods to compute activation energy:**"
+msgstr ""
+
+#: src/components/kinetics/ActivationEnergyControls.py:86
+msgid "**Search bounds for E (kJ/mol) — Vy / aVy:**"
+msgstr ""
+
+#: src/components/kinetics/ActivationEnergyControls.py:90
+#: src/components/kinetics/PredictionControls.py:89
+msgid "Lower bound"
+msgstr ""
+
+#: src/components/kinetics/ActivationEnergyControls.py:94
+msgid "Minimum E value (kJ/mol) the minimizer will consider."
+msgstr ""
+
+#: src/components/kinetics/ActivationEnergyControls.py:99
+#: src/components/kinetics/PredictionControls.py:101
+msgid "Upper bound"
+msgstr ""
+
+#: src/components/kinetics/ActivationEnergyControls.py:103
+msgid "Maximum E value (kJ/mol). The true E must fall within [lower, upper]."
+msgstr ""
+
+#: src/components/kinetics/ActivationEnergyControls.py:107
+msgid "Lower bound must be less than upper bound."
+msgstr ""
+
+#: src/components/kinetics/ActivationEnergyControls.py:114
+msgid "Confidence level (Advanced Vyazovkin)"
+msgstr ""
+
+#: src/components/kinetics/ActivationEnergyControls.py:119
+msgid ""
+"Confidence level for the error estimation of the Vyazovkin advanced "
+"method."
+msgstr ""
+
+#: src/components/kinetics/ActivationEnergyControls.py:127
+msgid "Show error bars"
+msgstr ""
+
+#: src/components/kinetics/ActivationEnergyControls.py:129
+msgid ""
+"Display error bars for the 95-percent confidence interval on the E(α) "
+"chart."
+msgstr ""
+
+#: src/components/kinetics/ActivationEnergyControls.py:138
+msgid "Calculate Activation Energy"
+msgstr ""
+
+#: src/components/kinetics/ActivationEnergyControls.py:143
+msgid "Select at least one method before calculating."
+msgstr ""
+
+#: src/components/kinetics/ActivationEnergyHandler.py:71
+#, python-brace-format
+msgid "Error creating Activation Energy object: {error}"
+msgstr ""
+
+#: src/components/kinetics/ActivationEnergyHandler.py:89
+msgid "No Activation Energy object available for calculation."
+msgstr ""
+
+#: src/components/kinetics/ActivationEnergyHandler.py:91
+msgid "No methods selected."
+msgstr ""
+
+#: src/components/kinetics/ActivationEnergyHandler.py:102
+#, python-brace-format
+msgid "Running {method}..."
+msgstr ""
+
+#: src/components/kinetics/ActivationEnergyHandler.py:106
+#, python-brace-format
+msgid "{method} calculation failed."
+msgstr ""
+
+#: src/components/kinetics/ActivationEnergyHandler.py:117
+#, python-brace-format
+msgid "{method} completed"
+msgstr ""
+
+#: src/components/kinetics/ActivationEnergyHandler.py:165
+#, python-brace-format
+msgid "Unknown method: {method}"
+msgstr ""
+
+#: src/components/kinetics/ActivationEnergyHandler.py:168
+#, python-brace-format
+msgid "{method} execution failed: {error}"
+msgstr ""
+
+#: src/components/kinetics/ActivationEnergyHandler.py:200
+msgid "Activation Energy Results — E(α)"
+msgstr ""
+
+#: src/components/kinetics/ActivationEnergyHandler.py:227
+#: src/components/kinetics/CompensationEffectHandler.py:123
+#: src/components/kinetics/PredictionHandler.py:209
+#: src/components/kinetics/PredictionHandler.py:260
+#: src/components/kinetics/ReconstructionHandler.py:157
+msgid "Conversion (α)"
+msgstr ""
+
+#: src/components/kinetics/ActivationEnergyHandler.py:228
+#: src/components/kinetics/CompensationEffectHandler.py:176
+msgid "E [kJ/mol]"
+msgstr ""
+
+#: src/components/kinetics/ActivationEnergyHandler.py:240
+msgid ""
+"Use for downstream steps (Compensation Effect, Reconstruction, "
+"Prediction):"
+msgstr ""
+
+#: src/components/kinetics/ActivationEnergyHandler.py:246
+msgid ""
+"The E(α) from this method will be passed to Steps 8–10. aVy is the most "
+"rigorous choice when methods disagree."
+msgstr ""
+
+#: src/components/kinetics/ActivationEnergyHandler.py:253
+msgid "Method details & downloads"
+msgstr ""
+
+#: src/components/kinetics/ActivationEnergyHandler.py:264
+msgid "Mean E"
+msgstr ""
+
+#: src/components/kinetics/ActivationEnergyHandler.py:266
+msgid "Min E"
+msgstr ""
+
+#: src/components/kinetics/ActivationEnergyHandler.py:268
+msgid "Max E"
+msgstr ""
+
+#: src/components/kinetics/ActivationEnergyHandler.py:276
+#, python-brace-format
+msgid "Download {method} results (CSV)"
+msgstr ""
+
+#: src/components/kinetics/CompensationEffectControls.py:20
+msgid "Step 8: Pre-exponential Factor — Compensation Effect"
+msgstr ""
+
+#: src/components/kinetics/CompensationEffectControls.py:24
+msgid "Complete Step 7 (Activation Energy) first to enable this step."
+msgstr ""
+
+#: src/components/kinetics/CompensationEffectControls.py:29
+msgid "Heating rate data not available."
+msgstr ""
+
+#: src/components/kinetics/CompensationEffectControls.py:36
+#, python-brace-format
+msgid "β = {beta:.2f} K/min (column {i})"
+msgstr ""
+
+#: src/components/kinetics/CompensationEffectControls.py:40
+msgid "Reference heating rate for model fitting"
+msgstr ""
+
+#: src/components/kinetics/CompensationEffectControls.py:44
+msgid ""
+"The compensation effect fits reaction models to data at this heating "
+"rate. The lowest heating rate often gives the best signal."
+msgstr ""
+
+#: src/components/kinetics/CompensationEffectControls.py:53
+msgid "MSE — Non-Linear fit"
+msgstr ""
+
+#: src/components/kinetics/CompensationEffectControls.py:54
+msgid "R² — Non-Linear fit"
+msgstr ""
+
+#: src/components/kinetics/CompensationEffectControls.py:55
+msgid "R² — Linear fit"
+msgstr ""
+
+#: src/components/kinetics/CompensationEffectControls.py:58
+msgid "Model filter method"
+msgstr ""
+
+#: src/components/kinetics/CompensationEffectControls.py:62
+msgid ""
+"Criterion used to accept or reject each reaction model fit:\n"
+"\n"
+"- **MSE Non-Linear**: keeps fits whose residual sum of squares is below a"
+" threshold (default, robust).\n"
+"- **R² Non-Linear**: keeps fits with a Pearson R² close to 1 from the "
+"non-linear curve fit.\n"
+"- **R² Linear**: linearises the rate equation and keeps fits with high R²"
+" from a linear regression."
+msgstr ""
+
+#: src/components/kinetics/CompensationEffectControls.py:75
+msgid "Calculate Compensation Effect"
+msgstr ""
+
+#: src/components/kinetics/CompensationEffectHandler.py:39
+msgid "Activation energy object or results not available."
+msgstr ""
+
+#: src/components/kinetics/CompensationEffectHandler.py:49
+msgid "Computing compensation effect — fitting reaction models to data..."
+msgstr ""
+
+#: src/components/kinetics/CompensationEffectHandler.py:58
+msgid ""
+"Compensation effect could not be computed. Try a different reference "
+"heating rate column or a different activation energy method."
+msgstr ""
+
+#: src/components/kinetics/CompensationEffectHandler.py:64
+msgid "Compensation effect computed successfully"
+msgstr ""
+
+#: src/components/kinetics/CompensationEffectHandler.py:79
+#, python-brace-format
+msgid "Error during compensation effect calculation: {error}"
+msgstr ""
+
+#: src/components/kinetics/CompensationEffectHandler.py:95
+msgid "Compensation Effect Results"
+msgstr ""
+
+#: src/components/kinetics/CompensationEffectHandler.py:99
+msgid "Slope a"
+msgstr ""
+
+#: src/components/kinetics/CompensationEffectHandler.py:99
+#, python-brace-format
+msgid "±{value:.5f} (stderr)"
+msgstr ""
+
+#: src/components/kinetics/CompensationEffectHandler.py:101
+msgid "Intercept b"
+msgstr ""
+
+#: src/components/kinetics/CompensationEffectHandler.py:101
+#, python-brace-format
+msgid "±{value:.4f} (stderr)"
+msgstr ""
+
+#: src/components/kinetics/CompensationEffectHandler.py:103
+msgid "Accepted models"
+msgstr ""
+
+#: src/components/kinetics/CompensationEffectHandler.py:106
+#, python-brace-format
+msgid "**Compensation effect equation:** `ln(A) = {a:.4f} · E + {b:.4f}`"
+msgstr ""
+
+#: src/components/kinetics/CompensationEffectHandler.py:122
+msgid "Pre-exponential Factor ln(A) vs Conversion α"
+msgstr ""
+
+#: src/components/kinetics/CompensationEffectHandler.py:124
+#: src/components/kinetics/CompensationEffectHandler.py:177
+msgid "ln(A / min⁻¹)"
+msgstr ""
+
+#: src/components/kinetics/CompensationEffectHandler.py:129
+msgid "ln(A) statistics"
+msgstr ""
+
+#: src/components/kinetics/CompensationEffectHandler.py:131
+#, python-brace-format
+msgid "**Mean:** {value:.4f}"
+msgstr ""
+
+#: src/components/kinetics/CompensationEffectHandler.py:132
+#, python-brace-format
+msgid "**Min:** {value:.4f}  (α = {alpha:.3f})"
+msgstr ""
+
+#: src/components/kinetics/CompensationEffectHandler.py:135
+#, python-brace-format
+msgid "**Max:** {value:.4f}  (α = {alpha:.3f})"
+msgstr ""
+
+#: src/components/kinetics/CompensationEffectHandler.py:175
+msgid "Compensation Effect: ln(A) vs E (by reaction model)"
+msgstr ""
+
+#: src/components/kinetics/CompensationEffectHandler.py:183
+#, python-brace-format
+msgid "**Accepted models ({n}):** {names}"
+msgstr ""
+
+#: src/components/kinetics/CompensationEffectHandler.py:193
+msgid "Download ln(A) Data (CSV)"
+msgstr ""
+
+#: src/components/kinetics/IsoconversionControls.py:34
+msgid "Step 6: Isoconversion Analysis"
+msgstr ""
+
+#: src/components/kinetics/IsoconversionControls.py:37
+msgid "Complete Step 5 (Conversion) first to enable isoconversion analysis."
+msgstr ""
+
+#: src/components/kinetics/IsoconversionControls.py:48
+msgid "Conversion step size (∆α)"
+msgstr ""
+
+#: src/components/kinetics/IsoconversionControls.py:53
+msgid "Step size between conversion values for isoconversion calculations"
+msgstr ""
+
+#: src/components/kinetics/IsoconversionControls.py:60
+msgid "Exact value"
+msgstr ""
+
+#: src/components/kinetics/IsoconversionControls.py:65
+msgid ""
+"Type a precise ∆α value — useful for values below 0.01, hard to hit with "
+"the slider."
+msgstr ""
+
+#: src/components/kinetics/IsoconversionControls.py:73
+msgid "Run Isoconversion"
+msgstr ""
+
+#: src/components/kinetics/IsoconversionHandler.py:34
+msgid "No extracted data available for isoconversion."
+msgstr ""
+
+#: src/components/kinetics/IsoconversionHandler.py:39
+msgid "Running isoconversion analysis..."
+msgstr ""
+
+#: src/components/kinetics/IsoconversionHandler.py:42
+msgid "Isoconversion analysis completed"
+msgstr ""
+
+#: src/components/kinetics/IsoconversionHandler.py:51
+#, python-brace-format
+msgid "Error during isoconversion analysis: {error}"
+msgstr ""
+
+#: src/components/kinetics/IsoconversionHandler.py:67
+msgid "Isoconversion Results"
+msgstr ""
+
+#: src/components/kinetics/IsoconversionHandler.py:70
+msgid "Temperature (K)"
+msgstr ""
+
+#: src/components/kinetics/IsoconversionHandler.py:70
+msgid "Time (min)"
+msgstr ""
+
+#: src/components/kinetics/IsoconversionHandler.py:70
+msgid "Conversion Rate (∆α/∆t)"
+msgstr ""
+
+#: src/components/kinetics/IsoconversionHandler.py:76
+msgid "Download Temperature Data (CSV)"
+msgstr ""
+
+#: src/components/kinetics/IsoconversionHandler.py:86
+msgid "Download Time Data (CSV)"
+msgstr ""
+
+#: src/components/kinetics/IsoconversionHandler.py:96
+msgid "Download Conversion Rate Data (CSV)"
+msgstr ""
+
+#: src/components/kinetics/PredictionControls.py:24
+msgid "Step 10: Kinetic Predictions"
+msgstr ""
+
+#: src/components/kinetics/PredictionControls.py:28
+msgid "Complete Step 7 (Activation Energy) first to enable predictions."
+msgstr ""
+
+#: src/components/kinetics/PredictionControls.py:31
+msgid "Model-free Prediction"
+msgstr ""
+
+#: src/components/kinetics/PredictionControls.py:31
+msgid "Model-based Isothermal"
+msgstr ""
+
+#: src/components/kinetics/PredictionControls.py:42
+msgid "Temperature program"
+msgstr ""
+
+#: src/components/kinetics/PredictionControls.py:44
+#: src/components/kinetics/PredictionHandler.py:88
+#: src/components/kinetics/PredictionHandler.py:193
+msgid "Isothermal"
+msgstr ""
+
+#: src/components/kinetics/PredictionControls.py:44
+#: src/components/kinetics/PredictionHandler.py:88
+#: src/components/kinetics/PredictionHandler.py:193
+msgid "Linear heating"
+msgstr ""
+
+#: src/components/kinetics/PredictionControls.py:47
+msgid ""
+"Isothermal: hold at a constant temperature. Linear heating: ramp at a "
+"fixed K/min rate."
+msgstr ""
+
+#: src/components/kinetics/PredictionControls.py:58
+#: src/components/kinetics/PredictionControls.py:130
+msgid "Isothermal temperature (K)"
+msgstr ""
+
+#: src/components/kinetics/PredictionControls.py:67
+msgid "Heating rate β (K/min)"
+msgstr ""
+
+#: src/components/kinetics/PredictionControls.py:76
+msgid "Target conversion α"
+msgstr ""
+
+#: src/components/kinetics/PredictionControls.py:83
+msgid "Simulation runs until this conversion value is reached."
+msgstr ""
+
+#: src/components/kinetics/PredictionControls.py:87
+msgid "**Time search bounds (min)**"
+msgstr ""
+
+#: src/components/kinetics/PredictionControls.py:96
+msgid ""
+"Search window around the previous time point. Set to the expected order-"
+"of-magnitude of the process duration."
+msgstr ""
+
+#: src/components/kinetics/PredictionControls.py:111
+msgid "Run Model-free Prediction"
+msgstr ""
+
+#: src/components/kinetics/PredictionControls.py:119
+msgid ""
+"Complete Steps 8 (Compensation Effect) and 9 (Reconstruction) to enable "
+"model-based predictions."
+msgstr ""
+
+#: src/components/kinetics/PredictionControls.py:136
+msgid "Constant temperature at which to predict conversion vs time."
+msgstr ""
+
+#: src/components/kinetics/PredictionControls.py:140
+#: src/components/kinetics/ReconstructionControls.py:33
+#, python-brace-format
+msgid "β = {beta:.2f} K/min"
+msgstr ""
+
+#: src/components/kinetics/PredictionControls.py:142
+msgid "Reference heating rate"
+msgstr ""
+
+#: src/components/kinetics/PredictionControls.py:146
+msgid "Heating rate whose temperature profile is used for the integral."
+msgstr ""
+
+#: src/components/kinetics/PredictionControls.py:152
+msgid "Run Model-based Prediction"
+msgstr ""
+
+#: src/components/kinetics/PredictionHandler.py:82
+msgid "Activation energy object not available."
+msgstr ""
+
+#: src/components/kinetics/PredictionHandler.py:92
+#, python-brace-format
+msgid "Running {mode} model-free prediction..."
+msgstr ""
+
+#: src/components/kinetics/PredictionHandler.py:115
+msgid "Model-free prediction completed"
+msgstr ""
+
+#: src/components/kinetics/PredictionHandler.py:124
+#, python-brace-format
+msgid "Error during model-free prediction: {error}"
+msgstr ""
+
+#: src/components/kinetics/PredictionHandler.py:148
+msgid ""
+"Missing data. Ensure Steps 6 (activation energy), 7 (compensation "
+"effect), and 8 (reconstruction) are all complete."
+msgstr ""
+
+#: src/components/kinetics/PredictionHandler.py:159
+#, python-brace-format
+msgid "Running model-based isothermal prediction at T = {iso_T:.0f} K..."
+msgstr ""
+
+#: src/components/kinetics/PredictionHandler.py:170
+msgid "Model-based prediction completed"
+msgstr ""
+
+#: src/components/kinetics/PredictionHandler.py:178
+#, python-brace-format
+msgid "Error during model-based prediction: {error}"
+msgstr ""
+
+#: src/components/kinetics/PredictionHandler.py:194
+#, python-brace-format
+msgid "Model-free Prediction — {mode}"
+msgstr ""
+
+#: src/components/kinetics/PredictionHandler.py:207
+#, python-brace-format
+msgid "Predicted Conversion vs Time ({mode})"
+msgstr ""
+
+#: src/components/kinetics/PredictionHandler.py:208
+#: src/components/kinetics/PredictionHandler.py:259
+msgid "Time [min]"
+msgstr ""
+
+#: src/components/kinetics/PredictionHandler.py:217
+msgid "Final conversion reached"
+msgstr ""
+
+#: src/components/kinetics/PredictionHandler.py:219
+msgid "Time to final conversion"
+msgstr ""
+
+#: src/components/kinetics/PredictionHandler.py:228
+msgid "Download Prediction Data (CSV)"
+msgstr ""
+
+#: src/components/kinetics/PredictionHandler.py:242
+#, python-brace-format
+msgid "Model-based Isothermal Prediction — T = {iso_T:.0f} K"
+msgstr ""
+
+#: src/components/kinetics/PredictionHandler.py:258
+#, python-brace-format
+msgid "Model-based Prediction: α vs Time at T = {iso_T:.0f} K"
+msgstr ""
+
+#: src/components/kinetics/PredictionHandler.py:268
+msgid "Final conversion"
+msgstr ""
+
+#: src/components/kinetics/PredictionHandler.py:270
+msgid "Total time predicted"
+msgstr ""
+
+#: src/components/kinetics/PredictionHandler.py:274
+msgid "Download Isothermal Prediction (CSV)"
+msgstr ""
+
+#: src/components/kinetics/ReconstructionControls.py:20
+msgid "Step 9: Reaction Model Reconstruction — g(α)"
+msgstr ""
+
+#: src/components/kinetics/ReconstructionControls.py:23
+msgid "Complete Step 8 (Compensation Effect) first to enable reconstruction."
+msgstr ""
+
+#: src/components/kinetics/ReconstructionControls.py:35
+msgid "Heating rate for temperature integration"
+msgstr ""
+
+#: src/components/kinetics/ReconstructionControls.py:39
+msgid ""
+"The reconstruction integrates exp(-E/RT(t))dt along the temperature "
+"profile of the selected experiment. Using the first (lowest) heating rate"
+" is common."
+msgstr ""
+
+#: src/components/kinetics/ReconstructionControls.py:50
+msgid "Reconstruct g(α)"
+msgstr ""
+
+#: src/components/kinetics/ReconstructionHandler.py:50
+msgid ""
+"Missing data. Ensure activation energy and compensation effect have been "
+"computed."
+msgstr ""
+
+#: src/components/kinetics/ReconstructionHandler.py:62
+msgid "Reconstructing g(α)..."
+msgstr ""
+
+#: src/components/kinetics/ReconstructionHandler.py:65
+msgid "Reaction model g(α) reconstructed successfully"
+msgstr ""
+
+#: src/components/kinetics/ReconstructionHandler.py:96
+msgid ""
+"Reconstruction requires accepted_models from the compensation effect "
+"step. Please re-run Step 8 before this step."
+msgstr ""
+
+#: src/components/kinetics/ReconstructionHandler.py:101
+#, python-brace-format
+msgid "Error during reconstruction: {error}"
+msgstr ""
+
+#: src/components/kinetics/ReconstructionHandler.py:118
+msgid "Reconstructed Integral Model g(α)"
+msgstr ""
+
+#: src/components/kinetics/ReconstructionHandler.py:150
+msgid "g(α) reconstructed"
+msgstr ""
+
+#: src/components/kinetics/ReconstructionHandler.py:156
+msgid "Reconstructed g(α) vs Accepted Reaction Models"
+msgstr ""
+
+#: src/components/kinetics/ReconstructionHandler.py:167
+msgid "Download g(α) Data (CSV)"
 msgstr ""
 
 #: src/views/home.py:7
