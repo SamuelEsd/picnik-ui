@@ -1,9 +1,41 @@
 
 # New class for Plotly plotting
+import re
+
 import plotly.graph_objects as go
 import streamlit as st
 import seaborn as sns
 import matplotlib.colors as mcolors
+
+
+_LATEX_UNICODE_MAP = {
+    r'\alpha': 'α',
+    r'\beta': 'β',
+    r'\gamma': 'γ',
+    r'\Delta': 'Δ',
+    r'\Omega': 'Ω',
+    r'\left': '',
+    r'\right': '',
+}
+
+
+def _sanitize_latex_label(text):
+    """Convert matplotlib LaTeX math syntax in a label to plain unicode text.
+
+    plotly.tools.mpl_to_plotly() copies matplotlib label strings verbatim
+    into Plotly trace names — it does not render LaTeX, so a raw label like
+    '$\\beta$=5.00 K/min' (as produced by picnik's plotting methods) would
+    otherwise show up literally in the Plotly legend instead of 'β=5.00 K/min'.
+    """
+    if not text:
+        return text
+    for latex, unicode_char in _LATEX_UNICODE_MAP.items():
+        text = text.replace(latex, unicode_char)
+    text = re.sub(r'\\text\{([^}]*)\}', r'\1', text)
+    text = re.sub(r'_\{([^}]*)\}', r'_\1', text)
+    text = re.sub(r'\^\{([^}]*)\}', r'^\1', text)
+    text = text.replace('$', '')
+    return text
 
 
 class PlotlyPlotter:
@@ -355,6 +387,9 @@ class PlotlyPlotter:
             with warnings.catch_warnings():
                 warnings.filterwarnings("ignore", message="I found a path object")
                 plotly_fig = tls.mpl_to_plotly(mpl_fig)
+            for trace in plotly_fig.data:
+                if getattr(trace, "name", None):
+                    trace.name = _sanitize_latex_label(trace.name)
             return plotly_fig
         except ImportError:
             raise ImportError("plotly.tools.mpl_to_plotly is required for matplotlib conversion. Please install plotly >=4.0.")

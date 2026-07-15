@@ -60,7 +60,6 @@ The application will be available at `http://localhost:8501`
 ## Project Structure
 
 - `main.py` - Main Streamlit application entry point
-- `picnick_dev.py` - Development utilities
 - `common/` - Shared utilities and helpers
 - `views/` - UI page components
 - `resources/` - Default data files and resources

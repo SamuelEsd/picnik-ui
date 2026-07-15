@@ -28,7 +28,7 @@ from src.config import (
 )
 from src.components.kinetics.ActivationEnergyControls import AE_METHODS, AE_METHOD_COLORS
 from src.models.results import ActivationEnergyResults
-from picnick_dev import ActivationEnergy
+from picnik import ActivationEnergy
 
 
 class ActivationEnergyHandler:

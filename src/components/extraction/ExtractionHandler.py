@@ -43,7 +43,7 @@ class ExtractionHandler:
         try:
             SessionManager.clear_downstream_from("extraction")
             # Import here to avoid circular imports
-            from picnick_dev import DataExtraction as DE
+            from picnik import DataExtraction as DE
 
             file_paths = self._sort_files_by_beta(file_paths)
 
@@ -106,7 +106,7 @@ class ExtractionHandler:
             True if retry successful, False otherwise.
         """
         try:
-            from picnick_dev import DataExtraction as DE
+            from picnik import DataExtraction as DE
 
             temp_paths = []
             with tempfile.TemporaryDirectory() as temp_dir:
