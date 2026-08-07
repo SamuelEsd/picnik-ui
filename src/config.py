@@ -25,6 +25,7 @@ DEFAULT_MAX_FILES: int = 20
 DEFAULT_MIN_FILES: int = 2
 DEFAULT_UPLOAD_DIR: str = str(DEFAULT_FILES_DIR)
 TEMP_UPLOAD_DIR: str = "/tmp"
+TEMP_UPLOAD_DIR_PREFIX: str = "picnik-ui-"
 
 # ============================================================================
 # FILE VALIDATION CONFIGURATION
@@ -58,6 +59,7 @@ SESS_LOCALE: str = 'locale'
 SESS_FILE_PATHS: str = 'file_paths'
 SESS_FILE_SOURCE: str = 'file_paths_source'
 SESS_FILE_FOLDER: str = 'file_paths_folder'
+SESS_UPLOAD_DIR: str = 'upload_dir'
 SESS_BNUM: str = 'Bnum'
 SESS_T0_NUM: str = 'T0num'
 SESS_DATA_EXTRACTOR: str = 'data_extractor'

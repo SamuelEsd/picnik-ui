@@ -2,6 +2,8 @@
 Session state management utilities.
 """
 
+import tempfile
+
 import streamlit as st
 from typing import List, Optional
 
@@ -9,6 +11,8 @@ from src.config import (
     SESS_FILE_PATHS,
     SESS_FILE_SOURCE,
     SESS_FILE_FOLDER,
+    SESS_UPLOAD_DIR,
+    TEMP_UPLOAD_DIR_PREFIX,
     SESS_BNUM,
     SESS_T0_NUM,
     SESS_DATA_EXTRACTOR,
@@ -97,6 +101,19 @@ class SessionManager:
     @staticmethod
     def get_file_paths() -> list:
         return st.session_state.get(SESS_FILE_PATHS, [])
+
+    @staticmethod
+    def get_upload_dir() -> str:
+        """Return this session's private temp directory for uploaded files, creating it on first use.
+
+        Isolating uploads per session avoids filename collisions between
+        concurrent users sharing the same Streamlit process.
+        """
+        upload_dir = st.session_state.get(SESS_UPLOAD_DIR)
+        if upload_dir is None:
+            upload_dir = tempfile.mkdtemp(prefix=TEMP_UPLOAD_DIR_PREFIX)
+            st.session_state[SESS_UPLOAD_DIR] = upload_dir
+        return upload_dir
 
     @staticmethod
     def set_file_paths(paths: list, source: str = 'default', folder: str = '') -> None:

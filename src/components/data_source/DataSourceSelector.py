@@ -79,8 +79,9 @@ class DataSourceSelector:
 
         file_paths = []
         if uploaded_files:
+            upload_dir = SessionManager.get_upload_dir()
             for uploaded_file in uploaded_files:
-                temp_path = os.path.join("/tmp", uploaded_file.name)
+                temp_path = os.path.join(upload_dir, uploaded_file.name)
                 with open(temp_path, "wb") as f:
                     f.write(uploaded_file.getbuffer())
                 file_paths.append(temp_path)
