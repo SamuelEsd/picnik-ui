@@ -21,7 +21,7 @@ narwhals==2.15.0
 numpy==2.4.1
 packaging==25.0
 pandas==2.3.3
-picnik==1.1.3
+picnik==1.1.4
 picnik-integrator==0.2.2
 pillow==12.1.0
 plotly==6.5.1
